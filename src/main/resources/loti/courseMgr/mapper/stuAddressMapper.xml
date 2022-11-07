@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.StuAddressMapper">
+
+	<select id="selectAppInfoDetailInfoListCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 수강신청자 리스트 (동기 리스트)
+		SELECT
+			COUNT(0) AS CNT
+		FROM TB_APP_INFO A
+		WHERE 1=1
+			AND GRCHK = #{grchk}
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+		ORDER BY EDUNO ASC
+	]]>
+	</select>
+	
+	<select id="selectAppInfoDetailInfoList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 수강신청자 리스트 (동기 리스트)
+						SELECT
+							GRCODE, GRSEQ, EDUNO,
+							DEPT, JIK, USERNO,
+							NAME,TELNO,
+							(SELECT EMAIL FROM tb_member WHERE USERNO = A.USERNO) AS EMAIL,
+							(SELECT DEPTSUB FROM tb_member WHERE USERNO = A.USERNO) AS DEPTSUB,
+							(SELECT SCP.DEC_B64('KEY1',RESNO) FROM tb_member WHERE USERNO = A.USERNO) AS RESNO,
+							(SELECT DEPTNM FROM TB_DEPT WHERE DEPT = A.DEPT) AS DEPTNM,
+							(SELECT JIKNM FROM TB_JIK WHERE JIK = A.JIK) AS JIKNM
+						FROM TB_APP_INFO A
+						WHERE 1=1
+							AND GRCHK = #{grchk}
+							AND GRCODE = #{grcode}
+							AND GRSEQ = #{grseq}
+						ORDER BY EDUNO ASC
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+</mapper>

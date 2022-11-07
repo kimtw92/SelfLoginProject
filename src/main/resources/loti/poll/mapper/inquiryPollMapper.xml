@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.poll.mapper.InquiryPollMapper">
+
+	<select id="selectInquirySetPollAjax" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+	-- 설문SET번호
+		SELECT 
+			MIN(SET_NO) AS MIN_VAL 
+		FROM 
+			TB_GRINQ_QUESTION_SET 
+		WHERE 
+			TITLE_NO = #{sequence}
+	]]>
+	</select>
+	
+	<select id="selectInquiryPollAjax" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+	--설문결과관리 
+	SELECT 
+		TITLE_NO, TITLE_SEQ 
+	FROM 
+		TB_GRINQ_TTL 
+	WHERE 1=1
+	  AND GRCODE = #{grcode}
+	  AND GRSEQ = #{grseq} 
+	ORDER BY TITLE_SEQ ASC
+	]]>
+	</select>
+		
+</mapper>

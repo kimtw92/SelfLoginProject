@@ -1,0 +1,12 @@
+.waiting {
+	BACKGROUND-POSITION: center center; BACKGROUND-IMAGE: url(/commonInc/css/img/waiting.gif); BACKGROUND-REPEAT: no-repeat; BACKGROUND-COLOR: white
+}
+.bigWaiting {
+	BACKGROUND-POSITION: center 20%; BACKGROUND-IMAGE: url(/commonInc/css/img/bigWaiting.gif); BACKGROUND-REPEAT: no-repeat; BACKGROUND-COLOR: white
+}
+.blackWaiting {
+	BACKGROUND-POSITION: center center; BACKGROUND-IMAGE: url(/commonInc/css/img/blackWaiting.gif); BACKGROUND-REPEAT: no-repeat; BACKGROUND-COLOR: black
+}
+.bigBlackWaiting {
+	BACKGROUND-POSITION: center center; BACKGROUND-IMAGE: url(/commonInc/css/img/bigBlackWaiting.gif); BACKGROUND-REPEAT: no-repeat; BACKGROUND-COLOR: black
+}

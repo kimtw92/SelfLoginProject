@@ -1,0 +1,140 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>JW Player Test Page by hwani</title>
+
+
+<!-- JW Players -->
+<script type="text/javascript" src="silverlight.js"></script>
+<script type="text/javascript" src="wmvplayer.js"></script>
+<script type='text/javascript' src='swfobject.js'></script>
+<!-- //JW Players -->
+
+
+<!-- JW Players -->
+<script type='text/javascript'>
+<!--
+
+//
+function linkChk() {
+	//alert(movUrl);
+	var  str_ext = "wmv"; 
+	switch (str_ext) {
+		case "wmv" :
+			view_wmv(); 
+		case "wma" :
+			view_wmv();
+		    return true;
+		    break;
+		default:
+			view_flv();
+	}
+}
+
+//WMV
+var player;
+function view_wmv() {
+	var elm = document.getElementById("wmvdiv");
+	var src = 'wmvplayer.xaml';
+	var cfg = {	file:'video.wmv', width:'413', height:'295'	};
+	player = new jeroenwijering.Player(elm,src,cfg);
+	addListeners();
+};
+	
+function addListeners() {
+	if(player.view) {
+		//player.addListener('VOLUME',volumeUpdate);
+		//player.addListener('LOAD',loadUpdate);
+		//player.addListener('STATE',stateUpdate);
+		player.addListener('TIME',timeUpdate);
+		//player.addListener('BUFFER',bufferUpdate);
+	} else {
+		setTimeout("addListeners()",100);
+	}
+};
+
+
+//FLV
+function view_flv() {
+	var movUrl = 'http://www.youtube.com/watch?v=um6lpRb3_uI';
+	var s1 = new SWFObject('/jwplayers/player-viral.swf','player','413','295','9','#ffffff');
+	s1.addParam('allowfullscreen','true');
+	s1.addParam('allowscriptaccess','always');
+	s1.addParam('wmode','opaque');
+	s1.addParam('flashvars','file='+movUrl);
+	s1.addParam('quality','low');
+	
+	s1.write('flvdiv');
+}
+
+function timeUpdate(pos,dur) { 
+	currentPosition = pos;
+
+	if(pos < 1) {
+		alert(pos);
+	}
+
+	var tmp = document.getElementById("time"); 
+	if (tmp) { tmp.innerHTML = "<b>Position:</b> "+pos+", <b>duration:</b> "+dur; } 
+};
+
+function printConfig() {
+	var cfg = player.getConfig();
+	var txt = '';
+	for(var itm in cfg) { 
+		txt += '<li>'+itm+': '+cfg[itm]+'</li>';
+	}
+	var tmp = document.getElementById("config");
+	if (tmp) { tmp.innerHTML = txt; }
+}
+
+-->
+</script>
+<!-- //JW Players -->
+
+
+</head>
+<body onload="linkChk();">
+
+
+
+<!-- JW Players 1 -->
+<div id="wmvdiv"></div>
+
+<div id="flvdiv"></div>
+<!-- //JW Players 1 -->
+
+
+
+<!-- JW Players 2 -->
+<!--
+<div id="wmv">
+	<embed id="wmvdiv" name="wmvdiv" src="/upload/player.swf" width="400" height="200" />
+</div>
+
+<div id="flv">
+	<embed id="flvdiv" name="flvdiv" src="/upload/player.swf" width="400" height="200" />
+</div>
+-->
+<!-- //JW Players 2 -->
+
+
+
+<h2>RECEIVED UPDATES</h2> 
+<ul> 
+	<li id="buffer"></li> 
+	<li id="state"></li> 
+	<li id="time"></li> 
+	<li id="load"></li> 
+	<li id="volume"></li> 
+</ul>
+
+
+<h2>CONFIG DATA</h2> 
+<ul> 
+<li><a href="javascript:printConfig()">(re)load configuration</a></li> 
+</ul> 
+<ul id="config"></ul>
+
+</body>
+</html>

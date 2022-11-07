@@ -1,0 +1,13 @@
+7월 11 11:34:20.172 오전 INFO - [[ACTIVE] ExecuteThread: '56' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+7월 11 11:34:24.890 오전 INFO - [[ACTIVE] ExecuteThread: '56' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+7월 11 12:10:29.783 오후 INFO - [[ACTIVE] ExecuteThread: '64' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+7월 11 12:10:29.988 오후 INFO - [[ACTIVE] ExecuteThread: '64' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+7월 11 10:28:36.373 오후 INFO - [[ACTIVE] ExecuteThread: '12' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(48) | SAML v2.0 Library Initializing...
+7월 11 10:28:38.958 오후 INFO - [[ACTIVE] ExecuteThread: '12' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(56) | Metadata Load...
+7월 11 10:28:38.989 오후 INFO - [[ACTIVE] ExecuteThread: '12' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(60) | MetadataRepInterface: com.etri.saml2.imp.MetadataRepImpFile
+7월 11 10:28:38.989 오후 INFO - [[ACTIVE] ExecuteThread: '12' for queue: 'weblogic.kernel.Default (self-tuning)']MetadataRepImpFile.setMetadataDirectory(53) | Metadata directory: //app1/apache/htdocs/LOTI/WebRoot/WEB-INF/metadata/
+7월 11 10:28:38.990 오후 INFO - [[ACTIVE] ExecuteThread: '12' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(66) | Session Record Load..
+7월 11 10:28:39.000 오후 INFO - [[ACTIVE] ExecuteThread: '12' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(73) | Federation Record Load..
+7월 11 10:28:39.025 오후 INFO - [[ACTIVE] ExecuteThread: '12' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(81) | Artifact Record Load..
+7월 11 10:28:39.064 오후 INFO - [[ACTIVE] ExecuteThread: '12' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.configure(166) | Properties Load Done. version 1.0
+7월 11 10:28:39.065 오후 INFO - [[ACTIVE] ExecuteThread: '12' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(103) | SAML Library initialize complete

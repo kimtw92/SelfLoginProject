@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.evalMgr.mapper.EvalAnalyMapper">
+
+	<select id="selectScoreTotData" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가점수조회 총점 
+		SELECT NVL(TOTPOINT,0) AS TOTPOINT 
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode, jdbcType=VARCHAR}
+		   AND GRSEQ = #{commGrseq, jdbcType=VARCHAR}
+		   AND SUBJ = #{commSubj, jdbcType=VARCHAR}
+	]]>
+	</select>
+	
+	<select id="selectScoreAvgData" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가점수조회 평균 
+		SELECT NVL(TO_CHAR(AVG(NVL(AVCOURSE,0)+NVL(AVLCOUNT,0)+NVL(AVQUIZ,0)+NVL(AVREPORT,0)),'99.99'),0) AS AVGPOINT
+		  FROM TB_STU_LEC 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+	]]>
+	</select>
+	
+	<select id="selectScoreList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가점수조회 회원 리스트 
+		SELECT AI.EDUNO
+		     , A.DEPT
+		     , C.DEPTNM AS DEPTNM
+		     , SCP.DEC_B64('KEY1',MB.RESNO) AS RESNO
+		     , A.NAME
+		     , B.JIKNM
+		     , NVL(A.AVLCOUNT,'0') AS AVLCOUNT
+		     , NVL(A.TSTEP,'0') AS TSTEP
+		     , NVL(A.QUIZSTEP,'0') AS QUIZSTEP
+		     , NVL(A.AVREPORT,0) AS AVREPORT
+		     , NVL(A.AVCOURSE,0) AS AVCOURSE
+		     , NVL(A.AVQUIZ,0) AS AVQUIZ
+		     , NVL(A.AVCOURSE,0)+NVL(A.AVLCOUNT,'0')+NVL(A.AVQUIZ,0)+NVL(A.AVREPORT,0) AS SUM_POINT
+          FROM TB_STU_LEC A
+             , TB_JIK B
+             , TB_DEPT C
+             , TB_MEMBER MB
+             , TB_APP_INFO AI 
+		 WHERE 1=1
+		   AND A.GRCODE = #{commGrcode}
+		   AND A.GRSEQ = #{commGrseq}
+		   AND A.SUBJ = #{commSubj}
+		   AND A.USERNO = MB.USERNO
+		   AND A.JIK = B.JIK
+		   AND A.DEPT = C.DEPT
+		   AND A.GRCODE = AI.GRCODE(+)
+		   AND A.GRSEQ = AI.GRSEQ(+)
+		   AND A.USERNO = AI.USERNO(+) 
+	]]>
+	<if test="commClass != null and commClass == ('3').toString()">
+	<![CDATA[
+		   AND A.DEPT = #{commDept}
+	]]>
+	</if>
+	<![CDATA[
+		 ORDER BY A.DEPT,A.NAME 
+	]]>
+	</select>
+	
+	<select id="selectAnalyListParam1" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가결과분석 리스트 param1
+		SELECT GRCODENIKNM||' '||GRSEQ AS GRTITLE 
+		  FROM TB_GRSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+	]]>
+	</select>
+	
+	<select id="selectAnalyListParam2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가결과분석 리스트 param2
+		SELECT LECNM 
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+	]]>
+	</select>
+	
+	<select id="selectAnalyListParam3" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가결과분석 리스트 param3		
+		SELECT (NVL(MGAKPOINT,0)*NVL(MGAKWEIGHT,0)+NVL(MJUPOINT,0)*NVL(MJUWEIGHT,0)) AS MPOINT
+		     , (NVL(LGAKPOINT,0)*NVL(LGAKWEIGHT,0)+NVL(LJUPOINT,0)*NVL(LJUWEIGHT,0)) AS LPOINT
+		     , (NVL(NGAKPOINT1,0)*NVL(NGAKWEIGHT1,0)+NVL(NJUPOINT1,0)*NVL(NJUWEIGHT1,0)) AS NPOINT1
+		     , (NVL(NGAKPOINT2,0)*NVL(NGAKWEIGHT2,0)+NVL(NJUPOINT2,0)*NVL(NJUWEIGHT2,0)) AS NPOINT2
+		     , (NVL(NGAKPOINT3,0)*NVL(NGAKWEIGHT3,0)+NVL(NJUPOINT3,0)*NVL(NJUWEIGHT3,0)) AS NPOINT3
+		     , (NVL(NGAKPOINT4,0)*NVL(NGAKWEIGHT4,0)+NVL(NJUPOINT4,0)*NVL(NJUWEIGHT4,0)) AS NPOINT4
+		     , (NVL(NGAKPOINT5,0)*NVL(NGAKWEIGHT5,0)+NVL(NJUPOINT5,0)*NVL(NJUWEIGHT5,0)) AS NPOINT5 
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+	]]>
+	</select>
+	
+	<select id="selectAnalyListParam4" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가결과분석 리스트 param4		
+		SELECT COUNT(DISTINCT A.USERNO) AS TOTALEDU
+		     , SUM(NVL(A.GAKPOINT,0)+NVL(A.JUPOINT,0)) AS MSCORE 
+		  FROM TB_EXRESULT A
+		     , TB_EXPAGE B 
+		 WHERE 1=1
+		   AND A.GRCODE = #{commGrcode}
+		   AND A.GRSEQ = #{commGrseq}
+		   AND A.SUBJ = #{commSubj}
+		   AND A.SUBJ = B.SUBJ
+		   AND A.GRCODE = B.GRCODE
+		   AND A.GRSEQ = B.GRSEQ
+		   AND A.PTYPE = B.PTYPE
+		   AND B.PTYPE = #{ptype}
+	]]>
+	</select>
+	
+	<select id="selectCourseHistoryGrcode" resultType="DataMap">
+	<![CDATA[
+		-- 과정평균추이도
+		SELECT GRCODE
+		     , GRCODENM 
+		  FROM TB_GRCODE 
+		 ORDER BY GRCODENM 
+	]]>
+	</select>
+</mapper>

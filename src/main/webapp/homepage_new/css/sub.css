@@ -1,0 +1,180 @@
+﻿@charset "UTF-8"; 
+@import url(basic.css);
+@import url(contents.css);
+
+#subContainer{width:990px;margin:0 auto;}
+
+.subNavi_area{float:left;width:229px; height:650px;}
+
+#quick_menu{position:relative; float:right; width:79px;z-index:50; }
+#quick_menu ul{background:url('/images/common/quick_bg.gif') repeat-y;}
+#quick_menu ul li{border-bottom:1px dashed #ccc;text-align:center;}
+#quick_menu ul li a{display:block;padding:7px 0;}
+
+.login {width:100%; height:118px; background:url('../images/main/login_bg2.gif') no-repeat left top;}
+.login h3 {width:200px; height:19px; float:left; margin:15px 0 0 15px; background:url(/images/main/title.gif) no-repeat left top; text-indent:-9999px;display:inline;}
+.login div.in_check {width:200px; height:25px; float:left;margin:7px 0 0 10px;text-align:left; font-size:11px; color:#4e4e4e;clear:both;display:inline;}
+.login div.in_check input, #aside div.login p.in_check label {cursor:pointer;}
+.login div.txtbox {width:200px; height:45px; margin:0 0 0 13px; text-align:left;clear:both;}
+.login p.in_txt {width:114px; float:left; margin:0; }
+.login p.in_txt input {width:95px; height:16px; margin-bottom:2px; padding:2px 0 0 9px; color:#587EA2; font-size:11px; font-weight:bold; border:1px solid #d7d7d7; background:#ffffff;}
+.login input.btn_login {float:left; width:56px; height:50px; padding:0; background:url(/images/main/btn.gif) no-repeat left top; border:0; cursor:pointer;}
+.login p.btn {margin:3px 0 0 13px;}
+.login p.btn a {float:left; margin-right:6px; padding:2px 6px 1px 7px; color:#fff; font-size:11px; letter-spacing:-1px; background:#3d5b7f;}
+
+.logout {width:100%; height:118px; margin-bottom:9px; background:url('../images/main/login_bg2.gif') no-repeat left top;}
+.logout p.in_check {width:200px;height:25px;float:left;padding:7px 0 0 16px; color:#406B93;text-align:left;}
+.logout label {width:170px;height:20px;float:left; color:#406b93}
+
+.logout p.btn {margin:3px 0 0 13px;}
+.logout p.btn a {float:left;height:17px; margin-right:6px; padding:2px 14px 1px 15px; line-height:17px; color:#fff; font-size:11px; letter-spacing:-1px; background:#3d5b7f;}
+.logout p.sel {width:174px;float:left;  margin:8px 0 0 16px; text-align:left; font-size:12px; color: #4B4B4B; display:inline;}
+
+
+#subNavi_area{width:199px;margin-top:10px;}
+#subNavi_area .title{height:29px;margin-left:9px;}
+#subNavi_area .sn{width:199px;height:auto;background:url('../images/common/subBox_bt.gif') no-repeat 0 bottom;}
+#subNavi_area .sn ul{padding:15px;background:url('../images/common/subBox_top.gif') no-repeat 0 top;}
+#subNavi_area .sn ul li{padding:0;_height:25px;}
+#subNavi_area .sn ul li a{display:block;padding:6px 0 6px 6px;_padding:5px 0 6px 6px;background:url('../images/common/subNavi_bg.gif') no-repeat 0 bottom;font-weight:bold;color:#545454;}
+#subNavi_area .sn ul li a:hover{background:url('../images/common/subNavi_bg.gif') no-repeat 0 top;color:#fff;}
+#subNavi_area .sn ul li .on{background:url('../images/common/subNavi_bg.gif') no-repeat 0 top;color:#fff;}
+#subNavi_area .sn ul li ul{padding:0;background:none;}
+#subNavi_area .sn ul li ul li{height:25px;margin:0;padding:0 0 0 10px;background:url('../images/common/dot1.gif') no-repeat 10px 50%;background-color:#f6f6f6;border-bottom:1px solid #dedede;}
+#subNavi_area .sn ul li ul li span{display:block;padding:0 0 0 7px;background:none;color:#646464;font-size:11px;font-weight:bold;line-height:25px;letter-spacing:-0.05em;}
+#subNavi_area .sn ul li ul li a{display:block;padding:0 0 0 7px;background:none;color:#858585;font-size:11px;font-weight:normal;line-height:25px;}
+#subNavi_area .sn ul li ul li a:hover{background:none;color:#646464;font-weight:bold;letter-spacing:-0.05em;}
+
+#contnets_area{float:left;width:671px;}
+
+.sub_visual{width:100%;height:auto;}
+.sub_visual1{width:671px;height:130px;background:url('../images/common/sub_visual1.jpg') no-repeat left top;font-size:0; text-indent:-9999px;}
+.sub_visual2{width:671px;height:130px;background:url('../images/common/sub_visual2.jpg') no-repeat left top;font-size:0; text-indent:-9999px;}
+.sub_visual3{width:671px;height:130px;background:url('../images/common/sub_visual3.jpg') no-repeat left top;font-size:0; text-indent:-9999px;}
+.sub_visual4{width:671px;height:130px;background:url('../images/common/sub_visual4.jpg') no-repeat left top;font-size:0; text-indent:-9999px;}
+.sub_visual5{width:671px;height:130px;background:url('../images/common/sub_visual5.jpg') no-repeat left top;font-size:0; text-indent:-9999px;}
+.sub_visual6{width:671px;height:130px;background:url('../images/common/sub_visual6.jpg') no-repeat left top;font-size:0; text-indent:-9999px;}
+.sub_visual7{width:671px;height:130px;background:url('../images/common/sub_visual7.jpg') no-repeat left top;font-size:0; text-indent:-9999px;}
+.local{width:100%;padding-bottom:5px;border-bottom:2px solid #219bc2;}
+.local:after{content:"";display:block;clear:both;}
+.local .navi{float:right;width:auto;font-size:11px;}
+.local .navi span{font-weight:bold;color:#8cc63e;}
+
+h2{float:left;padding-left:12px;background:url('../images/common/2depth.gif') no-repeat 0 50%;font-size:14px;color:#000;}
+
+.contnets{width:100%;margin-top:35px; text-align:left;}
+
+.mytab01{ float:left; width:670px; height:50px; background:url(../images/M1/mytab_bg.gif) repeat-x;display:inline;}
+.mytab01 ul{float:left;width:670px; height:28px; }
+.mytab01 ul li{float:left;display:inline; }
+
+.lecturer_tab01{ float:left; width:671px; height:58px; background:url(/images/skin4/sub/lecturer_bg01.gif) no-repeat left top;}
+.lecturer_tab01 ul{float:left;margin:20px 0 0 36px;display:inline;}
+.lecturer_tab01 ul li{float:left; }
+
+#realname { width:671px; CLEAR: both;}
+#realname DL {height:35px;}
+#realname DL *{VERTICAL-ALIGN: middle; }
+#realname DL label{margin-left:10px; }
+#realname DT {DISPLAY: inline; width:700px;  padding:0 20px 0 20px; text-align:center}
+#realname DD {DISPLAY: inline;}
+#realname DT {MARGIN: 0px 3px 20px 30px}
+#realname DT IMG {VERTICAL-ALIGN: middle; }
+#realname DD SPAN {MARGIN: 0px 5px 0px 4px; FONT-SIZE: 13px; TOP: 0px}
+#realname DL INPUT {BORDER-BOTTOM: #cccccc 2px solid; BORDER-LEFT: #cccccc 2px solid; PADDING-BOTTOM: 2px; PADDING-LEFT: 5px; WIDTH: 96px; PADDING-RIGHT: 0px; 
+                          	COLOR: #2e5775; FONT-SIZE: 14px; BORDER-TOP: #cccccc 2px solid; FONT-WEIGHT: bold; BORDER-RIGHT: #cccccc 2px solid; PADDING-TOP: 3px; magin-bottom:10px;}
+
+
+
+table.personal {BORDER-BOTTOM: #c3d3dc 2px solid; BORDER-LEFT: medium none; MARGIN: 0px 0px 20px; WIDTH: 100%; CLEAR: both; BORDER-TOP: #c3d3dc 2px solid; BORDER-RIGHT: medium none}
+table.personal TH {BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; COLOR: #2e5775; BORDER-TOP: medium none; BORDER-RIGHT: medium none}
+table.personal TD {BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; COLOR: #2e5775; BORDER-TOP: medium none; BORDER-RIGHT: medium none}
+table.personal TH {TEXT-ALIGN: left; PADDING-BOTTOM: 8px; LINE-HEIGHT: 18px; PADDING-LEFT: 10px; WIDTH: 120px; height:20px; PADDING-RIGHT: 0px; BACKGROUND: #f4f7f9; LETTER-SPACING: -1px; VERTICAL-ALIGN: top; BORDER-TOP: #ededed 1px solid; PADDING-TOP: 11px}
+table.personal TH LABEL {POSITION: relative; PADDING-BOTTOM: 0px; PADDING-LEFT: 11px; PADDING-RIGHT: 0px; DISPLAY: block; PADDING-TOP: 0px}
+table.personal TH SPAN {PADDING-RIGHT:7px;color:#ff6c00;}
+table.personal TD {BORDER-LEFT: #ededed 1px solid; PADDING-BOTTOM: 7px; PADDING-LEFT: 10px; PADDING-RIGHT: 0px; VERTICAL-ALIGN: middle; BORDER-TOP: #ededed 1px solid; PADDING-TOP: 6px}
+table.personal TR.first-child TH {	BORDER-TOP: medium none}
+table.personal TR.first-child TD {	BORDER-TOP: medium none}
+table.personal .input_text{BORDER-BOTTOM: #8fa6b2 1px solid; BORDER-LEFT: #8fa6b2 1px solid; BORDER-TOP: #8fa6b2 1px solid; BORDER-RIGHT: #8fa6b2 1px solid;
+                       PADDING: 2px 2px 2px 2px; COLOR: #333333; FONT-SIZE: 13px;}
+
+table.personal .w157 {	WIDTH: 150px}
+table.personal .input_radio {	POSITION: relative; MARGIN: 2px -1px 0px -4px; TOP: 3px}
+table.personal .input_check {	POSITION: relative; MARGIN: 2px -1px 0px -4px; TOP: 3px}
+table.personal TD LABEL {	POSITION: relative; TOP: -1px; _top: -2px}
+*:first-child + HTML table.personal TD LABEL {	TOP: -2px}
+table.personal TD .link {	POSITION: relative; MARGIN: 0px 0px 0px 1px; LETTER-SPACING: -1px; COLOR: #004790; FONT-SIZE: 11px; TOP: -3px; TEXT-DECORATION: underline; _margin: 0}
+table.personal .mail1 {	MARGIN: 0px 0px 5px}
+table.personal .optin {	PADDING-BOTTOM: 2px; PADDING-LEFT: 0px; WIDTH: 484px; PADDING-RIGHT: 0px; BORDER-TOP: #ededed 1px solid; PADDING-TOP: 10px}
+table.personal .type1.help_wrap {	Z-INDEX: 110 !important}
+table.personal .checkbox {	MARGIN: 0px 0px 7px; WIDTH: 15px; HEIGHT: 15px; VERTICAL-ALIGN: middle; _width: 13px; _height: 13px; _margin: -2px 0 2px}
+table.personal .default_view {	MARGIN-TOP: 7px}
+*:first-child + HTML table.personal .help_wrap{	Z-INDEX: 99}
+table.personal BR {CLEAR: both}
+table.personal .help_wrap{z-index : 98; position : relative; display : block; overflow : visible; _width : 100%;}
+
+
+/* 회원정보수정 화면(S) */
+#personal2 .pbx { width:540PX; height:100%; BORDER-BOTTOM: #e7ecf0 2px solid; BORDER-LEFT: #e7ecf0 2px solid; CLEAR: both; BORDER-TOP: #e7ecf0 2px solid; BORDER-RIGHT: #e7ecf0 2px solid; PADDING:10px 10PX;}
+#personal2 .cnt_desc .first-child {	MARGIN: 0px 0px 6px}
+#personal2 .cnt_desc A {	MARGIN: 0px 0px 0px 3px; LETTER-SPACING: -1px; COLOR: #004790; FONT-SIZE: 11px; TEXT-DECORATION: underline}
+#personal2 .notice {	TEXT-ALIGN: right; MARGIN: -15px 0px 2px; LETTER-SPACING: -1px; COLOR: #666666; FONT-SIZE: 11px}
+#personal2 TABLE {BORDER-BOTTOM: #c3d3dc 2px solid; BORDER-LEFT: medium none; MARGIN: 0px 0px 20px; WIDTH: 100%; CLEAR: both; BORDER-TOP: #c3d3dc 2px solid; BORDER-RIGHT: medium none}
+#personal2 TABLE TH {BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; COLOR: #2e5775; BORDER-TOP: medium none; BORDER-RIGHT: medium none}
+#personal2 TABLE TD {BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; COLOR: #2e5775; BORDER-TOP: medium none; BORDER-RIGHT: medium none}
+#personal2 TABLE TH {TEXT-ALIGN: left; PADDING-BOTTOM: 8px; LINE-HEIGHT: 18px; PADDING-LEFT: 10px; WIDTH: 125px; PADDING-RIGHT: 0px; BACKGROUND: #f4f7f9; LETTER-SPACING: -1px; VERTICAL-ALIGN: top; BORDER-TOP: #ededed 1px solid; PADDING-TOP: 11px}
+#personal2 TABLE TH IMG {POSITION: absolute; TOP: 2px; LEFT: 0px; left: -11px}
+#personal2 TABLE TH LABEL {POSITION: relative; PADDING-BOTTOM: 0px; PADDING-LEFT: 11px; PADDING-RIGHT: 0px; DISPLAY: block; PADDING-TOP: 0px}
+#personal2 TABLE TH SPAN {POSITION: relative; PADDING-BOTTOM: 0px; PADDING-LEFT: 11px; PADDING-RIGHT: 0px; DISPLAY: block; PADDING-TOP: 0px}
+#personal2 TABLE TD {BORDER-LEFT: #ededed 1px solid; PADDING-BOTTOM: 7px; PADDING-LEFT: 20px; PADDING-RIGHT: 0px; VERTICAL-ALIGN: middle; BORDER-TOP: #ededed 1px solid; PADDING-TOP: 6px}
+#personal2 TABLE TR.first-child TH {	BORDER-TOP: medium none}
+#personal2 TABLE TR.first-child TD {	BORDER-TOP: medium none}
+#personal2 TABLE .txt1 {	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; DISPLAY: block; FONT-WEIGHT: normal; PADDING-TOP: 5px}
+#personal2 TABLE .txt1 IMG {	MARGIN-TOP: -3px; VERTICAL-ALIGN: middle}
+#personal2 TABLE .txt1 SPAN {	LETTER-SPACING: -1px; COLOR: #999999; FONT-SIZE: 11px}
+#personal2 TABLE .txt1 SPAN.ico {	MARGIN: 0px 5px 0px 16px; FONT-SIZE: 12px}
+#personal2 TABLE .txt1 .newname {	MARGIN-LEFT: 6px}
+#personal2 TABLE .txt2 {	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; PADDING-TOP: 5px; padding: 3px 0 0 0}
+#personal2 TABLE .txt3 {	PADDING-BOTTOM: 6px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; PADDING-TOP: 7px}
+#personal2 TABLE .txt3 * {	VERTICAL-ALIGN: bottom}
+#personal2 TABLE .txt3 IMG {	MARGIN: 0px 10px 0px 0px; VERTICAL-ALIGN: middle;}
+#personal2 TABLE .txt3 INPUT {	POSITION: relative; _top: 1px}
+#personal2 TABLE .txt3 .check_txt {	POSITION: absolute; TOP: 12px; LEFT: 173px}
+#personal2 TABLE .txt4 {	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; DISPLAY: block; FONT-WEIGHT: bold; PADDING-TOP: 7px}
+#personal2 TABLE .txt5 {	PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; DISPLAY: block; PADDING-TOP: 15px}
+#personal2 TABLE .txt6 {	PADDING-BOTTOM: 6px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; DISPLAY: block; PADDING-TOP: 9px}
+#personal2 TABLE .input_text{BORDER-BOTTOM: #8fa6b2 1px solid; BORDER-LEFT: #8fa6b2 1px solid; BORDER-TOP: #8fa6b2 1px solid; BORDER-RIGHT: #8fa6b2 1px solid;
+                       PADDING: 2px 2px 2px 2px; COLOR: #333333; FONT-SIZE: 13px;  FONT-WEIGHT: bold;  }
+#personal2 TABLE .w110 {	WIDTH: 103px}
+#personal2 TABLE .w130 {	WIDTH: 123px}
+#personal2 TABLE .w154 {	WIDTH: 147px}
+#personal2 TABLE .w157 {	WIDTH: 150px}
+#personal2 TABLE .w286 {	WIDTH: 279px}
+#personal2 TABLE .w431 { WIDTH: 423px}
+#personal2 TABLE .w88 {	WIDTH: 81px}
+#personal2 TABLE .w138 {	WIDTH: 131px}
+#personal2 TABLE .input_radio {	POSITION: relative; MARGIN: 2px -1px 0px -4px; TOP: 3px}
+#personal2 TABLE .input_check {	POSITION: relative; MARGIN: 2px -1px 0px -4px; TOP: 3px}
+#personal2 TABLE TD LABEL {	POSITION: relative; TOP: -1px; _top: -2px}
+*:first-child + HTML #personal TABLE TD LABEL {	TOP: -2px}
+#personal2 TABLE .mr14 {	MARGIN-RIGHT: 14px}
+#personal2 TABLE TD .link {	POSITION: relative; MARGIN: 0px 0px 0px 1px; LETTER-SPACING: -1px; COLOR: #004790; FONT-SIZE: 11px; TOP: -3px; TEXT-DECORATION: underline; _margin: 0}
+#personal2 TABLE .mail1 {	MARGIN: 0px 0px 5px}
+#personal2 TABLE .optin {	PADDING-BOTTOM: 2px; PADDING-LEFT: 0px; WIDTH: 484px; PADDING-RIGHT: 0px; BORDER-TOP: #ededed 1px solid; PADDING-TOP: 10px}
+#personal2 TABLE EM {	PADDING-BOTTOM: 7px; PADDING-LEFT: 19px; PADDING-RIGHT: 0px; DISPLAY: block; LETTER-SPACING: -1px; COLOR: #ff6c00; FONT-SIZE: 11px; PADDING-TOP: 5px}
+#personal2 TABLE .type1.help_wrap {	Z-INDEX: 110 !important}
+#personal2 TABLE .checkbox {	MARGIN: 0px 0px 7px; WIDTH: 15px; HEIGHT: 15px; VERTICAL-ALIGN: middle; _width: 13px; _height: 13px; _margin: -2px 0 2px}
+#personal2 TABLE .default_view {	MARGIN-TOP: 7px}
+*:first-child + HTML #personal TABLE .help_wrap{	Z-INDEX: 99}
+#personal2 TABLE .upw.help_wrap {	Z-INDEX: 100}
+*:first-child + HTML #personal TABLE .upw.help_wap {	Z-INDEX: 100}
+#personal2 TABLE .left .arrow {	Z-INDEX: 4; POSITION: absolute; WIDTH: 4px; DISPLAY: block; BACKGROUND: url(/images/join2/bu_help_left.gif) no-repeat; HEIGHT: 6px; OVERFLOW: hidden; TOP: 13px; LEFT: -3px}
+#personal2 TABLE .top .arrow {	Z-INDEX: 4; POSITION: absolute; WIDTH: 6px; DISPLAY: block; BACKGROUND: url(/images/join2/bu_help_top.gif) no-repeat; HEIGHT: 4px; OVERFLOW: hidden; TOP: -3px; LEFT: 11px}
+#personal2 TABLE .bottom .arrow {	Z-INDEX: 4; POSITION: absolute; WIDTH: 7px; BOTTOM: -5px; DISPLAY: block; BACKGROUND: url(/images/join2/bu_help_bottom.gif) no-repeat; HEIGHT: 6px; OVERFLOW: hidden; LEFT: 11px}
+*:first-child + HTML #personal TABLE .help .shadow1 {	BACKGROUND: #919191}
+*:first-child + HTML #personal TABLE .help .shadow2 {	BACKGROUND: #919191}
+#personal2 TABLE .btn_cmail {PADDING-BOTTOM: 0px; MARGIN: 6px 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; DISPLAY: block; FLOAT: left; CLEAR: both; PADDING-TOP: 0px}
+#personal2 .btn_01 {PADDING-RIGHT: 10px; text-align:center; PADDING-BOTTOM: 15px;}
+#personal2 .btn_02 {PADDING-RIGHT: 10px; }
+#personal2 TABLE BR {CLEAR: both}
+

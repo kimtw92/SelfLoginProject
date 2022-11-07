@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.evalMgr.mapper.ScoreMapper">
+
+	<select id="selectScoreOption" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 특수과목 점수입력 Option출력 
+		SELECT SJS.SUBJ
+		     , SJS.LECNM 
+		  FROM TB_SUBJSEQ SJS
+		     , TB_SUBJ SB 
+		 WHERE 1=1
+		   AND SJS.SUBJ = SB.SUBJ
+		   AND SJS.GRCODE = #{commGrcode}
+		   AND SJS.GRSEQ = #{commGrseq}
+		   AND SB.SUBJTYPE = 'S'
+		   AND SJS.SUBJ <> 'SUB1000025'
+	]]>
+	</select>
+	
+	<select id="selectScoreSubj" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 특수과목인지 검사
+		SELECT SJS.SUBJ 
+		  FROM TB_SUBJSEQ SJS
+		     , TB_SUBJ SB 
+		 WHERE 1=1
+		   AND SJS.SUBJ = SB.SUBJ
+		   AND SJS.GRCODE = #{commGrcode}
+		   AND SJS.GRSEQ = #{commGrseq}
+		   AND SJS.SUBJ = #{commSubj}
+		   AND SB.SUBJTYPE = 'S' 
+		   AND SJS.SUBJ <> 'SUB1000025'
+	]]>
+	</select>
+	
+	<select id="selectScoreInfo" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 특수과목 점수입력 과목정보
+		SELECT GS.GRCODENIKNM
+		     , SJ.LECNM
+		     , SJ.CLOSING
+		     , NVL(SJ.TOTPOINT,0) AS TOTPOINT 
+		  FROM TB_GRSEQ GS
+		     , TB_SUBJSEQ SJ 
+		 WHERE 1=1
+		   AND GS.GRCODE = SJ.GRCODE
+		   AND GS.GRSEQ = SJ.GRSEQ 
+		   AND SJ.GRCODE = #{commGrcode}
+		   AND SJ.GRSEQ = #{commGrseq}
+		   AND SJ.SUBJ = #{commSubj}
+	]]>
+	</select>
+	
+	<select id="selectLangClass" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 특수과목 점수입력 과목정보 
+		SELECT SUBJTYPE
+		     , LANGUAGE 
+		  FROM TB_SUBJ
+		 WHERE 1=1
+		   AND SUBJ = #{commSubj}
+	]]>
+	</select>
+	
+	<select id="selectClassCnt" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 특수과목 Class 카운트 
+		SELECT CLASSNO
+		  FROM TB_SUBJCLASS
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+	]]>
+	</select>
+	
+	<select id="selectBf_Pcnt" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 특수과목 bf_pcnt 카운터 
+		SELECT GRCODE AS BF_PCNT 
+		  FROM TB_STU_LEC 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+		   AND NVL(DECODE(SUBJ, 'GUN0000001', AVCOURSE, 'SUB1000025', AVREPORT, AVLCOUNT),0) > 0 
+	]]>
+	</select>
+	
+	<select id="selectPersonList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 특수과목 personList
+		SELECT STL.USERNO
+		     , STL.CLASSNO
+		     , SC.CLASSNM
+		     , AP.EDUNO
+		     , SCP.DEC_B64('KEY1',MB.RESNO) AS RESNO
+		     , STL.NAME
+		     , DP.DEPTNM
+		     , JK.JIKNM
+		     , NVL(DECODE(STL.SUBJ, 'GUN0000001', STL.AVCOURSE, 'SUB1000025', STL.AVREPORT, STL.AVLCOUNT),0) AS AVLCOUNT 
+		  FROM TB_STU_LEC STL
+		     , TB_JIK JK
+		     , TB_DEPT DP
+		     , TB_MEMBER MB
+		     , TB_APP_INFO AP
+		     , TB_SUBJCLASS SC 
+		 WHERE 1=1
+		   AND STL.GRCODE = AP.GRCODE
+		   AND STL.GRSEQ = AP.GRSEQ
+		   AND STL.USERNO = AP.USERNO
+		   AND STL.USERNO = MB.USERNO 
+		   AND STL.DEPT = DP.DEPT(+)
+		   AND STL.JIK = JK.JIK(+)
+		   AND STL.GRCODE = SC.GRCODE(+)
+		   AND STL.GRSEQ = SC.GRSEQ(+)
+		   AND STL.SUBJ = SC.SUBJ(+) 
+		   AND STL.CLASSNO = SC.CLASSNO(+)
+		   AND STL.GRCODE = #{commGrcode}
+		   AND STL.GRSEQ = #{commGrseq}
+		   AND STL.SUBJ = #{commSubj}
+		 ORDER BY STL.CLASSNO, AP.EDUNO
+	]]>
+	</select>
+	
+	<select id="selectClassCount" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 총 클래스 목록
+		SELECT CLASSNO
+		     , CLASSNM 
+		  FROM TB_SUBJCLASS 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+		 ORDER BY CLASSNO
+	]]>
+	</select>
+	
+	<select id="selectClassList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 클래스별 학생 리스트
+		SELECT STL.CLASSNO
+		     , AP.EDUNO
+		     , SCP.DEC_B64('KEY1',MB.RESNO) AS RESNO
+		     , STL.NAME
+		     , DP.DEPTNM
+		     , JK.JIKNM
+		     , NVL(DECODE(STL.SUBJ, 'GUN0000001', STL.AVCOURSE, 'SUB1000025', STL.AVREPORT, STL.AVLCOUNT),0) AS AVLCOUNT 
+		  FROM TB_STU_LEC STL
+		     , TB_JIK JK
+		     , TB_DEPT DP
+		     , TB_MEMBER MB
+		     , TB_APP_INFO AP 
+		 WHERE 1=1
+		   AND STL.GRCODE = AP.GRCODE
+		   AND STL.GRSEQ = AP.GRSEQ
+		   AND STL.USERNO = AP.USERNO
+		   AND STL.USERNO = MB.USERNO 
+		   AND STL.DEPT = DP.DEPT(+)
+		   AND STL.JIK = JK.JIK(+) 
+		   AND STL.CLASSNO = #{classno}
+		   AND STL.GRCODE = #{commGrcode}
+		   AND STL.GRSEQ = #{commGrseq}
+		   AND STL.SUBJ = #{commSubj}
+		 ORDER BY STL.CLASSNO, AP.EDUNO
+	]]>
+	</select>
+	
+	<select id="selectLangClassCount" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 어학클래스 목록
+		SELECT CLASSNO
+		     , CLASSNM
+		     , LANG_SPOINT 
+		  FROM TB_SUBJCLASS 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+		 ORDER BY CLASSNO 
+	]]>
+	</select>
+	
+	<select id="selectLangClassList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 어학클래스 리스트
+		SELECT STL.CLASSNO
+		     , STL.USERNO
+		     , STL.LANG_POINT
+		     , AP.EDUNO
+		     , SCP.DEC_B64('KEY1',MB.RESNO) AS RESNO
+		     , STL.NAME
+		     , DP.DEPTNM
+		     , JK.JIKNM
+		     , NVL(DECODE(STL.SUBJ, 'GUN0000001', STL.AVCOURSE, 'SUB1000025', STL.AVREPORT, STL.AVLCOUNT),0) AS AVLCOUNT 
+		  FROM TB_STU_LEC STL
+		     , TB_JIK JK
+		     , TB_DEPT DP
+		     , TB_MEMBER MB
+		     , TB_APP_INFO AP 
+		 WHERE 1=1
+		   AND STL.GRCODE = AP.GRCODE
+		   AND STL.GRSEQ = AP.GRSEQ
+		   AND STL.USERNO = AP.USERNO
+		   AND STL.USERNO = MB.USERNO 
+		   AND STL.DEPT = DP.DEPT(+)
+		   AND STL.JIK = JK.JIK(+)
+		   AND STL.CLASSNO = #{classno}
+		   AND STL.GRCODE = #{commGrcode}
+		   AND STL.GRSEQ = #{commGrseq}
+		   AND STL.SUBJ = #{commSubj}
+		 ORDER BY STL.CLASSNO, AP.EDUNO	
+	]]>
+	</select>
+	
+	<update id="updatePerson" parameterType="Map">
+	<![CDATA[
+		-- 특수과목 개인별 점수입력 
+		UPDATE TB_STU_LEC 
+		   SET ${column} = #{point}
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+		   AND USERNO = #{userno}
+	]]>
+	</update>
+	
+	<update id="updateClass" parameterType="Map">
+	<![CDATA[
+		-- 클래스별 점수 입력
+		UPDATE TB_STU_LEC 
+		   SET ${column} = #{point}
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+		   AND CLASSNO = #{classNo}
+	]]>
+	</update>
+	
+	<update id="updateLangClass" parameterType="Map">
+	<![CDATA[
+		-- 어학 클래스 만점점수 입력
+		UPDATE TB_SUBJCLASS 
+		   SET LANG_SPOINT = #{point}
+		     , LUSERNO = #{sessNo}
+		     , LDATE = SYSDATE 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+		   AND CLASSNO = #{classNo}
+	]]>
+	</update>
+	
+	<update id="updateLangClassPoint" parameterType="Map">	
+	<![CDATA[
+		-- 어학 클래스 학생점수 입력(환산점수)
+		UPDATE TB_STU_LEC 
+		   SET AVLCOUNT = #{hpoint}
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+		   AND USERNO = #{userno}
+	]]>
+	</update>
+	
+	<update id="updateLangClassPoint2" parameterType="Map">	
+	<![CDATA[
+		-- 어학 클래스 학생점수 입력(어학점수)
+		UPDATE TB_STU_LEC 
+		   SET LANG_POINT = #{langPoint}
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+		   AND USERNO = #{userno}
+	]]>
+	</update>
+	
+	<select id="selectScoreParam3" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가통계별관리 점수별 param3-grcodeniknm
+		SELECT GRCODENIKNM 
+		  FROM TB_GRSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+	]]>
+	</select>
+	
+	<select id="selectPointUpList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 가점입력 리스트
+		SELECT MS.USERNO
+		     , SCP.DEC_B64('KEY1',MB.RESNO) AS RESNO
+		     , MB.NAME
+		     , DECODE(MS.MAS_GUBUN,'M','학생장','S','부학생장','E','기타') AS GUBUN
+		     , MS.ADDPOINT 
+		  FROM TB_GRSTUMAS MS
+		     , TB_MEMBER MB 
+		 WHERE 1=1
+		   AND MS.GRCODE = #{commGrcode}
+		   AND MS.GRSEQ = #{commGrseq}
+		   AND MS.USERNO = MB.USERNO 
+		 ORDER BY MS.MAS_GUBUN 
+	]]>
+	</select>
+	
+	<select id="selectPointUpClosing" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 가점입력 과정 closing여부
+		SELECT CLOSING 
+		  FROM TB_GRSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+	]]>
+	</select>
+	
+	<update id="updatePoint" parameterType="Map">
+	<![CDATA[
+		-- 가점입력 점수 update
+		UPDATE TB_GRSTUMAS 
+		   SET ADDPOINT = #{point} 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND USERNO = #{userno}
+	]]>
+	</update>
+</mapper>

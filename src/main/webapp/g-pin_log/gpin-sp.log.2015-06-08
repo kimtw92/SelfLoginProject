@@ -1,0 +1,4 @@
+6월 08 12:48:10.552 오후 INFO - [[ACTIVE] ExecuteThread: '15' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+6월 08 12:48:11.988 오후 INFO - [[ACTIVE] ExecuteThread: '15' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+6월 08 12:49:06.359 오후 INFO - [[ACTIVE] ExecuteThread: '102' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(360) | START
+6월 08 12:49:07.379 오후 INFO - [[ACTIVE] ExecuteThread: '102' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(404) | END

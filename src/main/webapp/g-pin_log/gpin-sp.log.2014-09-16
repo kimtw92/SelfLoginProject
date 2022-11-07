@@ -1,0 +1,46 @@
+9월 16 05:26:43.316 오전 INFO - [[ACTIVE] ExecuteThread: '17' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(48) | SAML v2.0 Library Initializing...
+9월 16 05:26:47.050 오전 INFO - [[ACTIVE] ExecuteThread: '17' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(56) | Metadata Load...
+9월 16 05:26:47.084 오전 INFO - [[ACTIVE] ExecuteThread: '17' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(60) | MetadataRepInterface: com.etri.saml2.imp.MetadataRepImpFile
+9월 16 05:26:47.084 오전 INFO - [[ACTIVE] ExecuteThread: '17' for queue: 'weblogic.kernel.Default (self-tuning)']MetadataRepImpFile.setMetadataDirectory(53) | Metadata directory: //app1/apache/htdocs/LOTI/WebRoot/WEB-INF/metadata/
+9월 16 05:26:47.084 오전 INFO - [[ACTIVE] ExecuteThread: '17' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(66) | Session Record Load..
+9월 16 05:26:47.094 오전 INFO - [[ACTIVE] ExecuteThread: '17' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(73) | Federation Record Load..
+9월 16 05:26:47.106 오전 INFO - [[ACTIVE] ExecuteThread: '17' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(81) | Artifact Record Load..
+9월 16 05:26:47.152 오전 INFO - [[ACTIVE] ExecuteThread: '17' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.configure(166) | Properties Load Done. version 1.0
+9월 16 05:26:47.152 오전 INFO - [[ACTIVE] ExecuteThread: '17' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(103) | SAML Library initialize complete
+9월 16 05:26:47.181 오전 INFO - [[ACTIVE] ExecuteThread: '17' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+9월 16 05:26:54.679 오전 INFO - [[ACTIVE] ExecuteThread: '17' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+9월 16 09:53:56.220 오전 INFO - [[ACTIVE] ExecuteThread: '19' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+9월 16 09:53:56.790 오전 INFO - [[ACTIVE] ExecuteThread: '19' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+9월 16 10:28:32.660 오전 INFO - [[ACTIVE] ExecuteThread: '27' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+9월 16 10:28:32.949 오전 INFO - [[ACTIVE] ExecuteThread: '27' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+9월 16 10:41:43.358 오전 INFO - [[ACTIVE] ExecuteThread: '21' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+9월 16 10:41:43.846 오전 INFO - [[ACTIVE] ExecuteThread: '21' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+9월 16 10:42:15.703 오전 INFO - [[ACTIVE] ExecuteThread: '51' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(360) | START
+9월 16 10:43:44.825 오전 INFO - [[ACTIVE] ExecuteThread: '51' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(404) | END
+9월 16 02:51:42.750 오후 INFO - [[ACTIVE] ExecuteThread: '8' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(48) | SAML v2.0 Library Initializing...
+9월 16 02:51:49.850 오후 INFO - [[ACTIVE] ExecuteThread: '8' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(56) | Metadata Load...
+9월 16 02:51:49.885 오후 INFO - [[ACTIVE] ExecuteThread: '8' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(60) | MetadataRepInterface: com.etri.saml2.imp.MetadataRepImpFile
+9월 16 02:51:49.886 오후 INFO - [[ACTIVE] ExecuteThread: '8' for queue: 'weblogic.kernel.Default (self-tuning)']MetadataRepImpFile.setMetadataDirectory(53) | Metadata directory: //app1/apache/htdocs/LOTI/WebRoot/WEB-INF/metadata/
+9월 16 02:51:49.890 오후 INFO - [[ACTIVE] ExecuteThread: '8' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(66) | Session Record Load..
+9월 16 02:51:49.900 오후 INFO - [[ACTIVE] ExecuteThread: '8' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(73) | Federation Record Load..
+9월 16 02:51:49.933 오후 INFO - [[ACTIVE] ExecuteThread: '8' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(81) | Artifact Record Load..
+9월 16 02:51:49.972 오후 INFO - [[ACTIVE] ExecuteThread: '8' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.configure(166) | Properties Load Done. version 1.0
+9월 16 02:51:49.973 오후 INFO - [[ACTIVE] ExecuteThread: '8' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(103) | SAML Library initialize complete
+9월 16 02:51:50.017 오후 INFO - [[ACTIVE] ExecuteThread: '8' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+9월 16 02:51:57.858 오후 INFO - [[ACTIVE] ExecuteThread: '8' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+9월 16 02:52:21.261 오후 INFO - [[ACTIVE] ExecuteThread: '27' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(360) | START
+9월 16 02:52:53.084 오후 INFO - [[ACTIVE] ExecuteThread: '27' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(404) | END
+9월 16 03:13:59.477 오후 INFO - [[ACTIVE] ExecuteThread: '26' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+9월 16 03:14:00.098 오후 INFO - [[ACTIVE] ExecuteThread: '26' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+9월 16 04:29:34.927 오후 INFO - [[ACTIVE] ExecuteThread: '44' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+9월 16 04:29:41.804 오후 INFO - [[ACTIVE] ExecuteThread: '44' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+9월 16 04:33:56.861 오후 INFO - [[ACTIVE] ExecuteThread: '39' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(360) | START
+9월 16 04:33:58.716 오후 INFO - [[ACTIVE] ExecuteThread: '39' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(404) | END
+9월 16 04:34:09.715 오후 INFO - [[ACTIVE] ExecuteThread: '44' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+9월 16 04:34:10.005 오후 INFO - [[ACTIVE] ExecuteThread: '44' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+9월 16 04:34:20.432 오후 INFO - [[ACTIVE] ExecuteThread: '29' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+9월 16 04:34:20.675 오후 INFO - [[ACTIVE] ExecuteThread: '29' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+9월 16 04:35:15.553 오후 INFO - [[ACTIVE] ExecuteThread: '8' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+9월 16 04:35:16.109 오후 INFO - [[ACTIVE] ExecuteThread: '8' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+9월 16 04:36:34.467 오후 INFO - [[ACTIVE] ExecuteThread: '45' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+9월 16 04:36:34.762 오후 INFO - [[ACTIVE] ExecuteThread: '45' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END

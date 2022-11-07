@@ -1,0 +1,1057 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.poll.mapper.CoursePollMapper">
+
+	<select id="selectGrinqTtlBySearchList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정별 설문지 목록
+		SELECT   
+			TITLE_NO, GRCODE, GRSEQ, TITLE, TITLE_SEQ, START_PERIOD, END_PERIOD,
+			ISTART_DATE, IEND_DATE, USE_DIFF, USE_YN, AREA_PART, USE_DIFF,
+			USE_YN, NEXT_TITLE_NO, GUBUN_ON_OFF, GUIDE_TEXT_NO,
+			TO_CHAR (START_PERIOD, 'YYYY-MM-DD HH24:MI') AS SRDATE,
+			TO_CHAR (END_PERIOD, 'YYYY-MM-DD HH24:MI') AS ERDATE,
+			TO_CHAR (ISTART_DATE, 'YYYY-MM-DD HH24:MI') AS SDATE,
+			TO_CHAR (IEND_DATE, 'YYYY-MM-DD HH24:MI') AS EDATE
+		FROM TB_GRINQ_TTL
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+			<if test="searchTitle != ''">
+				AND TITLE LIKE '%' || #{searchTitle} || '%' 
+			</if>
+		ORDER BY TITLE_SEQ ASC
+	</select>
+	
+	<select id="selectGrinqByNotApplyList" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문 미 응시자 목록 (progress >= 90)
+		SELECT 
+		     M.userno, M.user_id, M.name, M.email, SCP.DEC_B64('KEY1',M.hp) AS HP, SCP.DEC_B64('KEY1',M.home_tel) AS HOME_TEL, SCP.DEC_B64('KEY1',M.office_tel) AS OFFICE_TEL
+		     , DECODE(PROGRESSSUBJ(SLO.grcode, SLO.grseq, SLO.subj, SLO.userno),'',0,PROGRESSSUBJ(SLO.grcode, SLO.grseq, SLO.subj, SLO.userno)) AS progress
+		FROM (
+		        SELECT DISTINCT SLI.userno
+		        FROM TB_STU_LEC SLI, TB_GRSEQ GS
+		        WHERE SLI.grcode = GS.grcode
+		           AND SLI.grseq = GS.grseq
+		           AND GS.grcode = #{grcode}
+		           AND GS.grseq = #{grseq}
+		           AND DECODE(PROGRESSSUBJ(SLI.grcode, SLI.grseq, SLI.subj, SLI.userno),'',0,PROGRESSSUBJ(SLI.grcode, SLI.grseq, SLI.subj, SLI.userno)) >= '90'           
+		        MINUS
+		        SELECT DISTINCT userno
+		        FROM TB_GRINQ_ANSWER
+		        WHERE title_no = #{titleNo} 
+		      ) A
+		      , TB_MEMBER M
+		      , TB_GRSEQ GS
+		      , TB_STU_LEC SLO
+		      --, TB_SUBJRESULT SR
+         WHERE GS.grcode = SLO.grcode
+             AND GS.grseq  = SLO.grseq
+             AND A.userno  = SLO.userno
+             AND A.userno  = M.userno 
+             AND SLO.grcode  = #{grcode}
+             AND SLO.grseq   = #{grseq}
+		ORDER BY M.name
+	]]>
+	</select>
+	
+	<select id="selectGrinqAnswerChk" parameterType="Integer" resultType="Integer">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문의 응답자 확인.
+		SELECT 
+			COUNT(*) AS CNT 
+		FROM TB_GRINQ_ANSWER 
+		WHERE TITLE_NO = #{value}
+	]]>
+	</select>
+	
+	<select id="selectGrinqAnswerBySetUserChk" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문의 응답자 확인.
+		SELECT 
+			COUNT(*) AS CNT 
+		FROM TB_GRINQ_ANSWER 
+		WHERE TITLE_NO = #{titleNo}
+			AND SET_NO = #{setNo}
+			AND USERNO = #{userNo}
+	]]>
+	</select>
+	
+	<update id="deleteGrinqSampSet" parameterType="Integer">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문 보기 셋트 삭제
+		DELETE FROM TB_GRINQ_SAMP_SET 
+		WHERE TITLE_NO = #{value}
+	]]>
+	</update>
+	
+	<update id="deleteGrinqQuestionSet" parameterType="Integer">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문 항목 셋트 삭제
+		DELETE FROM TB_GRINQ_QUESTION_SET 
+		WHERE TITLE_NO = #{value}
+	]]>
+	</update>
+	
+	<update id="deleteGrinqTtl" parameterType="Integer">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문 삭제
+		DELETE FROM TB_GRINQ_TTL 
+		WHERE TITLE_NO = #{value}
+	]]>
+	</update>
+	
+	<select id="selectGrinqTtlRow" parameterType="Integer" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정별 설문지 상세정보
+		SELECT   
+			TITLE_NO,GRCODE,GRSEQ,TITLE,TITLE_SEQ,START_PERIOD,END_PERIOD,ISTART_DATE,IEND_DATE
+			,USE_DIFF,USE_YN,NEXT_TITLE_NO,GUBUN_ON_OFF,GUIDE_TEXT_NO
+			,TO_CHAR(START_PERIOD,'YYYYMMDD') AS SPERIOD
+			,TO_CHAR(END_PERIOD,'YYYYMMDD') AS EPERIOD
+			,TO_CHAR(START_PERIOD,'HH24') AS SPERIOD_HH
+			,TO_CHAR(START_PERIOD,'MI') AS SPERIOD_MM
+			,TO_CHAR(END_PERIOD,'HH24') AS EPERIOD_HH
+			,TO_CHAR(END_PERIOD,'MI') AS EPERIOD_MM
+			,TO_CHAR(ISTART_DATE,'YYYYMMDD') AS SDATE
+			,TO_CHAR(IEND_DATE,'YYYYMMDD') AS EDATE
+			,TO_CHAR(ISTART_DATE,'HH24') AS SDATE_HH
+			,TO_CHAR(ISTART_DATE,'MI') AS SDATE_MM
+			,TO_CHAR(IEND_DATE,'HH24') AS EDATE_HH
+			,TO_CHAR(IEND_DATE,'MI') AS EDATE_MM
+			,QUESTION_COMM_GUBUN
+		FROM TB_GRINQ_TTL
+		WHERE 1=1
+			AND TITLE_NO = #{value}
+	]]>
+	</select>
+	
+	<select id="selectGrinqQuestionSetByTtlList" parameterType="Integer" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 작성된 설문 세트 정보
+		SELECT 
+			DISTINCT TITLE_NO, SET_NO,
+			getGrinqQuestionSetSubjName(A.TITLE_NO, A.SET_NO) SUBJNM
+		FROM TB_GRINQ_QUESTION_SET A
+		WHERE TITLE_NO = #{value}
+	]]>
+	</select>
+	
+	<select id="selectGrinqTtlByTimeTableSubjList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 일반과목 가져 오기 - 시간표 순서 연동
+		SELECT
+			LECNM, A.SUBJ
+		FROM TB_SUBJSEQ A,TB_GRINQ_TTL C, TB_TIMETABLE D
+		WHERE 1=1
+			AND A.LEC_TYPE = 'S' 
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND C.TITLE_NO = #{titleNo}
+			AND A.GRCODE=D.GRCODE(+)
+			AND A.GRSEQ = D.GRSEQ(+) 
+			AND A.SUBJ = D.SUBJ(+)
+	]]>
+			<if test="fCyber != 'Y'.toString()">
+				 AND TO_CHAR(D.STUDYDATE,'yyyy-mm-dd') BETWEEN TO_CHAR(C.START_PERIOD,'yyyy-mm-dd') AND TO_CHAR(C.END_PERIOD,'yyyy-mm-dd') 
+			</if>
+		GROUP BY LECNM,A.SUBJ
+		ORDER BY MIN(D.STUDYDATE) , MIN(studytime)
+	</select>
+	
+	<select id="selectGrinqBankQuestionBySearchList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 설문은행에 작성된 설문 항목 목록 
+		SELECT
+			QUESTION_NO, QUESTION_CHECKED_NO,
+			SAMP_CHECKED_NO, QUESTION,
+			ANSWER_CNT,CHECKBOX_CHECKED_NO,
+			QUESTION_GUBUN
+		FROM TB_GRINQ_BANK_QUESTION
+		WHERE 1=1
+	]]>
+			<if test="questionGubun != ''">
+				AND QUESTION_CHECKED_NO = 0 AND SAMP_CHECKED_NO = 0
+				<if test="questionGubun == 'need'">
+					/* 필수 */
+					AND QUESTION_GUBUN = '0' 
+				</if>
+				<if test="questionGubun == 'comm'">
+					/* 공통 */
+					AND QUESTION_GUBUN = '1'
+				</if>
+				<if test="questionGubun == 'subj'">
+					/* 과목 */
+					AND QUESTION_GUBUN = '2' 
+				</if>
+				<if test="questionCommGubun != ''">
+					AND QUESTION_COMM_GUBUN = #{questionCommGubun} 
+				</if>
+			</if>
+		ORDER BY QUESTION_NO ASC
+	</select>
+	
+	<sql id="selectGrinqGuideListCommon">
+		FROM TB_GRINQ_GUIDE
+		WHERE 1=1
+			<if test="searchValue != ''">
+				AND ${searchKey} LIKE '%' || #{searchValue} || '%'
+			</if>
+		ORDER BY GUIDE_NO DESC
+	</sql>
+	<select id="selectGrinqGuideListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount"></include>
+		<include refid="selectGrinqGuideListCommon"></include>
+	</select>
+	<select id="selectGrinqGuideList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<![CDATA[
+			-- CoursePollDAO.java
+			-- 과정 안내문 목록
+			SELECT
+				GUIDE_NO, GUIDE_GRINQ_TITLE
+		]]>
+		<include refid="selectGrinqGuideListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<select id="selectGrinqGuideRow" parameterType="Integer" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 안내문 상세정보
+		SELECT
+			GUIDE_NO, GUIDE_TEXT, GUIDE_GRINQ_TITLE
+		FROM TB_GRINQ_GUIDE
+		WHERE GUIDE_NO = #{value}
+		ORDER BY GUIDE_NO DESC
+	]]>
+	</select>
+	
+	<update id="deleteGrinqGuide" parameterType="Integer" >
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 안내문 삭제
+		DELETE FROM TB_GRINQ_GUIDE
+		WHERE GUIDE_NO = #{value}
+	]]>
+	</update>
+	
+	<update id="insertGrinqGuide" parameterType="Map">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 안내문 등록
+		INSERT INTO TB_GRINQ_GUIDE 
+			(GUIDE_NO, GUIDE_TEXT, GUIDE_GRINQ_TITLE) 
+		VALUES 
+			( #{guideNo}, #{namoContent}, #{guideGrinqTitle})
+	]]>
+	</update>
+	
+	<update id="updateGrinqGuide" parameterType="Map">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 안내문 등록
+		UPDATE TB_GRINQ_GUIDE SET
+			GUIDE_TEXT = #{namoContent},
+			GUIDE_GRINQ_TITLE = #{guideGrinqTitle}
+		WHERE GUIDE_NO = #{guideNo}
+	]]>
+	</update>
+	
+	<select id="selectGrinqGuideMaxKey" resultType="Integer">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 안내문 Max Key
+		SELECT 
+			NVL(MAX(GUIDE_NO), 0) + 1 AS MAX_NO 
+		FROM TB_GRINQ_GUIDE
+	]]>
+	</select>
+	
+	<select id="selectGrinqQuestionSetByTutorSubjList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 설문 셑에 포함된 설문 문제 리스트 (수정됨)
+		SELECT
+		  QUESTION_NO, NAME, SEARCHLECNM(GRCODE, GRSEQ, TSUBJ) AS SUBJNM
+		FROM TB_GRINQ_QUESTION_SET A, TB_TUTOR B, TB_GRINQ_TTL C
+		WHERE A.TITLE_NO = #{titleNo}
+			AND SET_NO = #{setNo}
+			AND QUESTION_GUBUN = 2
+			AND TSUBJ IS NOT NULL
+			AND TUSERNO IS NOT NULL
+			AND A.TUSERNO = B.USERNO
+			AND A.TITLE_NO = C.TITLE_NO
+		ORDER BY QUESTION_NO
+		-- ) GROUP BY NAME, SUBJNM
+		
+	]]>
+	</select>
+	
+	<select id="selectGrinqQuestionSetByRequstList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 설문 셑에 포함된 설문 문제의 응답 리스트
+		SELECT   
+			A.QUESTION_NO, ANSWER_NO,
+			NVL (SUM (DECODE (ANS_NO, ANSWER_NO, 1, 0)), 0) AS ANSCNT,
+			NVL (  NVL(SUM(DECODE(ANS_NO, 1, 1, 0)), 0) + NVL (SUM (DECODE (ANS_NO, 2, 1, 0)), 0)
+				   + NVL (SUM (DECODE (ANS_NO, 3, 1, 0)), 0) + NVL (SUM (DECODE (ANS_NO, 4, 1, 0)), 0), 0 ) AS TOTAL
+		FROM TB_GRINQ_QUESTION_SET A,
+			 TB_GRINQ_TTL C,
+			 TB_GRINQ_SAMP_SET D,
+			 TB_GRINQ_ANSWER E
+		WHERE 1 = 1
+			AND A.TITLE_NO = #{titleNo}
+			AND A.SET_NO = #{setNo}
+			AND A.QUESTION_GUBUN = 2
+			AND A.TITLE_NO = C.TITLE_NO
+			AND A.TITLE_NO = D.TITLE_NO
+			AND A.SET_NO = D.SET_NO
+			AND A.QUESTION_NO = D.QUESTION_NO
+			AND A.TITLE_NO = E.TITLE_NO(+)
+			AND A.SET_NO = E.SET_NO(+)
+			AND A.QUESTION_NO = E.QUESTION_NO(+)
+		GROUP BY A.TITLE_NO, A.SET_NO, A.QUESTION_NO, ANSWER_NO
+		order by a.question_no
+	]]>
+	</select>
+	
+	<select id="selectGrinqAnswerBySetChk" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문의 해당 셋트 응답자 확인. 
+		SELECT 
+			COUNT(*) AS CNT 
+		FROM TB_GRINQ_ANSWER 
+		WHERE TITLE_NO = #{titleNo}
+			AND SET_NO = #{setNo}
+	]]>
+	</select>
+	
+	<update id="deleteGrinqSampSetBySet" parameterType="Map">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문 보기 셋트 삭제
+		DELETE FROM TB_GRINQ_SAMP_SET 
+		WHERE TITLE_NO = #{titleNo}
+			AND SET_NO = #{setNo}
+	]]>
+	</update>
+	
+	<update id="deleteGrinqQuestionSetBySet" parameterType="Map">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문 항목 셋트 삭제
+		DELETE FROM TB_GRINQ_QUESTION_SET 
+		WHERE TITLE_NO = #{titleNo}
+			AND SET_NO = #{setNo}
+	]]>
+	</update>
+	
+	<select id="selectGrinqTtlByMaxTitleNo" resultType="Integer">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문 MaxNo
+		SELECT 
+			NVL(MAX (TITLE_NO), 0) + 1 AS MAX
+		FROM TB_GRINQ_TTL
+	]]>
+	</select>
+	
+	<select id="selectGrinqTtlByMaxTitleSeq" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문의 과정별 설문 회차 MaxNo
+		SELECT 
+			NVL(MAX (TITLE_SEQ), 0) + 1 AS MAX
+		FROM TB_GRINQ_TTL
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<update id="insertGrinqTtl" parameterType="Map">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문의 등록
+		INSERT INTO TB_GRINQ_TTL 
+			(TITLE_NO, GRCODE, GRSEQ, 
+			TITLE, TITLE_SEQ,
+			START_PERIOD, 
+			END_PERIOD,
+			ISTART_DATE,
+			IEND_DATE, 
+			AREA_PART, USE_DIFF, USE_YN, 
+			NEXT_TITLE_NO, GUBUN_ON_OFF, GUIDE_TEXT_NO, 
+			QUESTION_COMM_GUBUN) 
+		VALUES 
+			( #{titleNo}, #{grcode}, #{grseq},
+			  #{title}, #{titleSeq},
+			  TO_DATE(#{pStartPeriod}, 'YYYYMMDDHH24MI'),
+			  TO_DATE(#{pEndPeriod}, 'YYYYMMDDHH24MI'),
+			  TO_DATE(#{pStartDate}, 'YYYYMMDDHH24MI'),
+			  TO_DATE(#{pEndDate}, 'YYYYMMDDHH24MI'),
+			  #{areaPart}, #{useDiff}, #{useYn},
+			  #{nextTitleNo}, #{gubunOnOff}, #{guideNo}, 
+			  #{questionCommGubun})
+	]]>
+	</update>
+	
+	<update id="updateGrinqTtl" parameterType="Map">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문의 수정
+		UPDATE TB_GRINQ_TTL SET
+			TITLE = #{title},
+			START_PERIOD = TO_DATE(#{fullStartPeriod}, 'YYYYMMDDHH24MI'),
+			END_PERIOD = TO_DATE(#{fullEndPeriod}, 'YYYYMMDDHH24MI'),
+			ISTART_DATE = TO_DATE(#{fullIstartDate}, 'YYYYMMDDHH24MI'),
+			IEND_DATE = TO_DATE(#{fullIendDate}, 'YYYYMMDDHH24MI'),
+			USE_YN = #{useYn},
+			GUBUN_ON_OFF = #{gubunOnOff},
+			GUIDE_TEXT_NO = #{guideNo},
+			QUESTION_COMM_GUBUN = #{questionCommGubun}
+		WHERE TITLE_NO = #{titleNo}
+	]]>
+	</update>
+	
+	<select id="selectGrinqQuestionSetMaxSetNo" parameterType="Integer" resultType="int">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문의 Set MaxQuestionNo
+		SELECT 
+			NVL(MAX(SET_NO), 0) + 1 AS SET_NO 
+		FROM TB_GRINQ_QUESTION_SET 
+		WHERE TITLE_NO = #{value}
+	]]>
+	</select>
+	
+	<select id="selectGrseqBySimpleCyberRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정기수의 사이버 정보 여부 확인.
+		SELECT 
+			GRCODE, GRSEQ, F_CYBER 
+		FROM TB_GRSEQ 
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectGrseqByClassTutorList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정기수에 속한 강사 정보
+		SELECT 
+			DISTINCT A.SUBJ AS SUBJ, B.USERNO AS USERNO, B.NAME AS NAME,
+			C.LECNM AS SUBJNM
+		FROM TB_CLASSTUTOR A, TB_TUTOR B, TB_SUBJSEQ C, TB_TIMETABLE_TU D
+		WHERE A.SUBJ = #{tmpSubj}
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.TGUBUN = 1
+			AND A.TUSERNO = B.USERNO
+			AND A.SUBJ = C.SUBJ
+			AND A.GRCODE = C.GRCODE
+			AND A.GRSEQ = C.GRSEQ
+			AND A.GRCODE = D.GRCODE
+			AND A.GRSEQ = D.GRSEQ
+			AND A.SUBJ = D.SUBJ
+			AND A.TUSERNO = D.USERNO
+			AND D.STUDYDATE BETWEEN TO_DATE (#{startPeriod}, 'YYYYMMDD') AND TO_DATE (#{endPeriod}, 'YYYYMMDD')
+	]]>
+	</select>
+	
+	<select id="selectGrseqByClassTutorCyberList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정기수에 속한 강사 정보
+		SELECT 
+			DISTINCT A.SUBJ AS SUBJ, B.USERNO AS USERNO, B.NAME AS NAME,
+			C.LECNM AS SUBJNM
+		FROM TB_CLASSTUTOR A, TB_TUTOR B, TB_SUBJSEQ C
+		WHERE A.SUBJ = #{tmpSubj}
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.TGUBUN = 1
+			AND A.TUSERNO = B.USERNO
+			AND A.SUBJ = C.SUBJ
+			AND A.GRCODE = C.GRCODE
+			AND A.GRSEQ = C.GRSEQ
+			AND C.STARTED <= TO_DATE (#{startPeriod}, 'YYYYMMDD')
+			AND C.ENDDATE >= TO_DATE (#{endPeriod}, 'YYYYMMDD')
+	]]>
+	</select>
+	
+	<select id="selectGrinqBankQuestionRow" parameterType="Integer" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 설문은행에 작성된 설문 항목 상세 정보 
+		SELECT
+			QUESTION_NO, QUESTION_CHECKED_NO,
+			SAMP_CHECKED_NO, QUESTION,
+			ANSWER_CNT,CHECKBOX_CHECKED_NO,
+			QUESTION_GUBUN, QUESTION_COMM_GUBUN,
+            DECODE(NVL(QUESTION_CHECKED_NO, 0), 
+            	0, '',
+                (SELECT NVL(QUESTION, '') FROM TB_GRINQ_BANK_QUESTION WHERE QUESTION_NO = A.QUESTION_CHECKED_NO) ) CHK_QUESTION,
+            DECODE(NVL(QUESTION_CHECKED_NO, 0), 
+            	0, '',
+                (SELECT NVL(ANSWER, '') FROM TB_GRINQ_BANK_SAMP WHERE QUESTION_NO = A.QUESTION_CHECKED_NO AND ANSWER_NO = A.SAMP_CHECKED_NO) ) CHK_ANSWER
+		FROM TB_GRINQ_BANK_QUESTION A
+		WHERE 1=1
+			AND QUESTION_NO = #{value}
+	]]>
+	</select>
+	
+	<select id="selectGrinqQuestionSetByMaxQuestionNo" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문 항목 SET 의 questionNo 추출 왜 count지 ㅡㅡ;;
+		SELECT 
+			COUNT(*) + 1 AS CNT_TOTAL
+		FROM TB_GRINQ_QUESTION_SET 
+		WHERE TITLE_NO = #{titleNo} 
+			AND SET_NO = #{setNo} 
+	]]>
+	</select>
+	
+	<update id="insertGrinqQuestionSetBySpecBank" parameterType="Map" >
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문의 Set 등록 (문제은행 데이터 참조.)
+		INSERT INTO TB_GRINQ_QUESTION_SET
+			(TITLE_NO, SET_NO, QUESTION_NO,
+			 QUESTION_CHECKED_NO, QUESTION, ANSWER_CNT, 
+			 CHECKBOX_CHECKED_NO, QUESTION_GUBUN, WUSERNO, 
+			 SAMP_CHECKED_NO, TUSERNO, TSUBJ)
+		SELECT 
+			#{titleNo}, #{setNo}, #{questionNo},
+			QUESTION_CHECKED_NO, #{question}, ANSWER_CNT, 
+			CHECKBOX_CHECKED_NO, QUESTION_GUBUN, #{wuserno}, 
+			SAMP_CHECKED_NO, #{tuserno}, #{tsubj}
+		FROM TB_GRINQ_BANK_QUESTION
+		WHERE QUESTION_NO = #{bankQuestionNo}
+	]]>
+	</update>
+	
+	<select id="selectGrinqBankSampCount" parameterType="Integer" resultType="Integer">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 설문 은행의 특정 설문 보기의 갯수
+		SELECT
+			COUNT(1) AS SAMP_CNT
+		FROM TB_GRINQ_BANK_SAMP
+		WHERE QUESTION_NO = #{value}
+	]]>
+	</select>
+	
+	<update id="insertGrinqSampSetBySpecBank" parameterType="Map">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문의 보기 등록 (문제 은행 참조)
+		INSERT INTO TB_GRINQ_SAMP_SET
+			(TITLE_NO, SET_NO, QUESTION_NO, 
+             ANSWER_NO, ANSWER, ANSWER_KIND)
+		SELECT 
+			#{titleNo}, #{setNo}, #{questionNo},
+            ANSWER_NO, ANSWER, ANSWER_KIND
+		FROM TB_GRINQ_BANK_SAMP
+		WHERE QUESTION_NO = #{bankQuestionNo}
+        ORDER BY ANSWER_NO ASC
+	]]>
+	</update>
+	
+	<select id="selectNoneChkPollList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	-- 설문관리 -> 미응시자관리 리스트
+        SELECT   
+            TITLE_NO, GRCODE, GRSEQ, TITLE, TITLE_SEQ, START_PERIOD, END_PERIOD,
+            ISTART_DATE, IEND_DATE, USE_DIFF, USE_YN, AREA_PART, USE_DIFF,
+            USE_YN, NEXT_TITLE_NO, GUBUN_ON_OFF, GUIDE_TEXT_NO,
+            TO_CHAR (START_PERIOD, 'YYYY-MM-DD HH24:MI') AS SRDATE,
+            TO_CHAR (END_PERIOD, 'YYYY-MM-DD HH24:MI') AS ERDATE,
+            TO_CHAR (ISTART_DATE, 'YYYY-MM-DD HH24:MI') AS SDATE,
+            TO_CHAR (IEND_DATE, 'YYYY-MM-DD HH24:MI') AS EDATE
+        FROM 
+            TB_GRINQ_TTL
+        WHERE 
+            GRCODE = #{commGrcode} AND GRSEQ = #{commGrseq}
+        ORDER BY TITLE_SEQ ASC
+	]]>
+	</select>
+	
+	<select id="selectGrcodenameRow" parameterType="String" resultType="String">
+	<![CDATA[
+	-- 설문관리 -> 회원네임 Row데이터
+		SELECT
+			GRCODENM
+		FROM 
+			TB_GRCODE
+		WHERE
+			GRCODE = #{value}
+		
+	]]>
+	</select>
+	
+	<select id="selectUserNameRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+	-- 설문관리 -> 회원네임 Row데이터
+		SELECT
+			NAME, SCP.DEC_B64('KEY1',HP) AS HP
+		FROM 
+			tb_member
+		WHERE
+			USERNO = #{value}
+		
+	]]>
+	</select>
+	
+	<select id="selectGrinqQuestionSetList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문 세트의 설문 리스트 
+		SELECT   
+			TITLE_NO, SET_NO, QUESTION_NO, QUESTION_CHECKED_NO, QUESTION,
+			ANSWER_CNT, CHECKBOX_CHECKED_NO, SAMP_CHECKED_NO,
+			SEARCHSUBJNM (TSUBJ) AS SUBJNM
+		FROM TB_GRINQ_QUESTION_SET
+		WHERE 1 = 1
+			AND TITLE_NO = #{titleNo}
+			AND SET_NO = #{setNo}
+			AND QUESTION_CHECKED_NO = 0
+			AND SAMP_CHECKED_NO = 0
+		ORDER BY QUESTION_NO
+	]]>
+	</select>
+	
+	<select id="selectGrinqSampSetList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 설문의 보기리스트
+		SELECT
+			TITLE_NO, SET_NO, QUESTION_NO, ANSWER_NO, ANSWER, ANSWER_KIND
+		FROM TB_GRINQ_SAMP_SET
+		WHERE TITLE_NO = #{titleNo} 
+			AND SET_NO = #{setNo} 
+			AND QUESTION_NO = #{questionNo}
+		ORDER BY ANSWER_NO ASC
+	]]>
+	</select>
+	
+	<select id="selectGrinqQuestionSetByQuestionCheckNoList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		--  설문의 관련 참고글 리스트
+		SELECT   
+			TITLE_NO, SET_NO, QUESTION_NO, QUESTION_CHECKED_NO, 
+			SAMP_CHECKED_NO, ANSWER_CNT, CHECKBOX_CHECKED_NO
+		FROM TB_GRINQ_QUESTION_SET
+		WHERE TITLE_NO = #{titleNo} 
+			AND SET_NO = #{setNo} 
+			AND QUESTION_CHECKED_NO = #{questionNo}
+		ORDER BY QUESTION_NO
+	]]>
+	</select>
+	
+	<select id="selectGrinqQuestionSetRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정 설문 세트의 설문 상세 정보 
+		SELECT   
+			TITLE_NO, SET_NO, QUESTION_NO, QUESTION_CHECKED_NO, QUESTION,
+			ANSWER_CNT, CHECKBOX_CHECKED_NO, SAMP_CHECKED_NO,
+			SEARCHSUBJNM (TSUBJ) AS SUBJNM
+		FROM TB_GRINQ_QUESTION_SET
+		WHERE 1 = 1
+			AND TITLE_NO = #{titleNo}
+			AND SET_NO = #{setNo}
+			AND QUESTION_NO = #{questionNo}
+			AND QUESTION_CHECKED_NO = 0
+			AND SAMP_CHECKED_NO = 0
+	]]>
+	</select>
+	
+	<insert id="insertGrinqAnswer" parameterType="Map">
+	<![CDATA[
+		-- CoursePollDAO.java
+		--  설문의 응답 등록
+		INSERT INTO TB_GRINQ_ANSWER 
+			(TITLE_NO, QUESTION_NO, SET_NO, 
+			USERNO, ANS_NO, ANSWER_TXT) 
+		VALUES 
+			( #{titleNo}, #{questionNo}, #{setNo},
+			  #{userno}, #{ansNo}, #{answerTxt})
+	]]>
+	</insert>
+	
+	<select id="selectGrinqAnswerByTxtList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 설문 결과 문항의 주관식 답 리스트.
+		SELECT 
+			TITLE_NO, QUESTION_NO, SET_NO, ANSWER_TXT
+		FROM TB_GRINQ_ANSWER
+		WHERE 1=1
+			AND TITLE_NO = #{titleNo}
+			AND QUESTION_NO = #{questionNo} 
+			AND SET_NO = #{setNo}
+			AND ANSWER_TXT IS NOT NULL
+	]]>
+	</select>
+	
+	<select id="selectGrinqAnswerBySampTotalCnt" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 설문 결과 문항의 객관식 전체 응답수
+		SELECT 
+			COUNT (*) AS TOTAL
+		FROM TB_GRINQ_ANSWER
+		WHERE TITLE_NO = #{titleNo}
+			AND QUESTION_NO = #{questionNo} 
+			AND SET_NO = #{setNo}
+			AND ANS_NO != 0
+	]]>
+	</select>
+	
+	<select id="selectGrinqAnswerBySampChioceCnt" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 설문 결과 문항의 객관식 해당보기 선택한 인원
+		SELECT 
+			COUNT (*) AS TOTAL
+		FROM TB_GRINQ_ANSWER
+		WHERE TITLE_NO = #{titleNo}
+			AND QUESTION_NO = #{questionNo}
+			AND SET_NO = #{setNo}
+			AND ANS_NO = #{answerNo}
+			AND ANS_NO != 0
+	]]>
+	</select>
+	
+	<select id="selectGrinqGrseqTotalResultList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- PollBankDAO.java
+		-- 설문 통합 결과 (공통)
+		SELECT   
+			A.QUESTION_NO AS QUESTION_NO, MIN (B.QUESTION) AS QUESTION,
+			MIN (B.TITLE_NO) AS TITLE_NO, MAX (B.SET_NO) AS SET_NO,
+			NVL (SUM (DECODE (A.ANS_NO, 1, 1, 0)), 0) AS ANS1,
+			ROUND (  NVL(SUM(DECODE (ANS_NO, 1, 1, 0)), 0) / 
+					 DECODE(NVL(COUNT(B.QUESTION_NO), 0), 0, 1, COUNT (B.QUESTION_NO) )
+				* 100, 2 ) AS ANS1_RAT,
+			NVL (SUM (DECODE (A.ANS_NO, 2, 1, 0)), 0) AS ANS2,
+			ROUND (  NVL (SUM (DECODE (ANS_NO, 2, 1, 0)), 0) / 
+					 DECODE (NVL (COUNT (B.QUESTION_NO), 0), 0, 1, COUNT (B.QUESTION_NO) )
+				* 100, 2 ) AS ANS2_RAT,
+			NVL (SUM (DECODE (A.ANS_NO, 3, 1, 0)), 0) AS ANS3,
+			ROUND (  NVL (SUM (DECODE (ANS_NO, 3, 1, 0)), 0)
+				/ DECODE (NVL (COUNT (B.QUESTION_NO), 0),
+						  0, 1,
+						  COUNT (B.QUESTION_NO)
+						 )
+				* 100,
+				2
+			   ) AS ANS3_RAT,
+			NVL (SUM (DECODE (A.ANS_NO, 4, 1, 0)), 0) AS ANS4,
+			ROUND (  NVL (SUM (DECODE (ANS_NO, 4, 1, 0)), 0)
+				/ DECODE (NVL (COUNT (B.QUESTION_NO), 0),
+						  0, 1,
+						  COUNT (B.QUESTION_NO)
+						 )
+				* 100,
+				2
+			   ) AS ANS4_RAT,
+			NVL (SUM (DECODE (A.ANS_NO, 5, 1, 0)), 0) AS ANS5,
+			ROUND (  NVL (SUM (DECODE (ANS_NO, 5, 1, 0)), 0)
+				/ DECODE (NVL (COUNT (B.QUESTION_NO), 0),
+						  0, 1,
+						  COUNT (B.QUESTION_NO)
+						 )
+				* 100,
+				2
+			   ) AS ANS5_RAT,
+			NVL (COUNT (A.QUESTION_NO), 0) AS TOTAL
+		FROM TB_GRINQ_ANSWER A, TB_GRINQ_QUESTION_SET B
+		WHERE A.TITLE_NO IN 
+				(SELECT TITLE_NO FROM TB_GRINQ_TTL WHERE GRCODE = #{value})
+			AND A.TITLE_NO = B.TITLE_NO
+			AND A.QUESTION_NO = B.QUESTION_NO
+			AND B.TSUBJ IS NULL
+			AND A.ANS_NO > 0
+			AND A.ANS_NO IS NOT NULL
+		GROUP BY A.QUESTION_NO
+	]]>
+	</select>
+	
+	<select id="selectGrinqGrseqTotalResultByTutorList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- PollBankDAO.java
+		-- 설문 통합 결과 (강사)
+		SELECT   
+			MIN (B.TITLE_NO) AS TITLE_NO, MIN (B.QUESTION_NO) AS QUESTION_NO,
+			MIN (B.SET_NO) AS SET_NO,
+			MIN (SEARCHLECNM (A.GRCODE, A.GRSEQ, B.TSUBJ)) AS SUBJNM,
+			B.QUESTION AS QUESTION, MIN (SEARCHNAME (B.TUSERNO)) AS TUSER_NAME,
+			NVL (SUM (DECODE (ANS_NO, 1, 1, 0)), 0) AS ANS1,
+			ROUND (  NVL (SUM (DECODE (ANS_NO, 1, 1, 0)), 0)
+				/ DECODE (NVL (COUNT (B.QUESTION_NO), 0),
+						  0, 1,
+						  COUNT (B.QUESTION_NO)
+						 )
+				* 100,
+				2
+			   ) AS ANS1_RAT,
+			NVL (SUM (DECODE (ANS_NO, 2, 1, 0)), 0) AS ANS2,
+			ROUND (  NVL (SUM (DECODE (ANS_NO, 2, 1, 0)), 0)
+				/ DECODE (NVL (COUNT (B.QUESTION_NO), 0),
+						  0, 1,
+						  COUNT (B.QUESTION_NO)
+						 )
+				* 100,
+				2
+			   ) AS ANS2_RAT,
+			NVL (SUM (DECODE (ANS_NO, 3, 1, 0)), 0) AS ANS3,
+			ROUND (  NVL (SUM (DECODE (ANS_NO, 3, 1, 0)), 0)
+				/ DECODE (NVL (COUNT (B.QUESTION_NO), 0),
+						  0, 1,
+						  COUNT (B.QUESTION_NO)
+						 )
+				* 100,
+				2
+			   ) AS ANS3_RAT,
+			NVL (SUM (DECODE (ANS_NO, 4, 1, 0)), 0) AS ANS4,
+			ROUND (  NVL (SUM (DECODE (ANS_NO, 4, 1, 0)), 0)
+				/ DECODE (NVL (COUNT (B.QUESTION_NO), 0),
+						  0, 1,
+						  COUNT (B.QUESTION_NO)
+						 )
+				* 100,
+				2
+			   ) AS ANS4_RAT,
+			NVL (SUM (DECODE (ANS_NO, 5, 1, 0)), 0) AS ANS5,
+			ROUND (  NVL (SUM (DECODE (ANS_NO, 5, 1, 0)), 0)
+				/ DECODE (NVL (COUNT (B.QUESTION_NO), 0),
+						  0, 1,
+						  COUNT (B.QUESTION_NO)
+						 )
+				* 100,
+				2
+			   ) AS ANS5_RAT,
+			NVL (SUM (DECODE (ANS_NO, 6, 1, 0)), 0) AS ANS6,
+			ROUND (  NVL (SUM (DECODE (ANS_NO, 6, 1, 0)), 0)
+				/ DECODE (NVL (COUNT (B.QUESTION_NO), 0),
+						  0, 1,
+						  COUNT (B.QUESTION_NO)
+						 )
+				* 100,
+				2
+			   ) AS ANS6_RAT,
+			NVL (COUNT (B.QUESTION_NO), 0) AS QUESTION_TOTAL
+		FROM TB_GRINQ_TTL A, TV_GRINQ_QUESTION_SET B, TB_GRINQ_ANSWER C
+		WHERE A.TITLE_NO = B.TITLE_NO
+			AND A.TITLE_NO = C.TITLE_NO
+			AND B.SET_NO = C.SET_NO
+			AND B.QUESTION_NO = C.QUESTION_NO
+			AND A.GRCODE = #{value}
+			AND C.ANS_NO > 0
+			AND C.ANS_NO IS NOT NULL
+		GROUP BY B.TSUBJ, B.TUSERNO, B.QUESTION
+	]]>
+	</select>
+	
+	<select id="selectGrinqSampSetByQuestionNoList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 설문의 보기리스트
+		SELECT
+			TITLE_NO, SET_NO, QUESTION_NO, ANSWER_NO, ANSWER, ANSWER_KIND
+		FROM TB_GRINQ_SAMP_SET
+		WHERE TITLE_NO = #{titleNo} 
+			AND QUESTION_NO = #{questionNo}
+		ORDER BY ANSWER_NO ASC
+	]]>
+	</select>
+	
+	<select id="selectGrinqTtlByCyberList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 과정별 설문지 목록 (사이버)
+		SELECT   
+			A.TITLE_NO, A.GRCODE, A.GRSEQ, A.TITLE, A.TITLE_SEQ, 
+            A.START_PERIOD, A.END_PERIOD,
+			A.ISTART_DATE, A.IEND_DATE, A.USE_DIFF, A.USE_YN, 
+            A.AREA_PART, A.USE_DIFF, A.USE_YN, A.NEXT_TITLE_NO, 
+            A.GUBUN_ON_OFF, A.GUIDE_TEXT_NO,
+			TO_CHAR(A.START_PERIOD, 'YYYY-MM-DD HH24:MI') AS SRDATE,
+			TO_CHAR(A.END_PERIOD, 'YYYY-MM-DD HH24:MI') AS ERDATE,
+			TO_CHAR(A.ISTART_DATE, 'YYYY-MM-DD HH24:MI') AS SDATE,
+			TO_CHAR(A.IEND_DATE, 'YYYY-MM-DD HH24:MI') AS EDATE,
+            B.GRCODENIKNM AS GRCODENM
+		FROM TB_GRINQ_TTL A, TB_GRSEQ B
+		WHERE 1=1
+        	AND A.GRCODE = B.GRCODE
+            AND A.GRSEQ = B.GRSEQ
+			AND B.F_CYBER = 'Y'
+	]]>
+			<if test="grseq != ''">
+				 AND A.GRSEQ =  #{grseq}
+			</if>
+			<if test="grcode != ''">
+				 AND A.GRCODE =  #{grcode}
+			</if>
+		ORDER BY TITLE_SEQ ASC
+	</select>
+	
+	
+	<select id="selectPollList" parameterType="DataMap" resultType="DataMap">
+	<![CDATA[ 
+		SELECT DISTINCT
+						 A.TITLE_NO
+						,A.GRCODE
+						,A.GRSEQ
+						,A.TITLE
+						,A.ISTART_DATE
+						,C.SET_NO
+					
+				FROM TB_GRINQ_TTL A
+					,TB_APP_INFO B
+					,TB_GRINQ_QUESTION_SET C
+				WHERE 1=1
+				AND A.TITLE_NO = C.TITLE_NO 
+    			AND SYSDATE BETWEEN A.ISTART_DATE AND A.IEND_DATE
+				AND A.USE_YN = 'y'
+				AND B.EDUNO IS NOT NULL				
+				AND A.GRCODE = B.GRCODE
+				AND B.USERNO = #{userno}
+				ORDER BY A.GRSEQ ASC
+	]]>		
+	</select>
+	
+	<select id="selectNewPollList" parameterType="DataMap" resultType="DataMap">
+	<![CDATA[
+	
+			SELECT 
+					 USERNO
+					,EDUNO
+					,NAME 					
+			FROM TB_APP_INFO			
+			WHERE 
+					GRCODE = #{grcode} 
+				AND GRSEQ = #{grseq}
+	]]>		
+	</select>
+	
+	<select id="selectNewPollYN" parameterType="DataMap" resultType="int">
+	<![CDATA[
+	
+				SELECT COUNT(*) FROM TB_APP_INFO 
+					WHERE 
+					   	   GRCODE = #{grcode} 
+					AND	   GRSEQ = #{grseq}
+					AND    POLL_YN = 'Y'
+	]]>		
+	</select>
+	
+	<update id="updatePollYN" parameterType="DataMap">
+	<![CDATA[
+	
+		UPDATE TB_APP_INFO 
+			SET POLL_YN = 'Y'
+			WHERE	GRCODE = #{grcode}
+			  AND   GRSEQ = #{grseq}
+			  AND   USERNO = #{userno}
+		
+	]]>
+	</update>
+	
+	<select id="selectIpList" parameterType="DataMap" resultType="DataMap">
+	<![CDATA[
+	
+			SELECT IP FROM TB_APP_INFO
+			
+			  WHERE	  GRCODE = #{grcode}
+				AND   GRSEQ = #{grseq}
+	]]>		
+	</select>
+	
+	<update id="insertIp" parameterType="DataMap">
+	<![CDATA[
+	
+		UPDATE TB_APP_INFO 
+			SET IP = #{ip}
+			WHERE	GRCODE = #{grcode}
+			  AND   GRSEQ = #{grseq}
+			  AND   USERNO = #{userno}		
+	]]>
+	</update>
+	
+	<select id="selectUsernoChk" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 로그인 체크
+		SELECT   userno
+				,name				
+				,user_id
+				,SCP.DEC_B64('KEY1',hp) AS HP				
+		FROM    TB_MEMBER
+		WHERE userno = #{userno}
+	]]>
+	</select>
+
+	<select id="selectScore" parameterType="DataMap" resultType="DataMap">
+		<![CDATA[		
+			SELECT 
+					 QUESTION_NO
+					,ANS_NO
+					,ANSWER_TXT
+					
+			FROM TB_GRINQ_ANSWER
+					   
+					WHERE TITLE_NO = #{titleNo} 
+					AND USERNO = #{userno}
+		]]>
+	</select>	
+	
+	<delete id="deleteAnsNo" parameterType="DataMap">
+	
+	DELETE FROM TB_GRINQ_ANSWER
+					   
+					WHERE TITLE_NO = #{titleNo} 
+					AND USERNO = #{userno}
+	
+	</delete>
+	
+	<select id="selectPollYNChk" parameterType="DataMap" resultType="String">
+		<![CDATA[		
+			 SELECT POLL_YN
+  			 FROM TB_APP_INFO	
+  			 
+			  	  WHERE GRCODE = #{grcode}
+			  	  AND GRSEQ = #{grseq}
+			  	  AND USERNO = #{userno}
+		]]>
+	</select>	
+	
+	
+	
+	
+
+	
+	
+	
+</mapper>

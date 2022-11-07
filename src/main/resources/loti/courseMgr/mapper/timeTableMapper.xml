@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.TimeTableMapper">
+
+	<select id="selectWeekCnt" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 학습 주차 갯수를 가져오기
+		SELECT NVL(IS_TMWEEKCNT(#{startDate}, #{endDate}), 0) AS DIFF_CNT 
+		  FROM DUAL
+	]]>
+	</select>
+	
+	<select id="selectStartEndDateByNow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 총 주차수와 현재주차의 시작일, 현재주차의 종료일을 구하기.
+		SELECT IS_TMWEEKCNT(#{startDate}, #{endDate}) AS WEEK_CNT
+		     , IS_TMSTRDATE(#{week}, #{startDate}, #{endDate}) AS WEEK_SDATE
+		     , TO_CHAR(TO_DATE(IS_TMSTRDATE(#{week}, #{startDate}, #{endDate}), 'YYYYMMDD'), 'D') AS WEEK_SDATE_NO
+		     , IS_TMENDDATE(#{week}, #{startDate}, #{endDate}) AS WEEK_EDATE
+		     , TO_CHAR(TO_DATE(IS_TMENDDATE(#{week}, #{startDate}, #{endDate}), 'YYYYMMDD'), 'D') AS WEEK_EDATE_NO 
+		  FROM DUAL
+	]]>
+	</select>
+	
+	<select id="selectTimeTableGrseqCnt" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 시간표 관리 갯수.
+		SELECT COUNT(*) TTCNT 
+		  FROM TB_TIMETABLE 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode} 
+		   AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectSubjSeqCnt" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 개설과정 과목 갯수.
+		SELECT COUNT(1) AS CNT
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode} 
+		   AND GRSEQ = #{grseq}
+		   AND SUBJ = #{subj}
+	]]>
+	</select>
+	
+	<select id="selectTimeGosiList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 시간표 교시 정보.
+		SELECT GOSINUM
+		     , TERM 
+		  FROM TB_TIMEGOSI
+		 WHERE 1=1
+		 ${gosiStr}
+		 ORDER BY GOSINUM
+	]]>
+	</select>
+	
+	<select id="selectDualTableByOneCol1" parameterType="Map" resultType="String">
+	<![CDATA[
+		-- DUAL 테이블 사용 쿼리.(첫번째 컬럼값을 반환)
+		SELECT NVL(TO_CHAR(TO_DATE(#{weekSdate}, 'YYYYMMDD')-(#{weekSdateNo}-2),'YYYYMMDD'), '') AS ONE_COL
+		  FROM DUAL
+	]]>
+	</select>
+	
+	<select id="selectDualTableByOneCol2" parameterType="Map" resultType="String">
+	<![CDATA[
+		-- DUAL 테이블 사용 쿼리.(첫번째 컬럼값을 반환)
+		SELECT NVL(TO_CHAR(TO_DATE(#{weekSdate}, 'YYYYMMDD')+(#{weekSdateNo}-2),'YYYYMMDD'), '') AS ONE_COL
+		  FROM DUAL
+	]]>
+	</select>
+	
+	<select id="selectDualTableByOneCol3" parameterType="Map" resultType="String">
+	<![CDATA[
+		-- DUAL 테이블 사용 쿼리.(첫번째 컬럼값을 반환)
+		SELECT NVL(TO_CHAR(TO_DATE(#{searchStarted},'yyyymmdd'), 'd'), '') AS ONE_COL
+		  FROM DUAL
+	]]>
+	</select>
+	
+	<select id="selectTimeTableByPlan1" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 시간표 리스트 월~수요일까지
+		SELECT A.GOSINUM
+		     , MIN(DECODE(B.DAY_NO, 2, STUDYDATE)) AS STUDYDATE1
+		     , MIN(DECODE(B.DAY_NO, 2, LECNM)) AS LECNM1
+		     , MIN(DECODE(B.DAY_NO, 2, SUBJ)) AS SUBJ1
+		     , MIN(DECODE(B.DAY_NO, 2, CLASSROOM_NAME)) AS CLASSROOM_NAME1
+		     , MIN(DECODE(B.DAY_NO, 2, TU_USERNO)) AS TU_USERNO1
+		     , MIN(DECODE(B.DAY_NO, 2, TU_NAME)) AS TU_NAME1
+		     , MIN(DECODE(B.DAY_NO, 3, STUDYDATE)) AS STUDYDATE2
+		     , MIN(DECODE(B.DAY_NO, 3, LECNM)) AS LECNM2
+		     , MIN(DECODE(B.DAY_NO, 3, SUBJ)) AS SUBJ2
+		     , MIN(DECODE(B.DAY_NO, 3, CLASSROOM_NAME)) AS CLASSROOM_NAME2
+		     , MIN(DECODE(B.DAY_NO, 3, TU_USERNO)) AS TU_USERNO2
+		     , MIN(DECODE(B.DAY_NO, 3, TU_NAME)) AS TU_NAME2
+		     , MIN(DECODE(B.DAY_NO, 4, STUDYDATE)) AS STUDYDATE3
+		     , MIN(DECODE(B.DAY_NO, 4, LECNM)) AS LECNM3
+		     , MIN(DECODE(B.DAY_NO, 4, SUBJ)) AS SUBJ3
+		     , MIN(DECODE(B.DAY_NO, 4, CLASSROOM_NAME)) AS CLASSROOM_NAME3
+		     , MIN(DECODE(B.DAY_NO, 4, TU_USERNO)) AS TU_USERNO3
+		     , MIN(DECODE(B.DAY_NO, 4, TU_NAME)) AS TU_NAME3
+		  FROM TB_TIMEGOSI A LEFT OUTER JOIN
+			   ( SELECT STUDYDATE
+				      , STUDYTIME
+				      , SUBSTR (MIN (SYS_CONNECT_BY_PATH (DAY_NO, ',')), 2) AS DAY_NO
+				      , SUBSTR (MAX (SYS_CONNECT_BY_PATH (SUBJ, ',&&')), 2) AS SUBJ
+				      , SUBSTR (MAX (SYS_CONNECT_BY_PATH (LECNM, ',&&')), 2) AS LECNM
+				      , SUBSTR (MAX (SYS_CONNECT_BY_PATH (CLASSROOM_NAME, ',&&')), 2) AS CLASSROOM_NAME
+				      , SUBSTR (MAX (SYS_CONNECT_BY_PATH (TU_USERNO, ',&&')), 2) AS TU_USERNO
+				      , SUBSTR (MAX (SYS_CONNECT_BY_PATH (TU_NAME, ',&&')), 2) AS TU_NAME
+			       FROM (SELECT ROW_NUMBER() OVER (PARTITION BY TM.STUDYDATE, TM.STUDYTIME ORDER BY TM.STUDYDATE, TM.STUDYTIME) AS RN
+			                  , TM.CAR_RESERVE_YN
+			                  , RM.CLASSROOM_NAME
+			                  , SO.RESOURCE_NAME
+			                  , TO_CHAR(TM.STUDYDATE, 'yyyymmdd') AS STUDYDATE
+			                  , TO_CHAR(TM.STUDYDATE, 'mm.dd') AS SDDATE
+			                  , TO_CHAR(TM.STUDYDATE, 'd') AS DAY_NO             -- 2:월요일, 1:일요일
+						      , TM.STUDYTIME
+						      , TM.SUBJ
+						      , SJ.LECNM
+						      , GETCONTTMCNT2(TM.GRCODE, TM.GRSEQ, TM.SUBJ, TM.STUDYDATE, TM.STUDYTIME) AS CONT_CNT
+						      , getTimeTableTutor(TM.GRCODE, TM.GRSEQ, TM.SUBJ, TO_CHAR (TM.STUDYDATE, 'yyyymmdd'), TM.STUDYTIME, '1') AS TU_USERNO
+						      , getTimeTableTutor(TM.GRCODE, TM.GRSEQ, TM.SUBJ, TO_CHAR (TM.STUDYDATE, 'yyyymmdd'), TM.STUDYTIME, '2') AS TU_NAME
+					       FROM TB_TIMETABLE TM
+					          , TB_SUBJSEQ SJ
+					          , TB_CLASSROOM RM
+					          , TB_RESOURCE SO
+					      WHERE 1=1
+					        AND TM.GRCODE = SJ.GRCODE
+					        AND TM.GRSEQ = SJ.GRSEQ
+					        AND TM.SUBJ = SJ.SUBJ
+					        AND TM.CLASSROOM_NO = RM.CLASSROOM_NO(+)
+					        AND TM.RESOURCE_NO = SO.RESOURCE_NO(+)
+					        AND TM.GRCODE = #{grcode}
+					        AND TM.GRSEQ = #{grseq}
+					        AND TO_CHAR (TM.STUDYDATE, 'yyyymmdd') BETWEEN #{weekSdate} AND #{weekEdate}
+					        AND TM.USEGUBUN = 'Y'
+					      ORDER BY TM.STUDYDATE, TM.STUDYTIME 
+			            ) A
+			      START WITH RN = 1
+			    CONNECT BY PRIOR RN = RN -1 AND PRIOR STUDYDATE = STUDYDATE AND PRIOR STUDYTIME = STUDYTIME
+			      GROUP BY STUDYDATE, STUDYTIME, DAY_NO
+			      ORDER BY STUDYDATE, STUDYTIME
+			   ) B
+			   ON A.GOSINUM = B.STUDYTIME
+		 WHERE 1=1
+		 ${gosiStr}
+		 GROUP BY A.GOSINUM
+	]]>
+	</select>
+	
+	<select id="selectTimeTableByPlan2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 시간표 리스트 목, 금요일
+		SELECT A.GOSINUM
+		     , MIN(DECODE(B.DAY_NO, 5, STUDYDATE)) AS STUDYDATE4
+		     , MIN(DECODE(B.DAY_NO, 5, LECNM)) AS LECNM4
+		     , MIN(DECODE(B.DAY_NO, 5, SUBJ)) AS SUBJ4
+		     , MIN(DECODE(B.DAY_NO, 5, CLASSROOM_NAME)) AS CLASSROOM_NAME4
+		     , MIN(DECODE(B.DAY_NO, 5, TU_USERNO)) AS TU_USERNO4
+		     , MIN(DECODE(B.DAY_NO, 5, TU_NAME)) AS TU_NAME4
+		     , MIN(DECODE(B.DAY_NO, 6, STUDYDATE)) AS STUDYDATE5
+		     , MIN(DECODE(B.DAY_NO, 6, LECNM)) AS LECNM5
+		     , MIN(DECODE(B.DAY_NO, 6, SUBJ)) AS SUBJ5
+		     , MIN(DECODE(B.DAY_NO, 6, CLASSROOM_NAME)) AS CLASSROOM_NAME5
+		     , MIN(DECODE(B.DAY_NO, 6, TU_USERNO)) AS TU_USERNO5
+		     , MIN(DECODE(B.DAY_NO, 6, TU_NAME)) AS TU_NAME5
+		  FROM TB_TIMEGOSI A LEFT OUTER JOIN
+			   ( SELECT STUDYDATE
+			          , STUDYTIME
+			          , SUBSTR (MIN (SYS_CONNECT_BY_PATH (DAY_NO, ',')), 2) AS DAY_NO
+			          , SUBSTR (MAX (SYS_CONNECT_BY_PATH (SUBJ, ',&&')), 2) AS SUBJ
+			          , SUBSTR (MAX (SYS_CONNECT_BY_PATH (LECNM, ',&&')), 2) AS LECNM
+			          , SUBSTR (MAX (SYS_CONNECT_BY_PATH (CLASSROOM_NAME, ',&&')), 2) AS CLASSROOM_NAME
+			          , SUBSTR (MAX (SYS_CONNECT_BY_PATH (TU_USERNO, ',&&')), 2) AS TU_USERNO
+			          , SUBSTR (MAX (SYS_CONNECT_BY_PATH (TU_NAME, ',&&')), 2) AS TU_NAME
+			       FROM (SELECT ROW_NUMBER() OVER (PARTITION BY TM.STUDYDATE, TM.STUDYTIME ORDER BY TM.STUDYDATE, TM.STUDYTIME) AS RN
+			                  , TM.CAR_RESERVE_YN
+			                  , RM.CLASSROOM_NAME
+			                  , SO.RESOURCE_NAME
+			                  , TO_CHAR (TM.STUDYDATE, 'yyyymmdd') AS STUDYDATE
+			                  , TO_CHAR (TM.STUDYDATE, 'mm.dd') AS SDDATE
+			                  , TO_CHAR (TM.STUDYDATE, 'd') AS DAY_NO             -- 2:월요일, 1:일요일
+			                  ,	TM.STUDYTIME
+			                  , TM.SUBJ
+			                  , SJ.LECNM
+			                  , GETCONTTMCNT2 (TM.GRCODE, TM.GRSEQ, TM.SUBJ, TM.STUDYDATE, TM.STUDYTIME) AS CONT_CNT
+			                  , getTimeTableTutor(TM.GRCODE, TM.GRSEQ, TM.SUBJ, TO_CHAR (TM.STUDYDATE, 'yyyymmdd'), TM.STUDYTIME, '1') AS TU_USERNO
+			                  , getTimeTableTutor(TM.GRCODE, TM.GRSEQ, TM.SUBJ, TO_CHAR (TM.STUDYDATE, 'yyyymmdd'), TM.STUDYTIME, '2') AS TU_NAME
+					       FROM TB_TIMETABLE TM
+					          , TB_SUBJSEQ SJ
+					          , TB_CLASSROOM RM
+					          , TB_RESOURCE SO
+					      WHERE 1=1
+					        AND TM.GRCODE = SJ.GRCODE
+					        AND TM.GRSEQ = SJ.GRSEQ
+					        AND TM.SUBJ = SJ.SUBJ
+					        AND TM.CLASSROOM_NO = RM.CLASSROOM_NO(+)
+					        AND TM.RESOURCE_NO = SO.RESOURCE_NO(+)
+					        AND TM.GRCODE = #{grcode}
+					        AND TM.GRSEQ = #{grseq}
+					        AND TO_CHAR (TM.STUDYDATE, 'yyyymmdd') BETWEEN #{weekSdate} AND #{weekEdate}
+					        AND TM.USEGUBUN = 'Y'
+					      ORDER BY TM.STUDYDATE, TM.STUDYTIME 
+			            ) A
+			      START WITH RN = 1
+			    CONNECT BY PRIOR RN = RN -1 AND PRIOR STUDYDATE = STUDYDATE AND PRIOR STUDYTIME = STUDYTIME
+			      GROUP BY STUDYDATE, STUDYTIME, DAY_NO
+			      ORDER BY STUDYDATE, STUDYTIME
+			   ) B
+			   ON A.GOSINUM = B.STUDYTIME
+		 WHERE 1=1
+	     ${gosiStr}
+		GROUP BY A.GOSINUM
+	]]>
+	</select>
+	
+	<select id="selectTimeTableRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 시간표 상세 정보 조회.
+		SELECT 
+			TO_CHAR(TM.STUDYDATE, 'YYYYMMDD') STUDYDATE, TM.STUDYTIME, TM.SUBJ,
+			SJ.LECNM, RM.CLASSROOM_NO, RM.CLASSROOM_NAME,
+			TM.CAR_RESERVE_YN, TM.CAUSE, TM.ORGAN
+		FROM 
+			TB_TIMETABLE TM, TB_SUBJSEQ SJ, TB_CLASSROOM RM
+		WHERE TM.GRCODE = #{grcode}
+			AND TM.GRSEQ = #{grseq}
+			AND TM.STUDYDATE = TO_DATE(#{studydate}, 'YYYYMMDD')
+			AND TM.STUDYTIME = #{studytime}
+			AND TM.SUBJ = #{subj}
+			AND TM.SUBJ = SJ.SUBJ
+			AND TM.GRCODE = SJ.GRCODE
+			AND TM.GRSEQ = SJ.GRSEQ
+			AND TM.CLASSROOM_NO = RM.CLASSROOM_NO(+)
+	]]>
+	</select>
+	
+	<select id="selectTimeTableTuListBySubj" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 시간표의 강사 리스트
+		SELECT 
+			TT.USERNO, TOR.NAME
+		FROM TB_TIMETABLE_TU TT, TB_TUTOR TOR
+		WHERE TT.USERNO = TOR.USERNO(+)
+			AND TT.GRCODE = #{grcode}
+			AND TT.GRSEQ = #{grseq}
+			AND TT.STUDYDATE = #{studydate}
+			AND TT.STUDYTIME = #{studytime}
+			AND TT.SUBJ = #{subj}
+	]]>
+	</select>
+	
+	<select id="selectClassRoomByGrseqRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기수의 강의실 및 과정장 정보
+		SELECT 
+			GS.GRCODE, GS.GRSEQ, 
+			GS.GRCODENIKNM, CM.CLASSROOM_NO, CM.CLASSROOM_NAME, 
+			(SELECT NAME FROM tb_member WHERE USERNO = GS.GRSEQMAN_USERNO) GRSEQMAN_NM
+		FROM 
+			TB_GRSEQ GS, TB_CLASSROOM CM
+		WHERE GS.CLASSROOM_NO = CM.CLASSROOM_NO(+)
+			AND GS.GRCODE = #{grcode}
+			AND GS.GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectClassTutorListByClassRoom" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사 리스트.
+		SELECT   
+			CT.SUBJ, CT.CAR_RESERVE_YN, RM.CLASSROOM_NO, 
+			RM.CLASSROOM_NAME,MB.USERNO, MB.NAME
+		FROM TB_CLASSTUTOR CT, tb_member MB, TB_CLASSROOM RM
+		WHERE CT.GRCODE = #{grcode}
+			AND CT.GRSEQ = #{grseq}
+			AND CT.TUSERNO = MB.USERNO
+			AND CT.CLASSROOM_NO = RM.CLASSROOM_NO(+)
+		ORDER BY CT.SUBJ, MB.NAME
+	]]>
+	</select>
+	
+	<select id="selectSubjSeqBySubjSearchList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과목검색 리스트.
+		SELECT   
+			SUBJ, LECNM, LEC_TYPE,
+			DECODE (LEC_TYPE,
+				 'S', '단일',
+				 'C', '선택('
+				  || (SELECT LECNM
+						FROM TB_SUBJSEQ
+					   WHERE GRCODE = SB.GRCODE
+						 AND GRSEQ = SB.GRSEQ
+						 AND SUBJ = SB.REF_SUBJ)
+				  || ')'
+				) LECTYPE_NM
+		FROM TB_SUBJSEQ SB
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND LEC_TYPE IN ('S', 'C')
+		ORDER BY DECODE(SB.LEC_TYPE, 'S', 1, 2),
+				 DECODE(LEC_TYPE, 'S', LECNM, REF_SUBJ),
+				 DECODE(LEC_TYPE, 'C', SB.LECNM)
+	]]>
+	</select>
+	
+	<insert id="insertTimeTable" parameterType="Map">
+	<![CDATA[
+		-- 시간표 등록
+		INSERT INTO TB_TIMETABLE (
+		   GRCODE, GRSEQ, SUBJ, 
+		   STUDYDATE, STUDYTIME, USEGUBUN, 
+		   LUSERNO, LDATE, CLASSROOM_NO) 
+		VALUES ( 
+			#{grcode}, #{grseq}, #{subj},
+			TO_DATE(#{studydate}, 'YYYYMMDD'), #{studytime}, #{usegubun},
+			#{userno}, SYSDATE, #{classroomNo} )
+	]]>
+	</insert>
+	
+	<insert id="insertTimeTableTu" parameterType="Map">
+	<![CDATA[
+		-- TimeTableDAO.java
+		-- 시간표 강사 등록
+		INSERT INTO TB_TIMETABLE_TU(
+			GRCODE, GRSEQ, SUBJ, 
+			STUDYDATE, STUDYTIME, USERNO,
+			SALARY_YN)
+		VALUES (
+			#{grcode}, #{grseq}, #{subj}, 
+			TO_DATE(#{studydate}, 'YYYYMMDD'), #{studytime}, #{userno},
+			#{salaryYn})
+	]]>
+	</insert>
+	
+	<select id="selectTimeTableBySubjChk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 시간표 등록 전 과목이 등록되어있는지 확인.
+		SELECT
+			COUNT(1) AS CNT
+		FROM TB_TIMETABLE
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND STUDYDATE = TO_DATE(#{studydate}, 'YYYYMMDD')
+			AND STUDYTIME = #{studytime}
+			AND SUBJ = #{subj}
+	]]>
+	</select>
+	
+	<select id="selectOutTimeTableChk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 외부 강사 시간표 등록여부 체크
+		SELECT 
+			COUNT(1) CNT 
+		FROM TB_OUTTIMETABLE 
+		WHERE CLASS_NO = #{classroomNo}
+			AND TO_CHAR(STUDYDATE, 'YYYYMMDD') = #{studydate} 
+			AND STUDYTIME = #{studytime}
+	]]>
+	</select>
+	
+	<delete id="deleteTimeTableTuBySubj" parameterType="Map">
+	<![CDATA[
+		-- 시간표 삭제.
+		DELETE FROM TB_TIMETABLE_TU 
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND STUDYDATE = TO_DATE(#{studydate}, 'YYYYMMDD')
+			AND STUDYTIME = #{studytime}
+			AND SUBJ = #{subj}
+	]]>
+	</delete>
+	
+	<update id="updateTimeTable" parameterType="Map">
+	<![CDATA[
+		-- 시간표 과목 수정.
+		UPDATE TB_TIMETABLE SET 
+			SUBJ = #{subj},
+			CLASSROOM_NO = #{classroomNo},
+			LUSERNO = #{userno}, 
+			LDATE = SYSDATE
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND STUDYDATE = TO_DATE(#{studydate}, 'YYYYMMDD')
+			AND STUDYTIME = #{studytime}
+			AND SUBJ = #{keySubj}
+	]]>
+	</update>
+	
+	<select id="selectClassTutorByTimeTableSubjList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사 검색(과목에 등록된 강사만)
+		SELECT 
+			MB.USERNO, MB.NAME,  SCP.DEC_B64('KEY1',MB.RESNO) AS RESNO, DECODE(NVL(TMT.STUDYTIME, ''), '', 0, 1) IS_SELECT
+		FROM TB_CLASSTUTOR TU, tb_member MB, TB_TIMETABLE_TU TMT 
+		WHERE TU.TUSERNO = MB.USERNO 
+			AND TU.GRCODE = TMT.GRCODE(+) 
+			AND TU.GRSEQ = TMT.GRSEQ(+) 
+			AND TU.SUBJ = TMT.SUBJ(+)
+			AND TU.TUSERNO = TMT.USERNO(+)
+			AND	TU.GRCODE = #{grcode}
+			AND TU.GRSEQ = #{grseq}
+			AND TU.SUBJ = #{subj}
+			AND TMT.STUDYDATE(+) = TO_DATE(#{studydate}, 'YYYYMMDD')
+			AND TMT.STUDYTIME(+) = #{studytime}
+		ORDER BY MB.NAME 
+	]]>
+	</select>
+	
+	<delete id="deleteTimeTableTuByDay" parameterType="Map">
+	<![CDATA[
+		-- 시간표의 특정에 속한 강사 삭제
+		DELETE FROM TB_TIMETABLE_TU
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND TO_CHAR(STUDYDATE, 'yyyymmdd') = #{studydate}
+	]]>
+	</delete>
+	
+	<delete id="deleteTimeTableByDay" parameterType="Map">
+	<![CDATA[
+		-- 시간표 특정 일자 초기화.
+		DELETE FROM TB_TIMETABLE
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND TO_CHAR(STUDYDATE, 'yyyymmdd') = #{studydate}
+	]]>
+	</delete>
+	
+	<delete id="deleteTimeTableTuByGrseq" parameterType="Map">
+	<![CDATA[
+		-- 기수의 시간표 강사 삭제
+		DELETE FROM TB_TIMETABLE_TU
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+	</delete>
+	
+	<delete id="deleteTimeTableByGrseq" parameterType="Map">
+	<![CDATA[
+		-- 기수의 시간표 초기화.
+		DELETE FROM TB_TIMETABLE
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+	</delete>
+	
+	<update id="updateSubjSeqByLessonTime" parameterType="Map">
+	<![CDATA[
+		-- 시간표 내용으로 개설과정의 강의시간 수정
+		UPDATE TB_SUBJSEQ SJS SET 
+			LESSONTIME =
+				  (SELECT COUNT (*)
+				   FROM TB_TIMETABLE
+				   WHERE GRCODE = SJS.GRCODE
+					  AND GRSEQ = SJS.GRSEQ
+					  AND SUBJ = SJS.SUBJ
+					  AND USEGUBUN = 'Y')
+		WHERE SJS.GRCODE = #{grcode}
+			AND SJS.GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<select id="selectTimeTableBySubjGubunCount" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과목분류별 건수를 미리 조회한다. (중식제외)
+		SELECT   
+			NVL(B.SUBJGUBUN, '03') SUBJGUBUN, COUNT(A.GRCODE) TOTTIME,
+			COUNT (DISTINCT A.SUBJ) SUBJCNT
+		FROM TB_TIMETABLE A, TB_SUBJ B
+		WHERE A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.SUBJ = B.SUBJ
+			AND A.SUBJ NOT IN ('SUB1000793')
+		GROUP BY NVL(B.SUBJGUBUN, '03')
+	]]>
+	</select>
+	
+	<select id="selectGubunBySubjGubun" resultType="DataMap">
+	<![CDATA[
+		-- 과목 구분의 정보 조회
+		SELECT
+			GUBUN, GUBUNNM
+		FROM TB_GUBUN
+		WHERE GRSUBJ = 'SG'
+		ORDER BY GUBUN
+	]]>
+	</select>
+	
+	<select id="selecttimeTableBySubjGubunList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과목 구분별 과목 정보 조회
+		SELECT   
+			B.SUBJ, B.SUBJNM, C.NAME, COUNT (A.STUDYTIME) TOTTIME
+		FROM TB_TIMETABLE A, TB_SUBJ B, tb_member C, TB_CLASSTUTOR D
+		WHERE A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.SUBJ = B.SUBJ
+			AND A.SUBJ = D.SUBJ(+)
+			AND A.GRCODE = D.GRCODE(+)
+			AND A.GRSEQ = D.GRSEQ(+)
+			AND D.TUSERNO = C.USERNO(+)
+			AND NVL(B.SUBJGUBUN, '03') = #{gubun}
+			AND A.SUBJ NOT IN ('SUB1000793')
+		GROUP BY B.SUBJNM, B.SUBJ, C.NAME
+	]]>
+	</select>
+	
+	<select id="selectDualCalDateRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 해당일의 월요일 및 금요일 정보 조회.
+		SELECT 
+			TO_CHAR( TO_DATE(#{searchStarted}, 'YYYYMMDD') + #{startDayNo}, 'YYYYMMDD' ) TMP_STARTED,
+			TO_CHAR( TO_DATE(#{searchStarted}, 'YYYYMMDD') + #{endDayNo}, 'YYYYMMDD' ) TMP_ENDDATE
+		FROM DUAL
+	]]>
+	</select>
+	
+	<select id="selectTimeTableByPrint" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- TimeTableDAO.java
+		-- 시간표의 과정 시간표 출력(일자에 선택된 모든 과정)
+		SELECT 
+			GS.GRCODE, GS.GRSEQ, GS.GRCODENIKNM, RM.CLASSROOM_NAME,
+			ROUND (  ( TO_DATE(#{weekSdate}, 'yyyymmdd') - TO_DATE(TO_CHAR (GS.STARTED, 'yyyymmdd'), 'yyyymmdd') ) / 7  )
+			+ 1 AS STUDYWEEK
+		FROM TB_GRSEQ GS,
+		   (SELECT   GRCODE, GRSEQ
+				FROM TB_TIMETABLE
+			   WHERE TO_CHAR (STUDYDATE, 'yyyymmdd') BETWEEN #{weekSdate} AND #{weekEdate}
+			GROUP BY GRCODE, GRSEQ
+			  HAVING COUNT (*) >= 1) TM,
+		   TB_CLASSROOM RM
+		WHERE GS.GRCODE = TM.GRCODE 
+			AND GS.GRSEQ = TM.GRSEQ 
+			AND GS.CLASSROOM_NO = RM.CLASSROOM_NO(+)
+	]]>
+	</select>
+	
+</mapper>

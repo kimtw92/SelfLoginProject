@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.homeFront.mapper.EBookMapper">
+
+	<select id="ebookListCount" resultType="Integer">
+	<![CDATA[
+		SELECT	count(*)
+        FROM
+        (
+            SELECT	EBOOK_TITLE, 	EBOOK_AUTH, IMG_PATH, IMG_NAME, 
+                    EBOOK_LINK, 
+                    GRSEQ AS REG_DATE, 
+                    EBOOK_PAGE
+            FROM	TB_WEBZINE_EBOOK_MNG
+            WHERE	USE_YN	=	'Y'
+            ORDER BY 
+                    EBOOK_NO DESC
+        ) A  
+	]]>
+	</select>
+
+	<select id="ebookList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		SELECT	A.*,
+                MOD(ROWNUM,2)  AS ROW_INDEX
+        FROM
+        (
+            SELECT	EBOOK_TITLE, 	EBOOK_AUTH, IMG_PATH, IMG_NAME, 
+                    EBOOK_LINK, 
+                    GRSEQ AS REG_DATE, 
+                    EBOOK_PAGE
+            FROM	TB_WEBZINE_EBOOK_MNG
+            WHERE	USE_YN	=	'Y'
+            ORDER BY 
+                    EBOOK_NO DESC
+        ) A  
+   	) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+	</select>
+</mapper>

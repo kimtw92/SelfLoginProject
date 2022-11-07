@@ -1,0 +1,31 @@
+@charset	"utf-8";
+/* Page Definition */
+body{margin:0; padding:0;color:#000;font-size:12px;font-family:Dotum, "돋움",sans-serif;}
+div, p, h1, h2, h3, h4, h5, h6, span, th, td, li, dt, dd, form { margin:0; padding:0; }
+select, input, textarea	{font-family:Dotum, "돋움", sans-serif; color:#666;}
+form, div, p, fieldset, ol, ul, dl {margin:0; padding:0;}
+img	{border:0;}
+legend, hr {display:none;}
+ul, ol	   {list-style:none;}
+
+table	{font-size:12px;border-collapse:collapse;margin:0;padding:0;}
+
+a, 	a:link, a:visited			{color:#2992B2; text-decoration:none; cursor:pointer;}
+a:hover, a:active				{color:#2992B2; text-decoration:underline; cursor:pointer;}
+
+div.calendarSet {width:195px;padding:1px;margin:0;background:#71C7E4;}
+div.calendarSet div.ym01		{width:195px;padding:6px 0 6px 0;margin:0;background:#E6F5FA;text-align:center;}
+div.calendarSet div.ym01 img	{vertical-align:-2px;}
+div.calendarSet div.ym01 select	{font-size:11px;line-height:14px;padding:0;margin:0;vertical-align:2px;}
+
+div.calendarSet div.calendar{width:176px;padding:10px;margin:0;}
+div.calendarSet div.calendar ul{clear:both;width:176px;padding:0;margin:0;}
+div.calendarSet div.calendar ul li{float:left;list-style:none;background:#fff;width:24px;height:18px;padding:4px 0 0 0;margin:0;border-left:1px solid #71C7E4;border-bottom:1px solid #71C7E4;text-align:center;}
+div.calendarSet div.calendar ul li.week	{float:left;list-style:none;background:#71C7E4;width:24px;height:10px;padding:0 0 5px 0;margin:0;border-left:1px solid #71C7E4;border-bottom:1px solid #71C7E4;text-align:center;}
+div.calendarSet div.calendar ul li.sun	{color:#FF0000;}
+div.calendarSet div.calendar ul li.sat	{color:#FF0000;}
+div.calendarSet div.calendar ul li.off	{color:#808080;}
+
+div.calendarSet div.spaceN{clear:both;height:0;visibility:hidden;margin:0;padding:0;font-size:0;}
+
+

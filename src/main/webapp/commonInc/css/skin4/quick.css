@@ -1,0 +1,13 @@
+@charset	"utf-8";
+
+#dvwhset div.quick1 div.optionSet{height:57px;padding:0 0 0 0;margin:0 0 0 0;background:url(/images/skin1/quick/bg_zoomTxt.gif) no-repeat 9px bottom;text-align:center;}
+#dvwhset div.quick1 div.optionSet h3.optionTit{padding:0;}
+#dvwhset div.quick1 div.optionSet p.zBtn{padding:6px 0 0 0;margin:0;}
+#dvwhset div.quick1 div.optionSet span.zoom00{margin-right:8px;}
+
+#dvwhset div.quick1 div.quickSet{height:225px;padding:0;margin:7px 0 0 0;background:url(/images/skin1/quick/bg_quickB.gif) no-repeat left bottom;}
+#dvwhset div.quick1 div.quickSet div.quickT{padding:39px 0 0 12px;margin:0;background:url(/images/skin1/quick/bg_quickT.gif) no-repeat left top;}
+#dvwhset div.quick1 div.quickSet div.quickT ul{width:66px;padding:0;margin:0 0 0 0;font-size:0;line-height:0;text-align:center;}
+#dvwhset div.quick1 div.quickSet div.quickT ul li{list-style:none;padding:7px 0 4px 0;margin:0;text-align:center;border-bottom:1px solid #F4F0E3;}
+#dvwhset div.quick1 div.quickSet div.quickT ul li.endQ{border-bottom:0;}
+

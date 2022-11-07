@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.baseCodeMgr.mapper.DeptMapper">
+
+	<sql id="selectDeptCodeListCommon">
+	<![CDATA[
+		--  기관코드 리스트
+		SELECT NVL(B.PART_CNT, 0) AS PART_CNT
+		     , A.DEPT
+		     , A.DEPTNM
+		     , A.LOWNM
+		     , A.LEVELS
+		     , A.UPPER
+		     , A.PARENT
+		     , A.USE_YN
+		     , A.PEOPLESYSTEM_YN
+		  FROM TB_DEPT A
+		     , (SELECT COUNT(*) AS PART_CNT, DEPT FROM TB_PART WHERE USE_YN='Y' GROUP BY DEPT) B
+		 WHERE 1=1
+		   AND B.DEPT(+) = A.DEPT
+		ORDER BY A.DEPT ASC
+	]]>
+	</sql>
+	<select id="selectDeptCodeListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount2"></include>
+		<include refid="selectDeptCodeListCommon"></include>
+		<include refid="page.pageTotalCount2Foot"></include>
+	</select>
+	<select id="selectDeptCodeList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<include refid="selectDeptCodeListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	<select id="selectDeptCodeListNotPaging" parameterType="Map" resultType="DataMap">
+		<include refid="selectDeptCodeListCommon"></include>
+	</select>
+	
+	<sql id="selectAllDeptCodeListCommon">
+	<![CDATA[
+		--  전체 기관코드 리스트
+		SELECT DEPT
+		     , ADEPTNM
+		     , ALOWNM
+		     , LEVELS
+		     , UPPER
+		     , PARENT
+		     , USE_YN
+		     , PEOPLESYSTEM_YN
+		  FROM TB_ALLDEPT
+		 WHERE 1=1
+	]]>
+	<if test="search != null and search != ''">
+		   AND ADEPTNM LIKE '%'||#{search}||'%'
+	</if>
+	<![CDATA[
+		 ORDER BY DEPT ASC
+	]]>
+	</sql>
+	<select id="selectAllDeptCodeListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount2"></include>
+		<include refid="selectAllDeptCodeListCommon"></include>
+		<include refid="page.pageTotalCount2Foot"></include>
+	</select>
+	<select id="selectAllDeptCodeList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<include refid="selectAllDeptCodeListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<select id="selectPartCodeList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT PARTCD
+		     , DEPT
+		     , PARTNM
+		     , USE_YN
+		  FROM TB_PART
+		 WHERE 1=1
+		   AND DEPT = #{dept}
+	]]>
+	</select>
+	
+	<select id="selectDeptCodeForm" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		--  기관코드 수정폼 셀렉 데이터
+		SELECT DEPT
+		     , DEPTNM
+		     , LOWNM
+		     , LEVELS
+		     , UPPER
+		     , PARENT
+		     , USE_YN
+		     , PEOPLESYSTEM_YN 
+		  FROM TB_DEPT
+		 WHERE 1=1
+		   AND DEPT = #{dept}
+	]]>
+	</select>
+	
+	<select id="selectAllDeptCodeForm" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		--  기관코드 수정폼 셀렉 데이터
+		SELECT DEPT
+		     , ADEPTNM
+		     , ALOWNM
+		     , LEVELS
+		     , UPPER
+		     , PARENT
+		     , USE_YN
+		     , PEOPLESYSTEM_YN
+		  FROM TB_ALLDEPT 
+		 WHERE 1=1
+		   AND DEPT = #{value}
+	]]>
+	</select>
+	
+	<select id="selectDeptCodeCountRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		--  기관코드 중복확인
+	  	SELECT COUNT(*)AS COUNT 
+	  	  FROM TB_DEPT
+	  	 WHERE 1=1
+	  	   AND DEPT = #{dept}
+	]]>
+	</select>
+	
+	<insert id="insertDept" parameterType="Map">
+	<![CDATA[
+		--  기관코드 인서트
+   	INSERT INTO TB_DEPT (
+   	       DEPT     , DEPTNM   , LOWNM            , LEVELS   , UPPER
+   	     , PARENT   , USE_YN   , PEOPLESYSTEM_YN
+   	) VALUES (
+   	       #{dept}  , #{deptnm}, #{lownm}         , #{levels}, #{upper}
+   	     , #{parent}, #{useYn} , #{peoplesystemYn}
+   	)
+	]]>
+	</insert>
+	
+	<select id="selectAllDeptCodeRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  전체기관코드 중복확인
+	  	SELECT COUNT(*) AS COUNT 
+	  	  FROM TB_ALLDEPT
+	  	 WHERE 1=1
+	  	   AND DEPT = #{dept}
+	]]>
+	</select>
+	
+	<insert id="insertAllDept" parameterType="Map">
+	<![CDATA[
+		--  전체 기관코드 인서트
+	   	INSERT INTO TB_ALLDEPT (
+	   	       DEPT     , ADEPTNM  , ALOWNM           , LEVELS   , UPPER
+	   	     , PARENT   , USE_YN   , PEOPLESYSTEM_YN
+	   	) VALUES (
+	   	       #{dept}  , #{deptnm}, #{lownm}         , #{levels}, #{upper}
+	   	     , #{parent}, #{useYn} , #{peoplesystemYn}
+	   	)
+	]]>
+	</insert>
+	
+	<update id="modifyDeptCode" parameterType="Map">
+	<![CDATA[
+		--  기관코드 수정
+		UPDATE TB_DEPT
+		   SET DEPTNM = #{deptnm}
+		     , LOWNM = #{lownm}
+		     , LEVELS = #{levels}
+		     , UPPER = #{upper}
+		     , PARENT = #{parent}
+		     , USE_YN = #{useYn}
+		     , PEOPLESYSTEM_YN =#{peoplesystemYn}
+		WHERE 1=1
+		  AND DEPT = #{dept}
+	]]>
+	</update>
+	
+	<update id="modifyAllDeptCode" parameterType="Map">
+	<![CDATA[
+		--  전체 기관코드 수정
+		UPDATE TB_ALLDEPT
+		   SET ADEPTNM = #{deptnm}
+		     , ALOWNM = #{lownm}
+		     , LEVELS = #{levels}
+		     , UPPER = #{upper}
+		     , PARENT = #{parent}
+		     , USE_YN = #{useYn}
+		     , PEOPLESYSTEM_YN =#{peoplesystemYn}
+		 WHERE 1=1
+		   AND DEPT = #{dept}
+	]]>
+	</update>
+	
+	<select id="selectPartCodeCountRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		--  부서코드 중복확인
+	  	SELECT COUNT(*) AS COUNT 
+	  	  FROM TB_PART
+	  	 WHERE 1=1
+	  	   AND PARTCD = #{partcd}
+	]]>
+	</select>
+	
+	<insert id="insertPart" parameterType="Map">
+	<![CDATA[
+		--  부서등록
+		INSERT INTO TB_PART (
+		       DEPT   , PARTCD   , PARTNM   , USE_YN
+		) VALUES (
+		       #{dept}, #{partcd}, #{partnm}, #{useYn}
+		)
+	]]>
+	</insert>
+	
+	<update id="partUpdate" parameterType="Map">
+	<![CDATA[
+		--  부서 정보 수정
+		UPDATE TB_PART 
+		   SET PARTNM = #{partnm}
+		     , USE_YN = #{useYn}
+		WHERE 1=1
+		  AND DEPT = #{dept}
+		  AND PARTCD = #{partcd}
+	]]>
+	</update>
+	
+	<select id="selectPartRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  부서 수정 폼
+		SELECT PARTCD
+		     , DEPT
+		     , PARTNM
+		     , USE_YN
+		  FROM TB_PART 
+		 WHERE 1=1
+		   AND DEPT = #{dept}
+		   AND PARTCD = #{partcd}
+	]]>
+	</select>
+	
+	<select id="selectPartCodeCheckRow" parameterType="String" resultType="int">
+	<![CDATA[
+		--  부서 존재여부 체크
+		SELECT COUNT(DEPT) AS COUNT
+		  FROM TB_PART
+		 WHERE 1=1
+		   AND DEPT = #{dept}
+	]]>
+	</select>
+	
+	<delete id="deptDelete" parameterType="String">
+	<![CDATA[
+		--  기관코드삭제
+		DELETE
+		  FROM TB_DEPT
+		 WHERE 1=1
+		   AND DEPT = #{dept}
+	]]>
+	</delete>
+	
+	<delete id="allDeptDelete" parameterType="String">
+	<![CDATA[
+		-- 전체 기관코드 리스트에서 기관 코드 삭제
+		DELETE
+		  FROM TB_ALLDEPT
+		 WHERE 1=1
+		   AND DEPT = #{dept}
+	]]>
+	</delete>
+	
+	<delete id="partDelete" parameterType="Map">
+	<![CDATA[
+		--  부서 정보 삭제
+		DELETE
+		  FROM TB_PART
+		 WHERE 1=1
+		   AND DEPT = #{dept}
+		   AND PARTCD = #{partcd}
+	]]>
+	</delete>
+</mapper>

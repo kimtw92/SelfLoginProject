@@ -1,0 +1,2 @@
+5월 27 01:47:39.843 오전 ERROR - [[ACTIVE] ExecuteThread: '28' for queue: 'weblogic.kernel.Default (self-tuning)']GPinProxy.getUserDupValue(181) | 주민번호가 올바르지않습니다.
+5월 27 01:47:54.332 오전 ERROR - [[ACTIVE] ExecuteThread: '30' for queue: 'weblogic.kernel.Default (self-tuning)']GPinProxy.getUserDupValue(181) | 주민번호가 올바르지않습니다.

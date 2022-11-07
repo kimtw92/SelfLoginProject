@@ -1,0 +1,154 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"> 
+<head> 
+<title>JW WMV Player - Javascript Control Examples</title> 
+ 
+ 
+<style type="text/css"> 
+	body { color:#000; margin:0; padding:0; font:13px/18px Arial, sans-serif; background-color:#EEE; text-align: center; }
+	h1 { margin:0; line-height:24px; border-bottom:2px solid #C00; font-size:20px; }
+	h2 { font-size: 14px; margin:0; }
+	a { color: #C00; }
+	a:hover { color: #000; }
+	ul,ol { margin:5px 0 40px 30px; list-style-type:square; }
+	#wrapper { width: 780px; padding: 40px; text-align:left; margin:0 auto; background-color:#FFF;}
+	#lead { font-weight:bold; font-style:italic; margin-bottom: 40px; }
+	#headline { float: right; width:320px; }
+	#placeholder { float: right; width:320px; }
+	#pid { margin: 8px 0 0 0; }
+	#footer { margin-top:60px; font-size:11px; }
+</style> 
+ 
+ 
+<script type="text/javascript" src="silverlight.js"></script> 
+<script type="text/javascript"  src="wmvplayer.js"></script> 
+<script type="text/javascript"> 
+	// some variables to save
+	var currentPosition = 0;
+	var currentBuffer = 0; 
+	var currentVolume = 80; 
+	var currentState = 'IDLE';
+	var currentLoad = 0;
+	var player;
+ 
+	// This creates the player after the page has finished loading (onload).
+	function createPlayer() {
+		var cnt = document.getElementById('placeholder');
+		var src = "wmvplayer.xaml";
+		var cfg = {height:"250", width:"320", file:"video.wmv", autostart:"true"};
+		player = new jeroenwijering.Player(cnt,src,cfg);
+		addListeners();
+	};
+	function addListeners() {
+		if(player.view) {
+			player.addListener('VOLUME',volumeUpdate);
+			player.addListener('LOAD',loadUpdate);
+			player.addListener('STATE',stateUpdate);
+			player.addListener('TIME',timeUpdate);
+			player.addListener('BUFFER',bufferUpdate);
+		} else {
+			setTimeout("addListeners()",100);
+		}
+	};
+	// These are the event listeners
+	function stateUpdate(ost,nst) {
+		currentState = nst;
+		var tmp = document.getElementById("state"); 
+		if (tmp) { tmp.innerHTML = "<b>Old state:</b> "+ost+", <b>new state:</b> "+nst; }
+	}; 
+	function bufferUpdate(pct) {
+		currentBuffer = pct;
+		var tmp = document.getElementById("buffer"); 
+		if (tmp) { tmp.innerHTML = "<b>Buffer:</b> "+pct; }
+	}; 
+	function volumeUpdate(vol) {
+		currentVolume = vol;
+		var tmp = document.getElementById("volume"); 
+		if (tmp) { tmp.innerHTML = "<b>Volume:</b> " + vol; } 
+	};
+	function loadUpdate(ldd) { 
+		currentLoad = ldd;
+		var tmp = document.getElementById("load"); 
+		if (tmp) { tmp.innerHTML = "<b>Load:</b> " + ldd; } 
+	};
+	function timeUpdate(pos,dur) { 
+		currentPosition = pos;
+
+		if(pos < 1) {
+			alert(pos);
+		}
+
+		var tmp = document.getElementById("time"); 
+		if (tmp) { tmp.innerHTML = "<b>Position:</b> "+pos+", <b>duration:</b> "+dur; } 
+	};
+	function printConfig() {
+		var cfg = player.getConfig();
+		var txt = '';
+		for(var itm in cfg) { 
+			txt += '<li>'+itm+': '+cfg[itm]+'</li>';
+		}
+		var tmp = document.getElementById("config");
+		if (tmp) { tmp.innerHTML = txt; }
+		
+	}
+</script> 
+ 
+ 
+</head> 
+<body onload="createPlayer();"> 
+ 
+<div id="wrapper"> 
+<h1>JW WMV Player JAVASCRIPT CONTROL EXAMPLES</h1> 
+<p id="lead"> 
+This page is essentially a modified copy of Jeroen Wijerings old JavaScript Interaction page, <br> 
+with examples of most of the interactions the WMV player support. 
+The code is organized, to make it readily accessible for use and layout changes, not programming elegance.<br> 
+Here is the corresponding Wiki page: <a href="http://code.longtailvideo.com/trac/wiki/SLAPI">Supported API Calls</a><br><br> 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------<br><br> 
+Note that installing the Silverlight Plugin twice without deinstalling in between, will in general break it !<br> 
+So make sure to have a clean functioning install before experimenting - check by trying the <a href="http://www.jeroenwijering.com/?item=JW_WMV_Player">WMV player page</a> 
+<br /><br /> 
+ 
+<p id="headline"><table width="320" border="0"><tr> 
+<td align="center"><a href="http://www.jeroenwijering.com/?item=JW_WMV_Player">JW WMV Player</a></td> 
+</tr><tr> 
+<td><p id="placeholder"></td> 
+</tr> 
+</table></p> 
+ 
+<h2>SEND EVENTS</h2> 
+<ul> 
+	<li><a href="javascript:player.sendEvent('play')">Toggle the play state.</a>.</li> 
+	<li><a href="javascript:player.sendEvent('link')">Jump to the link</a>.</li> 
+	<li><a href="javascript:player.sendEvent('scrub',currentPosition+5)">Scrub 5 seconds forward</a>.</li> 
+	<li><a href="javascript:player.sendEvent('scrub',currentPosition-5)">Scrub 5 seconds backward</a>.</li> 
+	<li><a href="javascript:player.sendEvent('volume',currentVolume+10)">Increase the volume 10%</a></li> 
+	<li><a href="javascript:player.sendEvent('volume',currentVolume-10);">Decrease the volume 10%</a></li> 
+	<li><a href="javascript:player.sendEvent('stop')">Stop loading and playing</a>.</li> 
+</ul> 
+ 
+ 
+<h2>RECEIVED UPDATES</h2> 
+<ul> 
+	<li id="buffer"></li> 
+	<li id="state"></li> 
+	<li id="time"></li> 
+	<li id="load"></li> 
+	<li id="volume"></li> 
+</ul> 
+ 
+ 
+<h2>CONFIG DATA</h2> 
+<ul> 
+<li><a href="javascript:printConfig()">(re)load configuration</a></li> 
+</ul> 
+<ul id="config"></ul> 
+ 
+<br> 
+<div id="footer">Documentation: <a href="http://www.jeroenwijering.com/?item=JW_WMV_Player">JW WMV Player</a>  | last update: July 28th, 2008 - JeroenW - some modifications by andersen</div> 
+</div> 
+</body> 
+</html> 
+ 
+ 
+<!-- end of page - delete this and next lines --> 
+<!-- Nedenst�nde indsat af TDC for at m�e trafikken samtidig med at brugeren er 100% anonym. Koden m� ikke s�tes ud af funktion, kopieres, eller �dres. --> <img src="http://statistik-gallup.net/V11***tdckoncern_dk/dk/ISO-8859-1//"> 

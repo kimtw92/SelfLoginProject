@@ -1,0 +1,42 @@
+
+@charset	"utf-8";
+/* Layout Definition */
+
+@import url('top.css');
+@import url('base.css');
+@import url('data.css');
+@import url('footer.css');
+
+/*#dvwh*************************************/
+#wrapper{width:100%;height:100%;margin:0;padding:0 0 0 0;background:#fff;}
+
+/*#dvwh*************************************/
+#dvwh	{width:830px;margin:auto;padding:0;}
+
+/*#header***********************************/
+#header{width:830px;height:119px;}
+
+/*#content**********************************/
+#content{width:830px;padding:15px 0 20px 0;}
+/*#subLeft*/
+#subLeft{float:left;padding:16px 20px 0 0;margin:0px;width:163px;height:249px;}
+#content div#subContentArear{float:left;width:647px;padding:0 0 0 0;}/*background:#efefef;*/
+
+#content div#subContentArear div#toptitle{clear:both;width:647;height:24px;margin:0 0 10px 0;padding:16px 0 4px 0; background: url(../images/sub/sub3line.gif) no-repeat bottom;}
+#content div#subContentArear div#toptitle h1#title{float:left;height:20px;padding:0 0 0 0;}
+#content div#subContentArear ul	{text-align:left;padding:0;}
+#content div#subContentArear ul li{text-align:left;padding:0 0 5px 15px;background:url(../images/common/bg_top.gif) no-repeat 5px 5px;}
+#content div#subContentArear ul li.L{list-style:none;margin-bottom:3px;padding:0 0 0 12px;background:url(../images/common/con_bull.gif) no-repeat 3px 4px;}
+#content div#subContentArear ul.depth1 li{margin:0;padding:3px 0 0 10px;background:none;font-size:12px}
+
+#content div#subContentArear h3{margin:0;padding:10px 0 8px 0;font-size:13px;}
+
+
+#content div#subContentArear div#toptitle div#location{float:right;margin:0;padding:0 0 0 0;}
+#content div#subContentArear div#toptitle div#location ul				{margin:0;padding:0 0 0 0;}
+#content div#subContentArear div#toptitle div#location ul li			{float:left;display:inline;padding:0 10px 0 0;color:#A1A1A1;background:url(../images/common/bullLocation.gif) no-repeat right 3px;}
+#content div#subContentArear div#toptitle div#location ul li.home		{font-weight:normal;}
+#content div#subContentArear div#toptitle div#location ul li.on			{background:none;padding-left:3px;}
+
+/*#footerarea*******************************/
+#footerarea{clear:both;width:100%;padding:0;}

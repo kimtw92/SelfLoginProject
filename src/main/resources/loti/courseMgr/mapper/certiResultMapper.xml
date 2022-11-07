@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.CertiResultMapper">
+
+	<select id="selectGrResultByAllList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 2010.01.28
+		-- user_id 추가 (i-pin 적용 관련)
+		-- 과정 기수 수료자 목록
+			SELECT 
+ 			SCP.DEC_B64('KEY1',M.RESNO) as RESNO, GRR.RRESNO, GRR.RSCHOOL, GRR.USERNO, GRR.RNAME, 
+			SEARCHDEPTNM(ai.DEPT) AS RDEPTNM, 
+ 			ai.DEPTSUB RDEPTSUB,
+			SEARCHJIKNM(ai.JIK) AS RJIKNM,
+			GRR.GRSEQ, GRR.GRCODE,
+ 			TO_CHAR (GRR.STARTED, 'YYYYMMDD') STARTED, TO_CHAR (GRR.ENDDATE, 'YYYYMMDD') ENDDATE, 
+ 			GRR.SEQNO, GRR.PACCEPT, GRR.RGRAYN, GRR.RAWARDNO,
+ 			GRR.RNO, GRR.EDUNO, GRR.TOTNO, GR.GRTIME,
+ 			DECODE (GRR.RGRAYN,
+ 						'Y', '수료',
+ 						'N', '미수료',
+ 						'X', '해당없음'
+ 					) TXT_RGRAYN
+ 			, M.USER_ID
+ 			, M.deptsub
+ 		FROM 
+		 TB_GRRESULT GRR, 
+		 tb_member M, 
+		 tb_app_info ai,
+		 TB_DEPT DP, 
+		 TB_JIK JK,
+		 TB_GRSEQ GQ, 
+		 TB_GRCODE GR
+ 		WHERE GRR.USERNO = M.USERNO
+ 			AND GRR.GRCODE = #{grcode}
+ 			AND GRR.GRSEQ = #{grseq}
+		 	AND GRR.GRCODE = ai.GRCODE
+ 			AND GRR.GRSEQ = ai.GRSEQ
+			AND	GRR.USERNO = ai.USERNO
+			AND GRR.RDEPT = DP.DEPT(+)
+ 			AND GRR.RJIK = JK.JIK(+)
+ 			AND GRR.GRCODE = GQ.GRCODE
+ 			AND GRR.GRSEQ = GQ.GRSEQ
+ 			AND GQ.GRCODE = GR.GRCODE
+			${searchStr}
+		${orderStr}
+		
+	]]>
+	</select>
+	
+	<select id="selectGrResultByAllNotSearchList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정 기수 수료자 목록
+		SELECT 
+			SCP.DEC_B64('KEY1',M.RESNO) as RESNO, GRR.RRESNO, GRR.RSCHOOL, GRR.USERNO, GRR.RNAME, DP.DEPTNM RDEPTNM,
+			GRR.RDEPTSUB, JK.JIKNM RJIKNM, GRR.GRSEQ, GRR.GRCODE,
+			TO_CHAR (GRR.STARTED, 'YYYYMMDD') STARTED, TO_CHAR (GRR.ENDDATE, 'YYYYMMDD') ENDDATE, 
+			GRR.SEQNO, GRR.PACCEPT, GRR.RGRAYN, GRR.RAWARDNO,
+			GRR.RNO, GRR.EDUNO, GRR.TOTNO, SCP.DEC_B64('KEY1',M.HP) as HP,
+			DECODE (GRR.RGRAYN,
+						'Y', '수료',
+						'N', '미수료',
+						'X', '해당없음'
+					) TXT_RGRAYN
+		FROM TB_GRRESULT GRR, tb_member M, TB_DEPT DP, TB_JIK JK
+		WHERE GRR.USERNO = M.USERNO
+			AND GRR.GRCODE = #{grcode}
+ 			AND GRR.GRSEQ = #{grseq}
+			AND GRR.RDEPT = DP.DEPT(+)
+			AND GRR.RJIK = JK.JIK(+)
+			AND GRR.RGRAYN = 'Y'
+			ORDER BY DECODE(GRR.RDEPT,6280000,1,6280053,2,3490000,3,3500000,4,3510500,5,3510000,6,3520000,7,3530000,8,3540000,9,3550000,10,3560000,11,3570000,12,3580000,13,6289999,14), GRR.RNAME	-- ORDER BY GRR.RNO ASC
+	]]>
+	</select>
+	
+	<select id="selectGrResultCompletionCntRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 2010.01.31
+		-- i-pin 적용으로 인한 성별 조회 변경
+		-- 과정 기수의 수료자 인원 조회
+		SELECT 
+			--NVL(SUM (DECODE (SUBSTR (B.RESNO, 7, 1), '1', 1, '3', 1, 0)), 0) AS MAN_CNT,
+			--NVL(SUM (DECODE (SUBSTR (B.RESNO, 7, 1), '2', 1, '4', 1, 0)), 0) AS WOMAN_CNT,
+			NVL(SUM (DECODE (B.SEX, 'M', 1, 'F', 0, 0)), 0) AS MAN_CNT,
+			NVL(SUM (DECODE (B.SEX, 'F', 1, 'M', 0, 0)), 0) AS WOMAN_CNT,
+			COUNT(1) as RESULT_TOTALCNT
+		FROM TB_GRRESULT A, tb_member B
+		WHERE A.RGRAYN = 'Y' 
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND A.USERNO = B.USERNO
+	]]>
+	</select>
+	
+	<select id="selectGrResultDeptList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수 수료자의 부서 리스트
+		SELECT 
+			DISTINCT A.RDEPT RDEPT, B.DEPTNM RDEPTNM 
+		FROM TB_GRRESULT A, TB_DEPT B 
+		WHERE 1=1
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.RDEPT = B.DEPT 
+		ORDER BY DECODE(GRR.RDEPT,6280000,1,6280053,2,3490000,3,3500000,4,3510500,5,3510000,6,3520000,7,3530000,8,3540000,9,3550000,10,3560000,11,3570000,12,3580000,13,6289999,14), GRR.RNAME
+	]]>
+	</select>
+	
+	<update id="updateGrResultByAllRawardnoNull" parameterType="Map">
+	<![CDATA[
+		-- 기수 수료자 일괄 상장번호 삭제
+		UPDATE TB_GRRESULT SET 
+			RAWARDNO = NULL    
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<update id="updateGrResultByAllRnoNull" parameterType="Map">
+	<![CDATA[
+		-- 기수 수료자 수료번호 삭제
+		UPDATE TB_GRRESULT SET 
+			RNO = NULL  
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<select id="selectGrResultSimpleList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수료자 간단한 정보 리스트.
+		SELECT 
+			USERNO
+		FROM TB_GRRESULT 
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND RGRAYN = 'Y' 
+		ORDER BY EDUNO ASC
+	]]>
+	</select>
+	
+	<update id="updateGrResultByRno" parameterType="Map">
+	<![CDATA[
+		-- 기수 수료자의 수료번호 수정.
+		UPDATE TB_GRRESULT SET 
+			RNO = #{rno}
+		WHERE GRCODE = #{grcode} 
+			AND GRSEQ = #{grseq}
+			AND USERNO = #{userno}
+			AND RGRAYN = 'Y'
+	]]>
+	</update>
+	
+	<select id="selectGrResultByUserRawardNoChk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 수료자의 상장번호가 있는지 확인.
+		SELECT 
+			COUNT(1) CNT
+		FROM TB_GRRESULT 
+		WHERE 1=1
+			AND GRCODE = #{grcode} 
+			AND GRSEQ = #{grseq}
+			AND USERNO = #{userno}
+			AND RAWARDNO IS NOT NULL
+	]]>
+	</select>
+	
+	<update id="updateGrResultByRawardNo" parameterType="Map">
+	<![CDATA[
+		-- 수료자의 상장번호가 수정
+		UPDATE TB_GRRESULT SET 
+			RAWARDNO = #{rawardno}
+		WHERE 1=1
+			AND GRCODE = #{grcode} 
+			AND GRSEQ = #{grseq}
+			AND USERNO = #{userno}
+			AND RAWARDNO IS NULL
+	]]>
+	</update>
+	
+	<select id="selectGrResultNextRawardNo" parameterType="String" resultType="int">
+	<![CDATA[
+		-- CertiResultDAO.java
+		-- 시스템에 기록된 상장 부여번호를 조회후 최고 상장 번호를 가져옴.
+		SELECT 
+			NVL(MAX(TO_NUMBER(RAWARDNO)),0) + 1 AS NEXT_RAWARDNO
+		FROM TB_GRRESULT 
+		WHERE 1=1
+			AND GRSEQ LIKE #{year}
+	]]>
+	</select>
+	
+	<select id="selectGrResultListBySearch" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수료자 검색
+		SELECT 
+			GRR.USERNO, GRR.RNAME, GRR.RRESNO, DP.DEPTNM RDEPTNM, GRR.RDEPTSUB,
+			JK.JIKNM RJIKNM, GC.GRCODENM, GRR.GRSEQ,
+			TO_CHAR (GRR.STARTED, 'yyyymmdd') STARTED,
+			TO_CHAR (GRR.ENDDATE, 'yyyymmdd') ENDDATE, GRR.SEQNO, GRR.PACCEPT,
+			DECODE (GRR.RGRAYN, 'Y', '수료', 'N', '미수료', '해당없음') RGRAYN
+			,(SELECT USER_ID FROM TB_MEMBER WHERE USERNO = GRR.USERNO) AS USER_ID
+		FROM TB_GRRESULT GRR, TB_DEPT DP, TB_JIK JK, TB_GRCODE GC, TB_MEMBER MB
+		WHERE GRR.RDEPT = DP.DEPT(+) and GRR.USERNO = MB.USERNO(+)
+			AND GRR.RJIK = JK.JIK(+)
+			AND GRR.GRCODE = GC.GRCODE
+			${whereStr}
+		ORDER BY GRR.RNAME, GRR.RRESNO, GRR.GRSEQ DESC, GC.GRCODENM 
+	]]>
+	</select>
+	
+	<select id="selectGrResultListByUserno" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수료자 수료 내역 조회
+		SELECT 
+			GS.GRCODENIKNM, GS.GRCODE, GS.GRSEQ, GRR.USERNO, GRR.RNAME,
+			DP.DEPTNM RDEPTNM, GRR.RDEPTSUB, JK.JIKNM RJIKNM,
+			TO_CHAR (GRR.STARTED, 'YYYYMMDD') STARTED, TO_CHAR (GRR.ENDDATE, 'YYYYMMDD') ENDDATE, GRR.SEQNO, GRR.PACCEPT,
+			TO_CHAR(GRR.STARTED, 'MM.DD') STARTED1, TO_CHAR (GRR.ENDDATE, 'MM.DD') ENDDATE1, 
+			DECODE (GRR.RGRAYN, 'Y', '수료', 'N', '미수료', 'X') RGRAYN, GRR.RNO,
+			GRR.EDUNO, DECODE(GS.TDATE, NULL, '', GS.TDATE||'') TDATE
+			,(SELECT GRTIME FROM TB_GRCODE WHERE GRCODE = GRR.GRCODE) AS GRTIME
+		FROM TB_GRRESULT GRR, TB_GRSEQ GS, TB_DEPT DP, TB_JIK JK
+		WHERE GRR.GRCODE = GS.GRCODE
+			AND GRR.GRSEQ = GS.GRSEQ
+			AND GRR.RDEPT = DP.DEPT(+)
+			AND GRR.RJIK = JK.JIK(+)
+			AND GRR.USERNO = #{userno}
+			${whereStr}
+		ORDER BY GS.GRCODE, GS.GRSEQ
+	]]>
+	</select>
+	
+	<select id="selectGrResultListByDept" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 2011.01.28
+		-- 아이디 추가 (i-pin 적용)
+		-- 수료자 수료 내역 조회 기관별 조회
+		SELECT 
+			SCP.DEC_B64('KEY1',M.RESNO) as RESNO, GRR.RSCHOOL, GRR.USERNO, GRR.RNAME, DP.DEPTNM RDEPTNM, M.BIRTHDATE,
+			GRR.RDEPTSUB, JK.JIKNM RJIKNM, GRR.GRSEQ,
+			TO_CHAR (GRR.STARTED, 'yyyymmdd') STARTED,
+			TO_CHAR (GRR.ENDDATE, 'yyyymmdd') ENDDATE, GRR.SEQNO, GRR.PACCEPT,
+			GRR.RGRAYN,
+			DECODE (GRR.RGRAYN,
+				   'Y', '수료',
+				   'N', '미수료',
+				   'X', '해당없음'
+				  ) TXT_RGRAYN,
+			GRR.RNO, GRR.EDUNO, GRR.SEQNO, GRR.TOTNO,
+			TO_CHAR (GRR.STARTED, 'yyyy.mm.dd') STARTED1,
+			TO_CHAR (GRR.ENDDATE, 'yyyy.mm.dd') ENDDATE1
+			, M.USER_ID
+		FROM TB_GRRESULT GRR, tb_member M, TB_DEPT DP, TB_JIK JK
+		WHERE GRR.USERNO = M.USERNO
+			AND GRR.GRSEQ = #{grseq}
+			AND GRR.RDEPT = DP.DEPT(+)
+			AND GRR.RJIK = JK.JIK(+)
+			${searchStr}
+		ORDER BY GRR.RDEPT, GRR.RNAME
+	]]>
+	</select>
+	
+	<select id="selectGrResultByAllListForCyberCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 2011.01.31
+		-- i-pin 적용으로 인한 프로세스 변경
+		-- 과정 기수 수료자 목록 (사이버)
+		SELECT 
+			COUNT(0) AS CNT
+		FROM TB_GRRESULT GRR, tb_member M, TB_DEPT DP, TB_JIK JK, TB_GRSEQ GQ, TB_GRCODE GR, TB_STU_LEC sl
+		WHERE GRR.USERNO = M.USERNO
+			AND GQ.F_CYBER = 'Y'
+			AND GRR.GRSEQ = #{grseq}
+			AND GRR.RDEPT = DP.DEPT(+)
+			AND GRR.RJIK = JK.JIK(+)
+			AND GRR.GRCODE = GQ.GRCODE
+			AND GRR.GRSEQ = GQ.GRSEQ
+			AND GQ.GRCODE = GR.GRCODE
+			AND GRR.GRCODE = SL.GRCODE
+			AND GRR.GRSEQ = SL.GRSEQ
+			AND GRR.USERNO = SL.USERNO
+		    ${searchStr}
+		${orderStr}
+	]]>
+	</select>
+	
+	<select id="selectGrResultByAllListForCyber" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 2011.01.31
+						-- i-pin 적용으로 인한 프로세스 변경
+						-- 과정 기수 수료자 목록 (사이버)
+						SELECT 
+							SCP.DEC_B64('KEY1',M.RESNO) as RESNO, GRR.RRESNO, GRR.RSCHOOL, GRR.USERNO, GRR.RNAME, DP.DEPTNM RDEPTNM,
+							GRR.RDEPTSUB, JK.JIKNM RJIKNM, GRR.GRSEQ, GRR.GRCODE,
+							TO_CHAR (GRR.STARTED, 'YYYYMMDD') STARTED, TO_CHAR (GRR.ENDDATE, 'YYYYMMDD') ENDDATE, 
+							GRR.SEQNO, GRR.PACCEPT, GRR.RGRAYN, GRR.RAWARDNO,
+							GRR.RNO, GRR.EDUNO, GRR.TOTNO, GQ.GRCODENIKNM, GR.GRTIME,
+							DECODE (GRR.RGRAYN,
+										'Y', '수료',
+										'N', '미수료',
+										'X', '해당없음'
+									) TXT_RGRAYN
+							, M.USER_ID, NVL (sl.AVLCOUNT, '0') AVLCOUNT, CASE
+				                   WHEN DECODE(gq.CLOSING, 'Y', 'E', '') = 'E'
+				                      THEN NVL (TO_CHAR (sl.TSTEP), '0')
+				                   ELSE NVL (PROGRESSSUBJ (sl.GRCODE, sl.GRSEQ, sl.SUBJ, sl.USERNO), '0')
+				                END TSTEP, NVL (sl.AVCOURSE, 0) AVCOURSE, M.BIRTHDATE BIRTHDATE, DECODE(m.SEX,'F', '여', 'M', '남','nodate') SEX
+						FROM TB_GRRESULT GRR, tb_member M, TB_DEPT DP, TB_JIK JK, TB_GRSEQ GQ, TB_GRCODE GR, TB_STU_LEC sl
+						WHERE GRR.USERNO = M.USERNO
+							AND GQ.F_CYBER = 'Y'
+							AND GRR.GRSEQ = #{grseq}
+							AND GRR.RDEPT = DP.DEPT(+)
+							AND GRR.RJIK = JK.JIK(+)
+							AND GRR.GRCODE = GQ.GRCODE
+							AND GRR.GRSEQ = GQ.GRSEQ
+							AND GQ.GRCODE = GR.GRCODE
+							AND GRR.GRCODE = SL.GRCODE
+							AND GRR.GRSEQ = SL.GRSEQ
+							AND GRR.USERNO = SL.USERNO
+						    ${searchStr}
+						${orderStr}
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectGrResultByAllListForCyber2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 2011.01.31
+		-- i-pin 적용으로 인한 프로세스 변경
+		-- 과정 기수 수료자 목록 (사이버)
+		SELECT 
+			SCP.DEC_B64('KEY1',M.RESNO) as RESNO, GRR.RRESNO, GRR.RSCHOOL, GRR.USERNO, GRR.RNAME, DP.DEPTNM RDEPTNM,
+			GRR.RDEPTSUB, JK.JIKNM RJIKNM, GRR.GRSEQ, GRR.GRCODE,
+			TO_CHAR (GRR.STARTED, 'YYYYMMDD') STARTED, TO_CHAR (GRR.ENDDATE, 'YYYYMMDD') ENDDATE, 
+			GRR.SEQNO, GRR.PACCEPT, GRR.RGRAYN, GRR.RAWARDNO,
+			GRR.RNO, GRR.EDUNO, GRR.TOTNO, GQ.GRCODENIKNM, GR.GRTIME,
+			DECODE (GRR.RGRAYN,
+						'Y', '수료',
+						'N', '미수료',
+						'X', '해당없음'
+					) TXT_RGRAYN
+			, M.USER_ID, NVL (sl.AVLCOUNT, '0') AVLCOUNT, CASE
+                   WHEN DECODE(gq.CLOSING, 'Y', 'E', '') = 'E'
+                      THEN NVL (TO_CHAR (sl.TSTEP), '0')
+                   ELSE NVL (PROGRESSSUBJ (sl.GRCODE, sl.GRSEQ, sl.SUBJ, sl.USERNO), '0')
+                END TSTEP, NVL (sl.AVCOURSE, 0) AVCOURSE, M.BIRTHDATE BIRTHDATE, DECODE(m.SEX,'F', '여', 'M', '남','nodate') SEX
+		FROM TB_GRRESULT GRR, tb_member M, TB_DEPT DP, TB_JIK JK, TB_GRSEQ GQ, TB_GRCODE GR, TB_STU_LEC sl
+		WHERE GRR.USERNO = M.USERNO
+			AND GQ.F_CYBER = 'Y'
+			AND GRR.GRSEQ = #{grseq}
+			AND GRR.RDEPT = DP.DEPT(+)
+			AND GRR.RJIK = JK.JIK(+)
+			AND GRR.GRCODE = GQ.GRCODE
+			AND GRR.GRSEQ = GQ.GRSEQ
+			AND GQ.GRCODE = GR.GRCODE
+			AND GRR.GRCODE = SL.GRCODE
+			AND GRR.GRSEQ = SL.GRSEQ
+			AND GRR.USERNO = SL.USERNO
+		    ${searchStr}
+		${orderStr}
+	]]>
+	</select>
+	
+	<select id="selectGrResultCompletionCntRowForCyber" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 2010.01.31
+		-- i-pin 적용으로 인한 성별 조회 변경
+		-- 과정 기수의 수료자 인원 조회 (사이버)
+		SELECT 
+			--NVL(SUM (DECODE (SUBSTR (B.RESNO, 7, 1), '1', 1, '3', 1, 0)), 0) AS MAN_CNT,
+			--NVL(SUM (DECODE (SUBSTR (B.RESNO, 7, 1), '2', 1, '4', 1, 0)), 0) AS WOMAN_CNT,
+			NVL(SUM (DECODE (B.SEX, 'M', 1, 'F', 0, 0)), 0) AS MAN_CNT,
+			NVL(SUM (DECODE (B.SEX, 'F', 1, 'M', 0, 0)), 0) AS WOMAN_CNT,
+			COUNT(1) as RESULT_TOTALCNT
+		FROM TB_GRRESULT A, tb_member B, TB_GRSEQ C
+		WHERE A.RGRAYN = 'Y'
+			AND C.F_CYBER = 'Y' 
+			AND A.GRSEQ = #{grseq}
+			AND A.USERNO = B.USERNO
+			AND A.GRCODE = C.GRCODE
+			AND A.GRSEQ = C.GRSEQ
+			${whereStr}
+	]]>
+	</select>
+	
+	<select id="selectGrResultDeptListForCyber" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수 수료자의 부서 리스트(사이버)
+		SELECT 
+			DISTINCT A.RDEPT RDEPT, B.DEPTNM RDEPTNM 
+		FROM TB_GRRESULT A, TB_DEPT B , TB_GRSEQ C
+		WHERE 1=1
+			AND A.GRSEQ = #{grseq} 
+			AND A.RDEPT = B.DEPT 
+            AND A.GRCODE = C.GRCODE
+            AND A.GRSEQ = C.GRSEQ
+            ${whereStr}
+		ORDER BY A.RDEPT
+	]]>
+	</select>
+	
+	<select id="selectGrResultByResultDocList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수료증 출력을 위한 수료자 조회
+		SELECT
+			b.grcode, b.grseq, A.USERNO, A.RNAME NAME, A.RNO,
+			SEARCHGRCODENM (A.GRCODE, A.GRSEQ) GRCODENM,
+			SEARCHDEPTNM (A.RDEPT) AS DEPTNM, A.RDEPTSUB AS DEPTSUB,
+			SEARCHJIKNM (A.RJIK) AS JIKNM, 
+			SUBSTR (A.GRSEQ, 1, 4) AS GRYEAR,
+			TO_CHAR (B.STARTED, 'yyyy.mm.dd') || ' ~ ' || TO_CHAR (B.ENDDATE, 'mm.dd') AS PERIOD,
+			TO_CHAR (B.STARTED, 'yyyy') SYEAR, TO_CHAR (B.STARTED, 'mm') SMONTH,
+			TO_CHAR (B.STARTED, 'dd') SDAY, TO_CHAR (B.ENDDATE, 'yyyy') EYEAR,
+			TO_CHAR (B.ENDDATE, 'mm') EMONTH, TO_CHAR (B.ENDDATE, 'dd') EDAY,
+			DECODE (SUBSTR (#{grseq}, 5, 2), 
+				'01', DECODE( (SELECT COUNT (*) FROM TB_GRSEQ WHERE GRCODE = A.GRCODE AND GRSEQ LIKE SUBSTR (#{grseq}, 1, 4) || '__' AND USE_YN = 'Y'),
+								   0, NULL,
+								   1, NULL,
+								   '제' || TO_NUMBER (SUBSTR (A.GRSEQ, 5, 2)) || '기 '
+								  ),
+				 '제' || TO_NUMBER (SUBSTR (A.GRSEQ, 5, 2)) || '기 ') TXSEQ
+			,nvl(NVL(A.EDUTIME,(select grtime
+            from TB_GRCODE
+            where grcode = a.grcode)),0) as time 
+            ,nvl((select grminute
+            from TB_GRCODE
+            where grcode = a.grcode), 0) as minute 
+            ,nvl(NVL(A.EDUTIME,(select grtime_new
+            from TB_GRCODE
+            where grcode = a.grcode)), 0) as time_new 
+            ,to_char(a.enddate, 'yyyymmdd') as enddate 
+		FROM TB_GRRESULT A, TB_GRSEQ B, tb_member C
+		WHERE A.GRCODE = B.GRCODE
+			AND A.GRSEQ = B.GRSEQ
+			AND A.USERNO = C.USERNO
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.RNO IS NOT NULL
+			${whereStr}
+		ORDER BY A.RNO
+	]]>
+	</select>
+	
+	<select id="selectStuLectBySubjStudyList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 2011.01.28
+		-- 아이디 추가 (I-PIN 적용)
+		-- 수강생 과목별 학습 현황
+		SELECT
+			A.DEPT, C.DEPTNM DEPTNM, SCP.DEC_B64('KEY1',MB.RESNO) as RESNO, A.USERNO, 
+			A.NAME, B.JIKNM, A.GRAYN,
+			NVL (A.AVLCOUNT, '0') AVLCOUNT, NVL (A.TSTEP, '0') TSTEP,
+			NVL (A.QUIZSTEP, '0') QUIZSTEP, NVL (A.AVREPORT, 0) AVREPORT, 
+			NVL (A.AVCOURSE, 0) AVCOURSE, NVL (A.AVQUIZ, 0) AVQUIZ
+			, MB.USER_ID
+		FROM TB_STU_LEC A, TB_JIK B, TB_DEPT C, TB_MEMBER MB
+		WHERE 1=1
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.SUBJ = #{subj}
+			AND A.USERNO = MB.USERNO
+			AND A.JIK = B.JIK
+			AND A.DEPT = C.DEPT
+			${whereStr}
+		ORDER BY a.dept, a.NAME
+	]]>
+	</select>
+</mapper>

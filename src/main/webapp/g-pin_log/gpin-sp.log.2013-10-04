@@ -1,0 +1,18 @@
+10월 04 03:48:58.989 오후 INFO - [[ACTIVE] ExecuteThread: '38' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(48) | SAML v2.0 Library Initializing...
+10월 04 03:49:04.156 오후 INFO - [[ACTIVE] ExecuteThread: '38' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(56) | Metadata Load...
+10월 04 03:49:04.222 오후 INFO - [[ACTIVE] ExecuteThread: '38' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(60) | MetadataRepInterface: com.etri.saml2.imp.MetadataRepImpFile
+10월 04 03:49:04.233 오후 INFO - [[ACTIVE] ExecuteThread: '38' for queue: 'weblogic.kernel.Default (self-tuning)']MetadataRepImpFile.setMetadataDirectory(53) | Metadata directory: //app1/apache/htdocs/LOTI/WebRoot/WEB-INF/metadata/
+10월 04 03:49:04.240 오후 INFO - [[ACTIVE] ExecuteThread: '38' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(66) | Session Record Load..
+10월 04 03:49:04.260 오후 INFO - [[ACTIVE] ExecuteThread: '38' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(73) | Federation Record Load..
+10월 04 03:49:04.286 오후 INFO - [[ACTIVE] ExecuteThread: '38' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(81) | Artifact Record Load..
+10월 04 03:49:04.383 오후 INFO - [[ACTIVE] ExecuteThread: '38' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.configure(166) | Properties Load Done. version 1.0
+10월 04 03:49:04.383 오후 INFO - [[ACTIVE] ExecuteThread: '38' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(103) | SAML Library initialize complete
+10월 04 05:34:43.542 오후 INFO - [[ACTIVE] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(48) | SAML v2.0 Library Initializing...
+10월 04 05:34:44.201 오후 INFO - [[ACTIVE] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(56) | Metadata Load...
+10월 04 05:34:44.208 오후 INFO - [[ACTIVE] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(60) | MetadataRepInterface: com.etri.saml2.imp.MetadataRepImpFile
+10월 04 05:34:44.209 오후 INFO - [[ACTIVE] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)']MetadataRepImpFile.setMetadataDirectory(53) | Metadata directory: //app1/apache/htdocs/LOTI/WebRoot/WEB-INF/metadata/
+10월 04 05:34:44.210 오후 INFO - [[ACTIVE] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(66) | Session Record Load..
+10월 04 05:34:44.213 오후 INFO - [[ACTIVE] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(73) | Federation Record Load..
+10월 04 05:34:44.217 오후 INFO - [[ACTIVE] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(81) | Artifact Record Load..
+10월 04 05:34:44.227 오후 INFO - [[ACTIVE] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.configure(166) | Properties Load Done. version 1.0
+10월 04 05:34:44.227 오후 INFO - [[ACTIVE] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)']InitSAML.initialize(103) | SAML Library initialize complete

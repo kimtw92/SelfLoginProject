@@ -1,0 +1,11 @@
+div.history { float:left; width:640px; padding-top:0px; padding-bottom:20px; margin:0px; }
+div.history div.history_wrap{ float:left; width:640px; padding-top:15px; padding-bottom:15px; margin:0px;  }
+div.history div.his_left{ float:left; width:130px; padding:0px; margin:0px; }
+div.history div.his_left img{ vertical-align:top; padding-left:21px; padding-top:6px; }
+div.history div.his_right{ float:left; width:510px; padding:0px; margin:0px; }
+
+div.history dl{ float:left; width:500px; background:bottom url(../../images/history/dl_bg.gif) repeat-x; padding-top:0px; padding-bottom:0px; margin:0px; }
+div.history dl dt{ float:left; width:45px; padding-top:5px; padding-bottom:10px; margin:0px; line-height:18px; }
+div.history dl dt img{ vertical-align:top; padding-left:10px; }
+div.history dl dd{ float:left; width:443px; padding-top:5px; background:left bottom url(../../images/history/dd_bg.gif) no-repeat; padding-left:12px; padding-bottom:10px; margin:0px; color:#646464; line-height:18px; }
+div.history dl dd b{ color:#156dbd; }

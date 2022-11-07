@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.baseCodeMgr.mapper.PositionMapper">
+
+	<select id="selectPositionListCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		--  직급코드 리스트
+	    SELECT COUNT(0) AS CNT
+		  FROM TB_JIK J
+		     , (SELECT CODE, CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'jikj') JN
+		     , (SELECT CODE, CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'jikr') RN
+		     , (SELECT CODE, CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'dogs') SN
+		     , (SELECT CODE, CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'jikl') LN
+		 WHERE 1=1
+		   AND JN.CODE(+) = J.JIKJ
+		   AND RN.CODE(+) = J.JIKR
+		   AND SN.CODE(+) = J.DOGS
+		   AND LN.CODE(+) = J.JIKL
+	]]>
+	<if test="search != null and search != ''">
+	<![CDATA[
+		   AND J.JIKNM LIKE '%'||#{search}||'%'
+	]]>
+	</if>
+	</select>
+	
+	<select id="selectPositionList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (--  직급코드 리스트
+					    SELECT J.JIK
+					         , J.JIKNM
+					         , J.USE_YN
+					         , JN.CODENM AS JIKJNM
+					         , RN.CODENM AS JIKRNM
+					         , SN.CODENM AS DOGSNM
+					         , LN.CODENM AS JIKLNM
+					         , J.JIK_GUBUN 
+						  FROM TB_JIK J
+						     , (SELECT CODE, CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'jikj') JN
+						     , (SELECT CODE, CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'jikr') RN
+						     , (SELECT CODE, CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'dogs') SN
+						     , (SELECT CODE, CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'jikl') LN
+						 WHERE 1=1
+						   AND JN.CODE(+) = J.JIKJ
+						   AND RN.CODE(+) = J.JIKR
+						   AND SN.CODE(+) = J.DOGS
+						   AND LN.CODE(+) = J.JIKL
+	]]>
+	<if test="search != null and search != ''">
+	<![CDATA[
+						   AND J.JIKNM LIKE '%'||#{search}||'%'
+	]]>
+	</if>
+	<![CDATA[
+					     ORDER BY J.JIK, J.JIKJ, J.JIKL, J.DOGS, J.JIKNM
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="rowMaxPosition" resultType="DataMap">
+	<![CDATA[
+		--  직급코드 맥스 리스트 데이터
+		SELECT MAX(JIK) AS MAX_JIK
+		  FROM TB_JIK
+	]]>
+	</select>
+	
+	<select id="selectPositionPopList" resultType="DataMap">
+	<![CDATA[
+		--  직급코드 셀렉트박스 리스트
+		SELECT JIKGUBUN
+		     , CODE
+		     , CODENM
+		  FROM TB_JIKGUBUN 
+		 ORDER BY JIKGUBUN, CODENM
+	]]>
+	</select>
+	
+	<insert id="insertPosition" parameterType="Map">
+	<![CDATA[
+		--  직급코드 인서트
+		INSERT INTO TB_JIK (
+		       JIK         , JIK_GUBUN  , JIKNM    , JIKJ     , JIKR
+		     , DOGS        , USE_YN     , LUSERNO  , JIKL     , LDATE
+		) VALUES (
+		       #{mcodeName}, #{jikGubun}, #{jiknm} , #{jikjnm}, #{jikrnm}
+		     , #{dogsnm}   , #{useYn}   , #{userNo}, #{jiklnm}, SYSDATE
+		)
+	]]>
+	</insert>
+	
+	<update id="modifyPosition" parameterType="Map">
+	<![CDATA[
+		--  직급코드 수정
+		UPDATE TB_JIK 
+		   SET JIKNM = #{jiknm}
+		     , JIK_GUBUN = #{jikGubun}
+		     , JIKJ = #{jikjnm}
+		     , JIKR = #{jikrnm}
+		     , DOGS = #{dogsnm}
+		     , USE_YN = #{useYn}
+		     , LUSERNO = #{userNo}
+		     , LDATE = SYSDATE
+		     , JIKL = #{jiklnm}
+		WHERE 1=1
+		  AND JIK = #{mcodeName}
+	]]>
+	</update>
+	
+	<select id="selectGuBunCodeListCount" parameterType="String" resultType="Integer">
+	<![CDATA[
+		--  직급코드 리스트
+						SELECT COUNT(*)
+				   	      FROM TB_JIKGUBUN
+				   	     WHERE 1=1
+    ]]>
+    <if test="value != ''">
+    <![CDATA[
+    					   AND JIKGUBUN = #{value}
+    ]]>
+    </if>
+	</select>
+	<select id="selectGuBunCodeList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (--  직급코드 리스트
+						SELECT JIKGUBUN
+						     , CODE
+						     , JIKGUBUNNM
+						     , CODENM
+						     , ORDERS
+						     , USE_YN 
+				   	      FROM TB_JIKGUBUN
+				   	     WHERE 1=1
+    ]]>
+    <if test="guBun != null and guBun != ''">
+    <![CDATA[
+    					   AND JIKGUBUN = #{guBun}
+    ]]>
+    </if>
+    <![CDATA[
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectGuBunCodeSelectBoxList" resultType="DataMap">
+	<![CDATA[
+		--  직급코드 셀렉트 박스 리스트
+   		SELECT DISTINCT JIKGUBUN
+   		     , JIKGUBUNNM
+   		  FROM TB_JIKGUBUN
+	]]>
+	</select>
+	
+	<select id="selectGubunCodeCountRow" parameterType="String" resultType="int">
+	<![CDATA[
+		--  직급구분코드 중복체크
+   		SELECT COUNT(*) AS COUNT
+   		  FROM TB_JIKGUBUN
+   		 WHERE 1=1
+   		   AND CODE = #{code}
+	]]>
+	</select>
+	
+	<insert id="insertGubunCode" parameterType="Map">
+	<![CDATA[
+		--  직급구분코드 등록
+   		INSERT INTO TB_JIKGUBUN (
+   		       JIKGUBUN, CODE     , JIKGUBUNNM   , CODENM   , ORDERS
+   		     , USE_YN  , LUSERNO  , LDATE
+   		) VALUES (
+   		       #{guBun}, #{code}  , #{jikgubunnm}, #{codenm}, #{orders}
+   		     , #{useYn}, #{userNo}, SYSDATE
+   		)
+	]]>
+	</insert>
+	
+	<select id="selectCountJikRow" parameterType="String" resultType="int">
+	<![CDATA[
+		--  jik중복체크
+		SELECT COUNT(JIK) AS COUNT 
+		  FROM TB_JIK 
+		 WHERE 1=1
+		   AND JIK = #{jik}
+	]]>
+	</select>
+	
+	<insert id="insertAllPosition" parameterType="Map">
+	<![CDATA[
+		--  직급코드 일괄 등록
+		INSERT INTO TB_JIK(
+		       JIK     , JIKNM    , JIKJ   , JIKR       , DOGS
+		     , USE_YN  , LUSERNO  , LDATE  , JIK_GUBUN
+		) VALUES (
+		       #{jik}  , #{jiknm} , #{jikj}, #{jikr}    , #{dogs}
+		     , #{useYn}, #{userNo}, SYSDATE, #{jikGubun}
+		)
+	]]>
+	</insert>
+</mapper>

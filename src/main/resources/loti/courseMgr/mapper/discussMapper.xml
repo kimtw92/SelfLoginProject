@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.DiscussMapper">
+
+	<select id="selectGrDiscussTopList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정 토론방 상위글 리스트
+		SELECT 
+			T.GRCODE, T.GRSEQ, T.SEQ, 
+			T.TOP_RANK, T.WUSERNO, TO_CHAR(T.REGDATE, 'YYYY-MM-DD') REGDATE, 
+			T.TITLE, T.STEP, T.DEPTH, 
+			T.VISIT, T.GROUPFILE_NO, T.REMOTE_IP, 
+			T.USERNAME
+		FROM TB_GRDISCUSS T
+		WHERE 1=1
+			AND TOP_RANK IS NOT NULL
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+		ORDER BY STEP DESC
+	]]>
+	</select>
+	
+	<select id="selectGrDiscussBySearchListCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 과정 토론방 리스트
+		SELECT 
+			COUNT(0) AS CNT
+		FROM TB_GRDISCUSS T
+		WHERE 1=1
+			AND TOP_RANK IS NULL
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			${whereStr}
+		ORDER BY STEP DESC
+	]]>
+	</select>
+	
+	<select id="selectGrDiscussBySearchList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 과정 토론방 리스트
+						SELECT 
+							T.GRCODE, T.GRSEQ, T.SEQ, 
+							T.TOP_RANK, T.WUSERNO, TO_CHAR(T.REGDATE, 'YYYY-MM-DD') REGDATE, 
+							T.TITLE, T.STEP, T.DEPTH, 
+							T.VISIT, T.GROUPFILE_NO, T.REMOTE_IP, 
+							T.USERNAME
+						FROM TB_GRDISCUSS T
+						WHERE 1=1
+							AND TOP_RANK IS NULL
+							AND GRCODE = #{grcode}
+							AND GRSEQ = #{grseq}
+							${whereStr}
+						ORDER BY STEP DESC
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectGrDiscussRow" parameterType="Map" resultMap="common.clobContent">
+	<![CDATA[
+		-- 과정 토론방 상세정보
+		SELECT 
+			T.GRCODE, T.GRSEQ, T.SEQ, 
+			T.TOP_RANK, T.WUSERNO, TO_CHAR(T.REGDATE, 'YYYY-MM-DD') REGDATE, 
+			T.TITLE, T.STEP, T.DEPTH, 
+			T.VISIT, T.GROUPFILE_NO, T.REMOTE_IP, 
+			T.CONTENT, T.USERNAME
+		FROM TB_GRDISCUSS T
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND SEQ = #{seq}
+	]]>
+	</select>
+	
+	<select id="selectGrDiscussReplyCheck" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 과정 토론방 하위글 확인.
+		SELECT 
+			COUNT(*) AS CNT 
+		FROM TB_GRDISCUSS 
+		WHERE 1=1 
+			AND STEP > #{lowStep}
+			AND STEP < #{highStep}
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<update id="updateGrDiscussByDelete" parameterType="Map">
+	<![CDATA[
+		-- 과정 토론방 하위글 확인.
+		UPDATE TB_GRDISCUSS SET 
+			TITLE = '삭제된 글입니다', 
+			CONTENT =  '삭제된 글입니다',
+			GROUPFILE_NO = '-2' 
+		WHERE 1=1
+			AND GRCODE =#{grcode}
+			AND GRSEQ = #{grseq}
+			AND SEQ = #{seq}
+	]]>
+	</update>
+	
+	<delete id="deleteGrDiscuss" parameterType="Map">
+	<![CDATA[
+		-- 과정 토론방 하위글 확인.
+		DELETE FROM TB_GRDISCUSS
+		WHERE 1=1
+			AND GRCODE =#{grcode}
+			AND GRSEQ = #{grseq}
+			AND SEQ = #{seq}
+	]]>
+	</delete>
+	
+	<select id="selectGrDiscussMaxSeq" resultType="int">
+	<![CDATA[
+		-- 과정 토론방 Max seq 추출
+		SELECT NVL(MAX(SEQ), 0)+1 AS SEQ 
+		FROM TB_GRDISCUSS
+	]]>
+	</select>
+	
+	<insert id="insertGrDiscuss" parameterType="Map">
+	<![CDATA[
+		-- 과정 토론방 글 등록
+		INSERT INTO TB_GRDISCUSS 
+			(GRCODE, GRSEQ, SEQ, 
+			TOP_RANK, WUSERNO, REGDATE, 
+			TITLE, STEP, DEPTH, 
+			VISIT, GROUPFILE_NO, REMOTE_IP, 
+			CONTENT, USERNAME) 
+		VALUES 
+			( #{grcode}, #{grseq}, #{seq},
+			  #{topRank}, #{wuserno}, SYSDATE,
+			  #{title}, #{seq}, 0,
+			  0, #{groupFileNo}, #{ip},
+			  #{namoContent}, #{username})
+	]]>
+	</insert>
+	
+	<update id="updateGrDiscuss" parameterType="Map">
+	<![CDATA[
+		-- 과정 토론방 글 수정
+		UPDATE TB_GRDISCUSS SET 
+			TITLE = #{title}, 
+			CONTENT =  #{namoContent},
+			GROUPFILE_NO = #{groupFileNo},
+			REMOTE_IP = #{ip},
+			USERNAME = #{username},
+			TOP_RANK = #{topRank}
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND SEQ = #{seq}
+	]]>
+	</update>
+	
+	<select id="selectGrDiscussReplyCheck2" parameterType="Map" resultType="Double">
+	<![CDATA[
+		-- 과정 토론방 덧글의 덧글들 체크 
+		SELECT 
+			NVL(MIN(STEP),0) AS MIN_STEP 
+		FROM TB_GRDISCUSS
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND DEPTH = #{depth}
+			AND STEP <= #{step1}
+			AND STEP > #{step2}
+	]]>
+	</select>
+	
+	<insert id="insertGrDiscussByReply" parameterType="Map">
+	<![CDATA[
+		-- 과정 토론방 답글 등록
+		INSERT INTO TB_GRDISCUSS 
+			(GRCODE, GRSEQ, SEQ, 
+			TOP_RANK, WUSERNO, REGDATE, 
+			TITLE, STEP, DEPTH, 
+			VISIT, GROUPFILE_NO, REMOTE_IP, 
+			CONTENT, USERNAME) 
+		VALUES 
+			( #{grcode}, #{grseq}, #{seq},
+			  null, #{wuserno}, SYSDATE,
+			  #{title}, #{step}, #{depth},
+			  0, #{groupFileNo}, #{ip},
+			  #{namoContent}, #{username})
+	]]>
+	</insert>
+	
+</mapper>

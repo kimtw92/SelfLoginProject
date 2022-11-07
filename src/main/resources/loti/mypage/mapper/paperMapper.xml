@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.mypage.mapper.PaperMapper">
+	
+	<select id="paperNewCount" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		SELECT 	COUNT(PAP_NO) AS COUNT_PAPER
+		FROM 	TB_PAPER 
+		WHERE 	RECIEVE_ID		= #{value}
+		AND 	RECIEVE_DEL 	= '0'
+		AND		RECIEVE_DATE	BETWEEN	SYSDATE-3 AND SYSDATE
+	]]>
+	</select>
+	
+	<update id="paperUpdate" parameterType="Map" >
+	<![CDATA[
+		UPDATE TB_PAPER SET
+			RECIEVE_DATE = SYSDATE
+			
+		WHERE RECIEVE_ID = #{userno}
+		AND RECIEVE_DATE IS NULL
+		AND RECIEVE_DEL = '0'
+	]]>
+	</update>
+	
+	<select id="paperListCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		SELECT 
+			count(*)
+		FROM TB_PAPER 
+		WHERE ${key}_ID = #{userno} and ${key}_DEL = '0'
+	]]>
+	</select>
+	
+	<select id="paperList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		SELECT 
+			PAP_NO,SEND_ID,SEND_NAME,TO_CHAR(SEND_DATE, 'yyyy-mm-dd') SEND_DATE,SEND_DEL,
+			RECIEVE_ID,RECIEVE_NAME,TO_CHAR(RECIEVE_DATE, 'yyyy-mm-dd') RECIEVE_DATE,RECIEVE_DEL,
+			CONTENTS
+		FROM TB_PAPER 
+		WHERE ${key}_ID = #{userno} and ${key}_DEL = '0'
+	) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+	</select>
+
+	<select id="memberListCount" parameterType="String" resultType="Integer">
+	<![CDATA[
+		SELECT count(*)
+		FROM tb_member
+		WHERE name like '%' || #{value} || '%'
+	]]>
+	</select>
+	<select id="memberList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		SELECT USERNO, NAME, USER_ID FROM tb_member
+		WHERE name like '%' || #{search} || '%'
+	) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<insert id="paperInsert" parameterType="Map">
+	<![CDATA[
+		INSERT INTO TB_PAPER (
+		PAP_NO,
+		SEND_ID,
+		SEND_NAME,
+		SEND_DATE,
+		SEND_DEL,
+		RECIEVE_ID,
+		RECIEVE_NAME,
+		RECIEVE_DEL,
+		CONTENTS
+		) VALUES (
+		(SELECT DECODE(max(PAP_NO), '', 0, max(PAP_NO)) from TB_PAPER)+1,
+		#{userno},
+		#{userName},
+		sysdate,
+		#{sendDel},
+		#{recieveNo},
+		#{recieveName},
+		#{recieveDel},
+		#{reContent})
+	]]>
+	
+	</insert>
+	
+	<delete id="paperDelete" parameterType="Map">
+	<![CDATA[
+		--  쪽지 삭제
+		UPDATE tb_paper SET ${kind}_DEL = '1' WHERE pap_no = #{papNo}
+	]]>
+	</delete>
+	
+	<update id="paperDeleteAll">
+		UPDATE tb_paper SET ${kind}_DEL = '1' WHERE ${kind}_ID = #{userno}
+	</update>
+	
+	
+</mapper>

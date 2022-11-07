@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.baseCodeMgr.mapper.GrCodeMapper">
+
+	<select id="selectGrCodeListCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		--  과정코드정보 count
+		SELECT COUNT(0)
+		  FROM TB_GRCODE GC
+		     , (SELECT * FROM TB_MAINCODE WHERE CD_GUBUN = 'G') MC
+             , (SELECT * FROM TB_SUBCODE WHERE CD_GUBUN = 'G') SC
+		 WHERE 1=1
+		   AND MC.MAJOR_CODE = GC.GRTYPE
+		   AND SC.MAJOR_CODE = GC.GRTYPE
+		   AND SC.MINOR_CODE = GC.GRSUBCD
+	]]>
+	<if test="searchKey != null and searchKey != ''">
+		   AND GC.USE_YN = #{searchKey}
+	</if>
+	<if test="searchValue != null and searchValue != ''">
+		   AND GC.GRCODENM LIKE '%'||#{searchValue}||'%'
+	</if>
+	<![CDATA[
+		 ORDER BY GC.GRCODENM DESC
+	]]>
+	</select>
+	
+	<select id="selectGrCodeList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (--  과정코드정보 list
+						SELECT GC.GRCODE GRCODE
+						     , GC.GRGUBUN GRGUBUN
+						     , GC.GRCODENM GRCODENM
+						     , GC.MK_YEAR MK_YEAR
+						     , GC.RULL_YN RULL_YN
+						     , GC.MUSIC_YN MUSIC_YN
+						     , GC.USE_YN USE_YN
+						     , GC.LUSERNO LUSERNO
+						     , GC.LDATE LDATE
+						     , GC.GR_POINT GR_POINT
+						     , GRTIME
+						     , MC.MCODE_NAME MCODE_NAME
+						     , SC.SCODE_NAME SCODE_NAME
+						  FROM TB_GRCODE GC
+						     , (SELECT * FROM TB_MAINCODE WHERE CD_GUBUN = 'G') MC
+				             , (SELECT * FROM TB_SUBCODE WHERE CD_GUBUN = 'G') SC
+						 WHERE 1=1
+						   AND MC.MAJOR_CODE = GC.GRTYPE
+						   AND SC.MAJOR_CODE = GC.GRTYPE
+						   AND SC.MINOR_CODE = GC.GRSUBCD
+	]]>
+	<if test="searchKey != null and searchKey != ''">
+						   AND GC.USE_YN = #{searchKey}
+	</if>
+	<if test="searchValue != null and searchValue != ''">
+						   AND GC.GRCODENM LIKE '%'||#{searchValue}||'%'
+	</if>
+	<![CDATA[
+						 ORDER BY GC.GRCODENM DESC
+	                   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectGrCodeRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		--  과정코드정보 상세보기.
+		SELECT GC.GRCODE GRCODE
+		     , GC.GRGUBUN GRGUBUN
+		     , GC.GRCODENM GRCODENM
+		     , GC.MK_YEAR MK_YEAR
+		     , GC.RULL_YN RULL_YN
+		     , GC.MUSIC_YN MUSIC_YN
+		     , GC.USE_YN USE_YN
+		     , GC.LUSERNO LUSERNO
+		     , GC.LDATE LDATE
+		     , GC.GR_POINT GR_POINT
+		     , GRTIME
+		     , GRTYPE
+		     , GRSUBCD
+		     , MC.MCODE_NAME MCODE_NAME
+			 , SC.SCODE_NAME SCODE_NAME
+		  FROM TB_GRCODE GC
+		     , (SELECT * FROM TB_MAINCODE WHERE CD_GUBUN = 'G') MC
+			 , (SELECT * FROM TB_SUBCODE WHERE CD_GUBUN = 'G') SC
+		 WHERE 1=1
+		   AND MC.MAJOR_CODE = GC.GRTYPE
+		   AND SC.MAJOR_CODE = GC.GRTYPE
+		   AND SC.MINOR_CODE = GC.GRSUBCD
+		   AND GC.GRCODE = #{grCode}
+		ORDER BY GC.GRCODENM DESC
+	]]>
+	</select>
+	
+	<select id="selectMaxGrCode" parameterType="String" resultType="String">
+	<![CDATA[
+		--  과정코드정보 상세보기.
+        SELECT NVL(MAX(GRCODE), '') MAX_FIELD
+          FROM TB_GRCODE
+         WHERE 1=1
+           AND SUBSTR(GRCODE, 1, 3) = #{grGubun}
+	]]>
+	</select>
+	
+	<insert id="insertGrCode" parameterType="Map">
+	<![CDATA[
+		--  과정코드정보 등록
+		INSERT INTO TB_GRCODE(
+		       GRCODE    , GRTYPE     , GRSUBCD
+		     , GRGUBUN   , GRCODENM   , MK_YEAR
+		     , RULL_YN   , MUSIC_YN   , USE_YN
+		     , LUSERNO   , LDATE      , GR_POINT
+		     , GRTIME
+		) VALUES ( 
+		       #{grCode} , #{grType}  , #{grSubCd}
+		     , #{grGubun}, #{grCodeNm}, #{mkYear}
+		     , #{rullYn} , #{musicYn} , #{useYn}
+		     , #{lUserNo}, SYSDATE    , #{grPoint}
+		     , #{grTime}
+		)
+	]]>
+	</insert>
+	
+	<update id="updateGrCode" parameterType="Map">
+	<![CDATA[
+		--  과정코드정보 수정
+		UPDATE TB_GRCODE
+		   SET GRTYPE   = #{grType}
+		     , GRSUBCD  = #{grSubCd}
+		     , GRGUBUN  = #{grGubun}
+		     , GRCODENM = #{grCodeNm}
+		     , MK_YEAR  = #{mkYear}
+		     , RULL_YN  = #{rullYn}
+		     , MUSIC_YN = #{musicYn}
+		     , USE_YN   = #{useYn}
+		     , LUSERNO  = #{lUserNo}
+		     , LDATE    = SYSDATE
+		     , GR_POINT = #{grPoint}
+		     , GRTIME   = #{grTime}
+		 WHERE 1=1
+		   AND GRCODE   = #{grCode}
+	]]>
+	</update>
+	
+	<select id="selectGrSeqCheck" parameterType="String" resultType="Integer">
+	<![CDATA[
+		--  과정 차수 개설 여부 체크
+		SELECT COUNT(1) 
+		  FROM TB_GRSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{grCode}
+	]]>
+	</select>
+	
+	<delete id="deleteGrCode" parameterType="String">
+	<![CDATA[
+		--  과정 차수 개설 여부 체크
+		DELETE
+		  FROM TB_GRCODE 
+		 WHERE 1=1
+		   AND GRCODE = #{grCode}
+	]]>
+	</delete>
+</mapper>

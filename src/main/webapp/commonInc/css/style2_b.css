@@ -1,0 +1,74 @@
+.leftMenuIllust{
+	background:#FFFFFF URL(/images/bg_illust.gif) no-repeat right bottom
+}
+
+.leftMenuBg{
+	background:#FFFFFF URL(/images/left_bg.gif) repeat-y
+}
+
+.commonTitleTable{
+	padding:1 20 0 20
+}
+
+.contentsTable{
+	padding:0 30 0 35;
+}
+.contentsSubTitleTable{
+	padding:0 20 0 30;
+}
+
+.popupContents{
+	background:#FFFFFF URL(/images/bg_pop.gif) repeat-x; padding:20px; line-height:18px
+}
+
+.commonDivLeft {
+	float:left;
+}
+
+.a_topmenu_listHover {
+	font-family: "돋움", "Verdana";
+	color: #00689F;
+	font-weight: bold;
+	border-bottom-color: #03AF9D;
+	border-bottom-style: solid;
+	border-bottom-width: 3px;
+}
+
+/* 체크박스용 */
+.chk_01 {border:3px;}
+
+/* 팝업용 */
+.popTable td.title_01 {font-family:돋움; size:13px; color:#246AAB;font-weight:bold;padding:3 20 0 20;border-bottom:1px solid #AACADF ;border-right:1px solid #AACADF ;border-left:1px solid #AACADF;background-color:#E2EFFA;text-align:center}
+.popTable td.cont_01  {font-family:돋움;font-size: 13px; color:#757575;border-bottom:1px solid #AACADF ;border-right:1px solid #AACADF  ;padding:3 0 0 16}
+
+
+.tableline30 {
+	border-top-width: 0px;
+  	border-right-width: 0px;
+	border-bottom-width: 1px;
+	border-left-width: 0px;
+	border-top-style: solid;
+	border-right-style: solid;
+	border-bottom-style: solid;
+	border-left-style: solid;
+	border-bottom-color: E5E5E5;
+	padding-top: 5px;
+}
+
+/* 리스트 용 align left 선 있는거   */
+.tableline_left {
+	border-top-width: 0px;
+	border-right-width: 1px;
+	border-bottom-width: 1px;
+	border-left-width: 0px;
+	border-top-style: solid;
+	border-right-style: solid;
+	border-bottom-style: solid;
+	border-left-style: solid;
+	border-top-color: E5E5E5;
+	border-right-color: E5E5E5;
+	border-bottom-color: E5E5E5;
+	border-left-color: E5E5E5;
+	padding-top: 5px;
+	padding:0 0 0 10;
+}

@@ -1,0 +1,22 @@
+@charset "EUC-KR";
+
+input.inbox {height:14px; padding:2px 0 0 5px;}
+select {vertical-align:-2px;}
+
+#aside div.login p.in_txt input {height:17px; margin-bottom:6px; padding:6px 0 0 9px;}
+#aside div.login input.btn_login {height:56px;}
+#aside div.login p.btn a {padding:6px 6px 3px 7px;}
+
+#aside div.logout p.note {background:url(../../images/main/ico.gif) no-repeat left top;}
+#aside div.logout p.btn a {padding:6px 10px 3px 10px;}
+
+#content_warp p.schedule input.txt_search {height:14px; padding:2px 0 0 5px;}
+#content_warp p.schedule {width:627px; height:32px; padding:11px 0 0 12px;}
+#content div.board_tab ul li {padding:1px 0;}
+#content div.month_tab ul.list li {height:22px; line-height:22px;}
+
+#content_warp p.schedule select , #content_warp p.schedule input {_float:left; _margin-top:2px !important;}
+#content_warp p.schedule input.inbox {_margin:2px 5px 0 3px;}
+#content_warp p.schedule input.txt_search { _padding:3px 0 0 5px; _margin:2px 5px 0 5px !important;}
+
+

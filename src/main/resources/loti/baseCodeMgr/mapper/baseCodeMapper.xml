@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="loti.baseCodeMgr.mapper.baseCodeMapper">
+
+	<select id="selectDeptCodeList" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		--  기관코드 리스트
+		SELECT 
+			(SELECT COUNT(*) FROM TB_PART WHERE DEPT=A.DEPT AND USE_YN='Y') AS PART_CNT,DEPT,DEPTNM,LOWNM,LEVELS,UPPER,PARENT,USE_YN, PEOPLESYSTEM_YN
+		FROM TB_DEPT A
+		ORDER BY DEPT ASC
+	]]>
+	</select>
+
+</mapper>

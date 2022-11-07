@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.login.mapper.LoginMapper">
+	
+	<select id="selectLoginChk" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 로그인 체크
+		SELECT  userno, name, NVL(SCP.DEC_B64('KEY1',pwd),'') pwd, authority, dept, user_id, SCP.DEC_B64('KEY1',hp) AS HP, SCP.DEC_B64('KEY1',RESNO) AS RESNO, delete_yn
+				, TO_CHAR(delete_date, 'YYYY-MM-DD') AS delete_date, ldapcode, ldapname, email, jik, nvl(lgfailcnt, 0) lgfailcnt
+		FROM    TB_MEMBER
+		--WHERE   (delete_yn IS NULL OR delete_yn <> 'Y')
+		WHERE user_id = #{value}
+	]]>
+	</select>
+	
+	<select id="selectLoginPwdChk" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 패스워드 체크
+		 select user_id from tb_member where user_id = #{value} and pwd_date < sysdate-90
+		 ]]>
+	</select>
+	
+	<select id="selectAuthority" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 사용자 권한
+		SELECT  A.GADMIN, B.GADMINNM, A.DEPT, A.PARTCD 
+		FROM    TB_MANAGER A, TB_GADMIN B 
+		WHERE   A.GADMIN = B.GADMIN
+		AND     A.USERNO = #{value}
+		AND     B.GADMIN = 'D'
+		AND		A.GADMIN != '6'	-- 강사관리자는 사용안함
+		ORDER BY 
+		        B.GADMIN
+        	
+	]]>
+	</select>
+	
+	<update id="updateLoginInfo" parameterType="String" >
+	<![CDATA[
+		-- 로그인 카운터 업데이트
+		UPDATE tb_member
+		    SET LGCNT = nvl(LGCNT, 0) + 1
+		    , LGLAST = SYSDATE 
+		    , LGFAILCNT = null
+		WHERE USERNO = #{value}  	
+	]]>
+	</update>
+	
+	<update id="updateLoginFailInfo" parameterType="Map">
+	<![CDATA[
+		-- 로그인 카운터 업데이트
+		UPDATE tb_member
+		    SET lgfailcnt = #{lgfailcnt}
+		WHERE USERNO = #{userNo}        	
+	]]>
+	</update>
+	
+	<select id="checkPasswordIsNull" parameterType="String" resultType="String">
+	<![CDATA[	
+		select SCP.DEC_B64('KEY1',pwd) as pwd from tb_member where user_id=#{value}
+	]]>
+	</select>
+	
+	<select id="checkPersonalInfo" parameterType="Map" resultType="String">
+	<![CDATA[
+		select count(*) as count from tb_member where user_id=#{id} and email=#{email}
+	]]>
+	</select>
+	
+	<insert id="sendSmsSetPassword" parameterType="Map">
+	<![CDATA[
+		INSERT INTO MMSMNG.SMS_MSG(MSGKEY, PHONE, CALLBACK, STATUS, REQDATE, MSG, COMPKEY, ID)
+		VALUES(SMS_MSG_SEQ.nextVal, #{hp}, '0324407674', '0', sysdate,#{msg}, '052','edu00')  
+	]]>
+	</insert>
+	
+	<update id="openUpdatePassword" parameterType="Map">
+	<![CDATA[
+		update tb_member set pwd=SCP.ENC_B64('KEY1',#{pw}) where user_id=#{id}
+	]]>
+	</update>
+	
+	<update id="openUpdateDamoPassword" parameterType="Map">
+	<![CDATA[
+		update tb_member set pwd_date=sysdate where user_id=#{id}
+	]]>
+	</update>
+	
+	<insert id="setPasswordLog" parameterType="Map">
+	<![CDATA[	
+		insert into tb_setpassword values(#{id},#{ip},sysdate)
+	]]>
+	</insert>
+	
+	<select id="selectSSOLoginChk" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[	
+		select * from tb_member where SCP.DEC_B64('KEY1',RESNO)=#{value} and (delete_yn = 'N' or delete_yn is null)
+	]]>
+	</select>
+	
+	<select id="selectPwdChk" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		--비밀번호를 90일동안 변경하지 않은 특수권한자회원
+		
+  SELECT 
+    TO_CHAR(pwd_date,'YYYY-MM-DD') AS PWD_DATE 
+	FROM tb_member A,TB_MANAGER B 
+	WHERE 1=1
+	and A.USERNO = B.USERNO
+	and pwd_date BETWEEN
+	       TO_DATE('2010-12-01', 'YYYY-MM-DD')  AND (select TO_DATE(to_char(sysdate - 90,'yyyy-mm-dd'),'YYYY-MM-DD') from dual)
+	AND a.userno = #{userno}	
+	and B.GADMIN != '6'
+		
+	]]>
+	</select>
+	
+	
+	
+	
+	
+	
+	
+</mapper>

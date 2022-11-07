@@ -1,0 +1,27 @@
+@charset "utf-8";
+/* CSS Document */
+
+html, body, div, p, img, h1, h2, h3, table, th, td, span, ul, li, a{margin:0px; padding:0px; font-family: "돋움", "나눔고딕", "맑은 고딕" ; font-size:12px; border:0px;}
+li{list-style:none;}
+#wrap{width:450px; height:780px;}
+#wrap h1{background:url('img/pop_information_01.gif') no-repeat 0px 0px; width:450px; height: 42px; text-indent:-99999px;}
+#wrap .infor_h3_a{background:url('img/pop_information_02.gif') no-repeat 0px 0px; width:450px; height: 32px; text-indent:-99999px;}
+#wrap .infor_div1{background:url('img/pop_information_05.gif') no-repeat 0px 0px; width:416px; height:285px; margin:6px 0px 0px 8px; padding:18px 0px 0px 17px;}
+#wrap .infor_ul label{font-weight:bold; color:#3f3f3f; font-size:13px;}
+#wrap .infor_ul li{margin-bottom:15px;}
+#wrap .infor_ul_s1{margin-left:38px; color:#0082df;}
+#wrap .infor_ul_in1{width:150px; height:18px; border:1px solid #CCCCCC; margin-left:35px;}
+#wrap .infor_ul_sel1{ margin-left:2px;}
+#wrap .infor_ul_in2{width:150px; height:18px; border:1px solid #CCCCCC; margin-left:21px;}
+#wrap .infor_ul_in3{width:60px; height:18px; border:1px solid #CCCCCC; margin-left:21px;}
+#wrap .infor_ul_in4{width:70px; height:18px; border:1px solid #CCCCCC; margin-left:8px;}
+#wrap .infor_ul_in5{width:150px; height:18px; border:1px solid #CCCCCC; margin-left:21px;}
+#wrap .infor_ulbt{margin-left:5px;}
+#wrap .infor_bt_a{text-align:center;padding-top:25px;}
+#wrap .infor_h3_b{background:url('img/pop_information_08.gif') no-repeat 0px 0px; width:450px; height: 32px; text-indent:-99999px; margin-top:12px;}
+#wrap .infor_p_text{margin:15px 15px 15px 15px; width:430px; height:70px; font-weight:bold; color:#3f3f3f;}
+#wrap .infor_table_box{ width:436px; height:202px; border-top:1px solid #cccccc;border-left:1px solid #cccccc; border-right:1px solid #cccccc;margin:3px 0px 0px 6px; }
+#wrap .infor_table_box table{width:100%; height:100%;}
+#wrap .infor_table_box table th{text-align:center; background-color:#38a0eb; color:#FFFFFF; height:40px;}
+#wrap .infor_table_box table td{text-align:center; color:#3f3f3f; border-bottom:1px solid #ccc;}
+#wrap .infor_bt_b{text-align:center;margin:10px 0px 0px 0px; }

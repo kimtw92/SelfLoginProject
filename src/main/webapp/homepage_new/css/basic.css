@@ -1,0 +1,69 @@
+@charset "UTF-8"; 
+
+body {
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	font-size: 75%;
+	line-height:1.5em;
+	color: #727272;
+	font-family: Dotum, Verdana, AppleGothic, Sans-serif;
+}
+
+
+/*
+*{
+font-family:AppleGothic, sans-serif !important;
+font-family:AppleGothic, serif !important;
+}
+*/
+
+
+hr{display:none;}
+p{margin:0; padding:0;}
+img, fieldset{border:0; margin:0;padding:0;vertical-align:middle;}
+div{border:0;}
+span{border:0px;}
+button{border:none 0;background:none; cursor:pointer;}
+em{font-style:normal;color:#f36c4c;font-weight:bold;}
+
+
+h1, h2, h3, h4, h5, h6 { margin:0; padding:0; font-weight:bold; }
+ul, li, ol, dl, dt, dd { list-style:none; padding:0; margin:0; /* for IE imge margin */ }
+form { font-weight:normal; margin:0; padding:0; }
+
+
+table caption {font-size:0; line-height:0}
+legend{overflow:hidden;visibility:hidden;position:absolute;top:0;left:0;width:1px;height:1px;font-size:0;line-height:0;padding:0;margin:0;}
+
+.aleft {text-align:left;}
+.aright {text-align:right;}
+.acenter {text-align:center;}
+.fl{float:left;}
+.fr{float:right;}
+.cb{clear:both;}
+.img_explan{display:block; height:1px; width:1px; margin:0 -1px -1px 0; padding:0; overflow:hidden; font-size:0; line-height:0;}
+.sub_img{margin-bottom:20px; text-align:center;}
+.sub_img_left{margin-bottom:20px;}
+.sub_img_right{margin-bottom:20px;text-align:right;}
+.sub_btn{margin:10px 0 15px 0; text-align:center;}
+.sub_btn_left{margin:10px 0 15px 0; text-align:left;}
+.sub_btn_right{margin:10px 0 15px 0; text-align:right;}
+.hidden{display:none;}
+
+/* ��Ʈ ���� Ư�� �ʱ�ȭ */
+address, caption, cite, code, dfn, th, var {font-style:normal;font-weight:normal;}
+
+/* -------------------------link txt------------------------- */
+a:link, a:visited {color: #7d7d7d;text-decoration: none;cursor: pointer;}
+a:hover, a:active {color: #446cb3;text-decoration: none;cursor: pointer;}
+
+.skip{display:block;overflow:hidden;height:1px;width:1px;margin:0 -1px -1px 0;padding:0;font-size:0;line-height:0}
+.skip:hover,
+.skip:active,
+.skip:focus{width:100%;height:auto;margin:0;padding:5px 0;font-weight:bold;font-size:12px;font-family:Tahoma;color:#333;line-height:1;text-decoration:none !important;text-indent:10px}
+
+/* -------------------------space------------------------- */
+.mb15{margin-bottom:15px;}
+.mb20{margin-bottom:20px;}

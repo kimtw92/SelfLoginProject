@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="loti.homepageMgr.mapper.TimeTableMapper">
+
+	<select id="selectWeekCnt" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 학습 주차 갯수를 가져오기
+		SELECT 
+			NVL(IS_TMWEEKCNT(#{startDate}, #{endDate}), 0) AS DIFF_CNT 
+		FROM DUAL
+	]]>
+	</select>
+	
+	<select id="selectStartEndDateByNow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 총 주차수와 현재주차의 시작일, 현재주차의 종료일을 구하기.
+		SELECT 
+			IS_TMWEEKCNT(#{startDate}, #{endDate})	WEEK_CNT, 
+			IS_TMSTRDATE(#{week}, #{startDate}, #{endDate}) WEEK_SDATE, 
+			TO_CHAR(TO_DATE(IS_TMSTRDATE(#{week}, #{startDate}, #{endDate}), 'YYYYMMDD'), 'D') WEEK_SDATE_NO, 
+			IS_TMENDDATE(#{week}, #{startDate}, #{endDate}) WEEK_EDATE, 
+			TO_CHAR(TO_DATE(IS_TMENDDATE(#{week}, #{startDate}, #{endDate}), 'YYYYMMDD'), 'D') WEEK_EDATE_NO 
+		FROM DUAL
+	]]>
+	</select>
+	
+	<select id="selectTimeGosiList" resultType="DataMap">
+	<![CDATA[
+		-- 시간표 교시 정보.
+		SELECT 
+			GOSINUM, TERM 
+		FROM TB_TIMEGOSI
+		WHERE 1=1
+		ORDER BY GOSINUM
+	]]>
+	</select>
+	
+	<select id="selectTimeGosiListBetween1And9" resultType="DataMap">
+	<![CDATA[
+		-- 시간표 교시 정보.
+		SELECT 
+			GOSINUM, TERM 
+		FROM TB_TIMEGOSI
+		WHERE 1=1
+			AND GOSINUM BETWEEN 1 AND 9
+		ORDER BY GOSINUM
+	]]>
+	</select>
+	
+	<select id="selectDualTableByOneCol" parameterType="String" resultType="String">
+	<![CDATA[
+		-- TimeTableDAO.java
+		-- DUAL 테이블 사용 쿼리.(첫번째 컬럼값을 반환)
+		SELECT 
+			NVL(${value}, '') AS ONE_COL
+		FROM DUAL
+	]]>
+	</select>
+	
+	<select id="selectClassRoomByGrseqRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- TimeTableDAO.java
+		-- 기수의 강의실 및 과정장 정보
+		SELECT 
+			GS.GRCODE, GS.GRSEQ, 
+			GS.GRCODENIKNM, CM.CLASSROOM_NO, CM.CLASSROOM_NAME, 
+			(SELECT NAME FROM tb_member WHERE USERNO = GS.GRSEQMAN_USERNO) GRSEQMAN_NM
+		FROM 
+			TB_GRSEQ GS, TB_CLASSROOM CM
+		WHERE GS.CLASSROOM_NO = CM.CLASSROOM_NO(+)
+			AND GS.GRCODE = #{grcode}
+			AND GS.GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectTimeTableByPlan1" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- TimeTableDAO.java
+		-- 시간표 리스트 월~수요일까지
+	SELECT A.GOSINUM
+		     , MIN(DECODE(B.DAY_NO, 2, STUDYDATE)) AS STUDYDATE1
+		     , MIN(DECODE(B.DAY_NO, 2, LECNM)) AS LECNM1
+		     , MIN(DECODE(B.DAY_NO, 2, SUBJ)) AS SUBJ1
+		     , MIN(DECODE(B.DAY_NO, 2, CLASSROOM_NAME)) AS CLASSROOM_NAME1
+		     , MIN(DECODE(B.DAY_NO, 2, TU_USERNO)) AS TU_USERNO1
+		     , MIN(DECODE(B.DAY_NO, 2, TU_NAME)) AS TU_NAME1
+		     , MIN(DECODE(B.DAY_NO, 3, STUDYDATE)) AS STUDYDATE2
+		     , MIN(DECODE(B.DAY_NO, 3, LECNM)) AS LECNM2
+		     , MIN(DECODE(B.DAY_NO, 3, SUBJ)) AS SUBJ2
+		     , MIN(DECODE(B.DAY_NO, 3, CLASSROOM_NAME)) AS CLASSROOM_NAME2
+		     , MIN(DECODE(B.DAY_NO, 3, TU_USERNO)) AS TU_USERNO2
+		     , MIN(DECODE(B.DAY_NO, 3, TU_NAME)) AS TU_NAME2
+		     , MIN(DECODE(B.DAY_NO, 4, STUDYDATE)) AS STUDYDATE3
+		     , MIN(DECODE(B.DAY_NO, 4, LECNM)) AS LECNM3
+		     , MIN(DECODE(B.DAY_NO, 4, SUBJ)) AS SUBJ3
+		     , MIN(DECODE(B.DAY_NO, 4, CLASSROOM_NAME)) AS CLASSROOM_NAME3
+		     , MIN(DECODE(B.DAY_NO, 4, TU_USERNO)) AS TU_USERNO3
+		     , MIN(DECODE(B.DAY_NO, 4, TU_NAME)) AS TU_NAME3
+		  FROM TB_TIMEGOSI A LEFT OUTER JOIN
+			   ( SELECT STUDYDATE
+				      , STUDYTIME
+				      , SUBSTR (MIN (SYS_CONNECT_BY_PATH (DAY_NO, ',')), 2) AS DAY_NO
+				      , SUBSTR (MAX (SYS_CONNECT_BY_PATH (SUBJ, ',&&')), 2) AS SUBJ
+				      , SUBSTR (MAX (SYS_CONNECT_BY_PATH (LECNM, ',&&')), 2) AS LECNM
+				      , SUBSTR (MAX (SYS_CONNECT_BY_PATH (CLASSROOM_NAME, ',&&')), 2) AS CLASSROOM_NAME
+				      , SUBSTR (MAX (SYS_CONNECT_BY_PATH (TU_USERNO, ',&&')), 2) AS TU_USERNO
+				      , SUBSTR (MAX (SYS_CONNECT_BY_PATH (TU_NAME, ',&&')), 2) AS TU_NAME
+			       FROM (SELECT ROW_NUMBER() OVER (PARTITION BY TM.STUDYDATE, TM.STUDYTIME ORDER BY TM.STUDYDATE, TM.STUDYTIME) AS RN
+			                  , TM.CAR_RESERVE_YN
+			                  , RM.CLASSROOM_NAME
+			                  , SO.RESOURCE_NAME
+			                  , TO_CHAR(TM.STUDYDATE, 'yyyymmdd') AS STUDYDATE
+			                  , TO_CHAR(TM.STUDYDATE, 'mm.dd') AS SDDATE
+			                  , TO_CHAR(TM.STUDYDATE, 'd') AS DAY_NO             -- 2:월요일, 1:일요일
+						      , TM.STUDYTIME
+						      , TM.SUBJ
+						      , SJ.LECNM
+						      , GETCONTTMCNT2(TM.GRCODE, TM.GRSEQ, TM.SUBJ, TM.STUDYDATE, TM.STUDYTIME) AS CONT_CNT
+						      , getTimeTableTutor(TM.GRCODE, TM.GRSEQ, TM.SUBJ, TO_CHAR (TM.STUDYDATE, 'yyyymmdd'), TM.STUDYTIME, '1') AS TU_USERNO
+						      , getTimeTableTutor(TM.GRCODE, TM.GRSEQ, TM.SUBJ, TO_CHAR (TM.STUDYDATE, 'yyyymmdd'), TM.STUDYTIME, '2') AS TU_NAME
+					       FROM TB_TIMETABLE TM
+					          , TB_SUBJSEQ SJ
+					          , TB_CLASSROOM RM
+					          , TB_RESOURCE SO
+					      WHERE 1=1
+					        AND TM.GRCODE = SJ.GRCODE
+					        AND TM.GRSEQ = SJ.GRSEQ
+					        AND TM.SUBJ = SJ.SUBJ
+					        AND TM.CLASSROOM_NO = RM.CLASSROOM_NO(+)
+					        AND TM.RESOURCE_NO = SO.RESOURCE_NO(+)
+					        AND TM.GRCODE = #{grcode}
+					        AND TM.GRSEQ = #{grseq}
+					        AND TO_CHAR (TM.STUDYDATE, 'yyyymmdd') BETWEEN #{weekSdate} AND #{weekEdate}
+					        AND TM.USEGUBUN = 'Y'
+					      ORDER BY TM.STUDYDATE, TM.STUDYTIME 
+			            ) A
+			      START WITH RN = 1
+			    CONNECT BY PRIOR RN = RN -1 AND PRIOR STUDYDATE = STUDYDATE AND PRIOR STUDYTIME = STUDYTIME
+			      GROUP BY STUDYDATE, STUDYTIME, DAY_NO
+			      ORDER BY STUDYDATE, STUDYTIME
+			   ) B
+			   ON A.GOSINUM = B.STUDYTIME
+		 WHERE 1=1
+		 AND GOSINUM BETWEEN 1 AND 9 
+		 GROUP BY A.GOSINUM
+		 ORDER BY A.GOSINUM asc
+		 
+		 
+	]]>
+	</select>
+	
+	<select id="selectTimeTableByPlan2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- TimeTableDAO.java
+		-- 시간표 리스트 목, 금요일
+	SELECT A.GOSINUM
+		     , MIN(DECODE(B.DAY_NO, 5, STUDYDATE)) AS STUDYDATE4
+		     , MIN(DECODE(B.DAY_NO, 5, LECNM)) AS LECNM4
+		     , MIN(DECODE(B.DAY_NO, 5, SUBJ)) AS SUBJ4
+		     , MIN(DECODE(B.DAY_NO, 5, CLASSROOM_NAME)) AS CLASSROOM_NAME4
+		     , MIN(DECODE(B.DAY_NO, 5, TU_USERNO)) AS TU_USERNO4
+		     , MIN(DECODE(B.DAY_NO, 5, TU_NAME)) AS TU_NAME4
+		     , MIN(DECODE(B.DAY_NO, 6, STUDYDATE)) AS STUDYDATE5
+		     , MIN(DECODE(B.DAY_NO, 6, LECNM)) AS LECNM5
+		     , MIN(DECODE(B.DAY_NO, 6, SUBJ)) AS SUBJ5
+		     , MIN(DECODE(B.DAY_NO, 6, CLASSROOM_NAME)) AS CLASSROOM_NAME5
+		     , MIN(DECODE(B.DAY_NO, 6, TU_USERNO)) AS TU_USERNO5
+		     , MIN(DECODE(B.DAY_NO, 6, TU_NAME)) AS TU_NAME5
+		  FROM TB_TIMEGOSI A LEFT OUTER JOIN
+			   ( SELECT STUDYDATE
+			          , STUDYTIME
+			          , SUBSTR (MIN (SYS_CONNECT_BY_PATH (DAY_NO, ',')), 2) AS DAY_NO
+			          , SUBSTR (MAX (SYS_CONNECT_BY_PATH (SUBJ, ',&&')), 2) AS SUBJ
+			          , SUBSTR (MAX (SYS_CONNECT_BY_PATH (LECNM, ',&&')), 2) AS LECNM
+			          , SUBSTR (MAX (SYS_CONNECT_BY_PATH (CLASSROOM_NAME, ',&&')), 2) AS CLASSROOM_NAME
+			          , SUBSTR (MAX (SYS_CONNECT_BY_PATH (TU_USERNO, ',&&')), 2) AS TU_USERNO
+			          , SUBSTR (MAX (SYS_CONNECT_BY_PATH (TU_NAME, ',&&')), 2) AS TU_NAME
+			       FROM (SELECT ROW_NUMBER() OVER (PARTITION BY TM.STUDYDATE, TM.STUDYTIME ORDER BY TM.STUDYDATE, TM.STUDYTIME) AS RN
+			                  , TM.CAR_RESERVE_YN
+			                  , RM.CLASSROOM_NAME
+			                  , SO.RESOURCE_NAME
+			                  , TO_CHAR (TM.STUDYDATE, 'yyyymmdd') AS STUDYDATE
+			                  , TO_CHAR (TM.STUDYDATE, 'mm.dd') AS SDDATE
+			                  , TO_CHAR (TM.STUDYDATE, 'd') AS DAY_NO             -- 2:월요일, 1:일요일
+			                  ,	TM.STUDYTIME
+			                  , TM.SUBJ
+			                  , SJ.LECNM
+			                  , GETCONTTMCNT2 (TM.GRCODE, TM.GRSEQ, TM.SUBJ, TM.STUDYDATE, TM.STUDYTIME) AS CONT_CNT
+			                  , getTimeTableTutor(TM.GRCODE, TM.GRSEQ, TM.SUBJ, TO_CHAR (TM.STUDYDATE, 'yyyymmdd'), TM.STUDYTIME, '1') AS TU_USERNO
+			                  , getTimeTableTutor(TM.GRCODE, TM.GRSEQ, TM.SUBJ, TO_CHAR (TM.STUDYDATE, 'yyyymmdd'), TM.STUDYTIME, '2') AS TU_NAME
+					       FROM TB_TIMETABLE TM
+					          , TB_SUBJSEQ SJ
+					          , TB_CLASSROOM RM
+					          , TB_RESOURCE SO
+					      WHERE 1=1
+					        AND TM.GRCODE = SJ.GRCODE
+					        AND TM.GRSEQ = SJ.GRSEQ
+					        AND TM.SUBJ = SJ.SUBJ
+					        AND TM.CLASSROOM_NO = RM.CLASSROOM_NO(+)
+					        AND TM.RESOURCE_NO = SO.RESOURCE_NO(+)
+					        AND TM.GRCODE = #{grcode}
+					        AND TM.GRSEQ = #{grseq}
+					        AND TO_CHAR (TM.STUDYDATE, 'yyyymmdd') BETWEEN #{weekSdate} AND #{weekEdate}
+					        AND TM.USEGUBUN = 'Y'
+					      ORDER BY TM.STUDYDATE, TM.STUDYTIME 
+			            ) A
+			      START WITH RN = 1
+			    CONNECT BY PRIOR RN = RN -1 AND PRIOR STUDYDATE = STUDYDATE AND PRIOR STUDYTIME = STUDYTIME
+			      GROUP BY STUDYDATE, STUDYTIME, DAY_NO
+			      ORDER BY STUDYDATE, STUDYTIME
+			   ) B
+			   ON A.GOSINUM = B.STUDYTIME
+		 WHERE 1=1
+	    AND GOSINUM BETWEEN 1 AND 9 
+		GROUP BY A.GOSINUM
+		ORDER BY A.GOSINUM asc
+	]]>
+	</select>
+	
+</mapper>

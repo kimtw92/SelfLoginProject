@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.homepageMgr.mapper.FaqMapper">
+
+	<sql id="selectFaqListCommon">
+	<![CDATA[
+		-- 교육관련 FAQ리스트
+		SELECT 
+            FNO,    CODE_ID, QUESTION,            USE_YN, REGDATE ,
+            VISIT, TO_CHAR(REGDATE,'YYYY-MM-DD'), SEARCHCODENM('C', 'F01', CODE_ID) AS CODE_NAME
+        FROM 
+            TB_FAQ
+	]]>
+			<if test="question != '' or selectType != '' or minVisit != '' or maxVisit != ''">
+				WHERE
+			</if>
+			<if test="selectType != ''">
+				CODE_ID=#{selectType}
+			</if> 
+			<if test="question != ''">
+				<choose>
+					<when test="selectType != ''">
+						 AND QUESTION LIKE '%' || #{question} || '%'
+					</when>
+					<otherwise>
+						QUESTION LIKE '%' || #{question} || '%'
+					</otherwise> 
+				</choose>
+			</if>
+				<choose>
+					<when test="minVisit != '' and maxVisit != ''">
+						<choose>
+							<when test="question != '' or selectType != ''">
+					        	-- 조회수 조건이 둘중 하나라도 있을때  검색
+								AND VISIT BETWEEN #{minVisit} AND #{maxVisit}
+							</when>
+							<otherwise>
+								VISIT BETWEEN #{minVisit} AND #{maxVisit}
+							</otherwise>
+						</choose>
+					</when>
+					<when test="minVisit != '' and maxVisit == ''">
+						<choose>
+							<when test="question != '' or selectType != ''">
+					        	-- 조회수 첫번째 값만 있을경우
+								AND VISIT <![CDATA[ >= ]]> #{minVisit}
+							</when>
+							<otherwise>
+								VISIT  <![CDATA[ >= ]]> #{minVisit}
+							</otherwise>
+						</choose>
+					</when>
+					<when test="minVisit == '' and maxVisit != ''">
+						<choose>
+							<when test="question != '' or selectType != ''">
+								AND VISIT  <![CDATA[ >= ]]> #{maxVisit}
+							</when>
+							<otherwise>
+								VISIT  <![CDATA[ >= ]]> #{maxVisit}
+							</otherwise>
+						</choose>
+					</when>
+				</choose>
+			 
+		
+
+        ORDER BY USE_YN DESC,REGDATE DESC
+	</sql>
+	<select id="selectFaqListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount2"></include>
+		<include refid="selectFaqListCommon"></include>
+		<include refid="page.pageTotalCount2Foot"></include>
+	</select>
+	<select id="selectFaqList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<include refid="selectFaqListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<select id="selectSubCodeFaqList" resultType="DataMap">
+	<![CDATA[
+		-- FAQ서브코드리스트
+        SELECT 
+            MINOR_CODE  ,SCODE_NAME 
+        FROM 
+            TB_SUBCODE 
+        WHERE 
+            CD_GUBUN='C' AND MAJOR_CODE='F01'
+        ORDER BY MINOR_CODE
+ 	]]>
+	</select>       
+	
+	<resultMap type="DataMap" id="clobContent">
+		<result property="HTML_CONTENTS"  column="HTML_CONTENTS" javaType="String" jdbcType="CLOB" typeHandler="org.apache.ibatis.type.ClobTypeHandler"></result>
+	</resultMap>
+	
+	<select id="selectFaqViewRow" parameterType="String" resultMap="clobContent">
+	<![CDATA[
+		-- 교육관련 FAQ 상세 페이지
+		SELECT 
+			FNO, CODE_ID, SEARCHCODENM('C', 'F01', CODE_ID) AS CODE_NAME, QUESTION, 
+			CONTENT AS HTML_CONTENTS, VISIT, TO_CHAR(REGDATE,'YYYY-MM-DD') REGDATE, USE_YN
+		FROM 
+			TB_FAQ
+		WHERE 
+			FNO = #{value}
+	]]>
+	</select>
+	
+	<select id="selectFaqFnoRow" resultType="Integer">
+	<![CDATA[	
+	-- FAQ Max Fno
+		SELECT NVL(MAX(FNO),0)+1 FROM TB_FAQ
+	]]>
+	</select>
+	
+	<update id="insertFaq" parameterType="Map">
+	<![CDATA[	
+	-- FAQ등록
+		INSERT INTO 
+    		TB_FAQ
+            	(FNO, CODE_ID, QUESTION, CONTENT, WUSERNO, VISIT, REGDATE)
+        	VALUES
+            	(#{fno}, #{selectType}, #{question}, #{namoContent}, #{wuserno}, 0, SYSDATE)		
+	]]>
+	</update>
+	
+	<update id="modifyFaqUseYn" parameterType="Map">
+	<![CDATA[	
+	-- FAQ사용여부 수정
+		UPDATE 
+			TB_FAQ
+		SET
+			USE_YN = #{useYn}
+		WHERE 
+			FNO = #{fno}			
+	
+	]]>
+	</update>
+	
+	<update id="modifyFaqFno" parameterType="Integer">
+	<![CDATA[
+	-- FAQ 뷰페이지 카운터수 늘리기	
+		UPDATE 
+			TB_FAQ
+		SET
+			VISIT = VISIT + 1
+		WHERE 
+			FNO = #{value}
+	]]>
+	</update>
+	
+	<update id="modifyFaq" parameterType="Map">
+	<![CDATA[	
+	--FAQ 글 수정
+		UPDATE 
+			TB_FAQ
+		SET
+			CODE_ID = #{selectType}, QUESTION = #{question}, CONTENT = #{namoContent}, WUSERNO = #{wuserno}, REGDATE = SYSDATE
+		WHERE 
+			FNO = #{fno}		
+	
+	]]>
+	</update>
+
+	<update id="deleteFaq" parameterType="Integer">
+	<![CDATA[	
+	-- FAQ글 삭제
+		DELETE FROM 
+			TB_FAQ
+		WHERE 
+			FNO = #{value}		
+	
+	]]>
+	</update>
+			
+</mapper>

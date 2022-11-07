@@ -1,0 +1,44 @@
+/// Customizing Style
+
+
+body {font-family:µ¸¿ò; font-size:12px; color:#323232;}
+p		 {font-family:µ¸¿ò; font-size:12px; color:#323232;}
+td 	 {font-family:µ¸¿ò; font-size:12px; color:#323232;}
+
+a:link    {font-family:µ¸¿ò; font-size:12px; color:#323232; text-decoration:none;}
+a:visited {font-family:µ¸¿ò; font-size:12px; color:#323232; text-decoration:none;}
+a:active  {font-family:µ¸¿ò; font-size:12px; color:#323232; text-decoration:none;}
+a:hover   {font-family:µ¸¿ò; font-size:12px; color:#777777; text-decoration:none;}
+
+.text3 {font-family:µ¸¿ò,seoul,verdana; font-size:12px;color:#323232; }
+
+/***********************************************************************************************/
+
+
+/***********************************************************************************************/
+
+select	 		{font-family:µ¸¿ò; font-size:12px; color:#323232;}
+input.text	{font-family:µ¸¿ò; font-size:12px; color:#323232;}
+textarea.text	{font-family:µ¸¿ò; font-size:12px; color:#323232; line-height:18px;}
+
+.ntitle 	{font-family:µ¸¿ò; font-size:14px; color:#323232; font-weight:bold; }
+.dtitle	{font-family:µ¸¿ò; font-size:15px; color:#1C428B; font-weight:bold; } /* ´º½º-Å«Å¸ÀÌÆ²3 */
+
+
+/***********************************************************************************************/
+
+TR.H	{BACKGROUND-COLOR: #F5F5F5}
+
+.popupLink 	{ COLOR: red; outline: none }
+.popup		{ POSITION: absolute; VISIBILITY: hidden; BACKGROUND-COLOR: yellow; LAYER-BACKGROUND-COLOR: yellow; width: 250; BORDER-LEFT: 1px solid black; BORDER-TOP: 1px solid black; BORDER-BOTTOM: 3px solid black; BORDER-RIGHT: 3px solid black; PADDING: 3px; z-index: 10 }
+.popup2 	{ POSITION: absolute; VISIBILITY: hidden; BACKGROUND-COLOR: yellow; LAYER-BACKGROUND-COLOR: yellow; width: 250; BORDER-LEFT: 1px solid black; BORDER-TOP: 1px solid black; BORDER-BOTTOM: 3px solid black; BORDER-RIGHT: 3px solid black; PADDING: 3px; z-index: 10 }
+.imgpopup 	{ POSITION: absolute; VISIBILITY: hidden; BACKGROUND-COLOR: white; LAYER-BACKGROUND-COLOR: yellow; width: 350; BORDER-LEFT: 1px solid black; BORDER-TOP: 1px solid black; BORDER-BOTTOM: 3px solid black; BORDER-RIGHT: 3px solid black; PADDING: 3px; z-index: 10 }
+.imgpopup2 	{ POSITION: absolute; VISIBILITY: hidden; BACKGROUND-COLOR: #f0f0f1; LAYER-BACKGROUND-COLOR: yellow; width: 300; BORDER-LEFT: 1px solid black; BORDER-TOP: 1px solid black; BORDER-BOTTOM: 3px solid black; BORDER-RIGHT: 3px solid black; PADDING: 3px; z-index: 10 }
+
+P {margin-top:3px;margin-bottom:3px;}
+
+.ws9	{ 
+	font-family : Seoul, ±¼¸², Verdana, Helvetica;
+	font-size: 9pt;
+	line-height: 11pt;
+	}

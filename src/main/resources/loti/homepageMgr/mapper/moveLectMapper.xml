@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.homepageMgr.mapper.MoveLectMapper">
+
+	<select id="selectMoveLectListCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 홈페이지관리 -> 우수강사 명강의 게시판 리스트
+ 		SELECT 
+ 			COUNT(0) AS CNT
+ 		FROM 
+ 			TB_MOVELECT_DATA A LEFT OUTER JOIN TB_UPLOAD B 
+            ON A.GROUPFILE_NO = B.GROUPFILE_NO
+		${where}
+ 		ORDER BY A.SEQ DESC
+	]]>
+	</select>
+	
+	<select id="selectMoveLectList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 홈페이지관리 -> 우수강사 명강의 게시판 리스트
+				 		SELECT 
+				 			A.SEQ, A.LUSER_NAME, A.LUSER_NO, 
+				 			A.TITLE, A.GROUPFILE_NO, A.URL, B.FILE_PATH, A.GUBUN
+				 		FROM 
+				 			TB_MOVELECT_DATA A LEFT OUTER JOIN TB_UPLOAD B 
+				            ON A.GROUPFILE_NO = B.GROUPFILE_NO
+						${where}
+				 		ORDER BY A.SEQ DESC
+				       ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectFileUrl" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 섬네일이미지 리스트 
+     	SELECT
+ 			GROUPFILE_NO, FILE_NO, FILE_PATH, 
+ 			FILE_NAME, FILE_DOWN, LUSERNO, 
+ 			LDATE, FILE_SIZE
+ 		FROM 
+ 			TB_UPLOAD 
+ 		WHERE 
+ 			GROUPFILE_NO = #{groupfileNo}
+	]]>
+	</select>
+	
+	<select id="selectMoveLectRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 홈페이지관리 -> 우수강사 명강의 게시판 폼데이터
+		SELECT 
+			SEQ, LUSER_NAME, LUSER_NO,
+			TITLE, GROUPFILE_NO, URL
+		FROM 
+			TB_MOVELECT_DATA
+		WHERE
+			SEQ = #{seq}
+	]]>
+	</select>
+	
+	<insert id="insertMovelect" parameterType="Map">
+	<![CDATA[
+		-- 홈페이지관리 -> 우수강사 명강의 게시판 등록
+		INSERT INTO TB_MOVELECT_DATA 
+			(SEQ, LUSER_NAME, LUSER_NO, TITLE, GROUPFILE_NO, URL, GUBUN) 
+		VALUES 
+			( (SELECT NVL(MAX(SEQ),0) + 1 FROM TB_MOVELECT_DATA ), #{sessName}, #{sessNo}, #{title}, #{filegroupNo}, #{url}, #{gubun})
+	]]>
+	</insert>
+	
+	<update id="updateMovelect" parameterType="Map">
+	<![CDATA[
+		-- 홈페이지관리 -> 우수강사 명강의 게시판 수정
+		UPDATE 
+			TB_MOVELECT_DATA
+		SET    
+       		LUSER_NAME		= #{sessName},
+       		LUSER_NO		= #{sessNo},
+       		TITLE       	= #{title},
+       		GROUPFILE_NO 	= #{filegroupNo},
+       		URL          	= #{url},
+       		GUBUN          	= #{gubun}
+		WHERE  
+			SEQ          	= #{seq}
+	]]>
+	</update>
+	
+	<delete id="deleteMovelect" parameterType="Map">
+	<![CDATA[
+		-- 홈페이지관리 -> 우수강사 명강의 게시판 삭제
+		DELETE 
+			FROM 
+				TB_MOVELECT_DATA
+			WHERE
+				SEQ = #{seq}
+	]]>
+	</delete>
+	
+</mapper>

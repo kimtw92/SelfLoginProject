@@ -1,0 +1,70 @@
+<!--
+ AIViewer를 사용하는 웹페이지에 반드시 포함되어야 하는 요소와 사용법을 기술한 페이지로
+ 다음순서에 따라 응용하여 사용
+  1. AIScript.js의 object tag의 codebase를 AIViewer를 배치한 웹서버의 경로로 수정 (필요시)
+  2. 사용목적에 따라 적절한 뷰어제어 parameter를 설정(AIScript.js및 배포된 param_usage.txt 참조)
+  3. AIViewer의 유형(embed or 팝업)에 따라 적절한 호출함수사용
+     -> embedAI() 또는 popAI() 또는 loadReport()
+
+ AIViewer를 호출하는 페이지마다 이 페이지의 내용을 포함할 필요는 없으며
+ 메뉴기능을 하는 Frame에 한번만 포함하여 사용하는 것을 권장함
+-->
+
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<title>AIViewer 호출 페이지</title>
+<!-- AIScript.js를 include하는 부분으로 반드시 HEAD Tag내부에 기술해야 함 -->
+<script language="JavaScript" src="AIScript.js">
+</script>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<!-- AIViewer를 Frame에 동적으로 embed하고자 하는 경우에 사용하는 방법 (AIScript.js참조)
+     embedAI(frame, cgi) <--- defined in AIScript.js
+       .frame : AIViewer를 embed할, 현재문맥에서 유효한 JavaScript의 frame(window)객체 이름
+                현재의 프레임인 경우에는 'self'를 사용
+       .cgi   : 호출할 출력프로그램의 URL
+-->
+<a href="javascript:embedAI('parent.ai_viewer', '/AIViewer/sample.txt')">Embed뷰어 사용예제</a>
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+<!-- 팝업윈도우 형태로 AIViewer를 호출하는 경우에 사용하는 방법 (AIScript.js참조)
+     popAI(cgi) <--- defined in AIScript.js
+       .cgi   : 호출할 출력프로그램의 URL
+-->
+<a href="javascript:popAI('sample.txt')">팝업뷰어 사용예제</a>
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+<!-- 정적으로 embed된 AIViewer를 통해 보고서를 반복적으로 처리하는 경우에 사용하는 방법 (AIScript.js참조)
+     loadReport(frame, cgi) <--- defined in AIScript.js
+       .frame : AIViewer가 정적으로 embed된, 현재문맥에서 유효한 JavaScript의 frame(window)객체 이름
+                현재의 프레임인 경우에는 'self'를 사용
+       .cgi   : 호출할 출력프로그램의 URL
+-->
+<!--
+<a href="javascript:loadReport('self','http://www.ai-report.com/ai_script/demo/re_demo_format02_1.txt')">정적Embed 사용예제 </a>
+-->
+
+
+<!-- AIGenerator OCX 포함 시작, 반드시 BODY Tag내부에 기술되어야 함 -->
+<script language="JavaScript">
+    document.write(tagAIGeneratorOcx);
+</script>
+<!-- AIGenerator OCX 포함 끝 -->
+
+
+<!-- AIViewer OCX 포함 시작, 반드시 BODY Tag내부에 기술되어야 함 -->
+<!--
+<script language="JavaScript">
+    document.write(tagAIViewer);
+</script>
+-->
+<!-- AIViewer OCX 포함 끝 -->
+
+</body>
+</html>

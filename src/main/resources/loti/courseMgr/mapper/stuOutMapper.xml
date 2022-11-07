@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.StuOutMapper">
+
+	<select id="selectAppRejectList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 퇴교자 취소 리스트
+		SELECT   
+			USERNO, NAME, SEARCHDEPTNM (DEPT) AS DEPTNM,
+			TO_CHAR (CANCEL_DATE, 'YYYY.MM.DD') AS CANCEL_DATE,
+			DECODE (CKIND,
+					'1', '직권퇴교',
+					'2', '자퇴',
+					'3', '미등록',
+					'4', '교육취소'
+				   ) AS CKINDNM, 
+			SUBSTR (REASON, 1, 30) AS REASON, CKIND
+		FROM TB_APP_REJECT
+		WHERE 
+			GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND CKIND != '0'
+		ORDER BY DEPT, NAME
+	]]>
+	</select>
+	
+	<select id="selectAppRejectRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 퇴교자 취소 상세정보
+		SELECT 
+			A.USERNO, A.NAME, SCP.DEC_B64('KEY1',B.RESNO) AS RESNO, SEARCHDEPTNM (A.DEPT) AS DEPTNM,
+			DECODE (A.JIK, '', B.MJIKNM, SEARCHJIKNM (A.JIK)) AS JIKNM, A.REASON
+		FROM TB_APP_REJECT A, tb_member B
+		WHERE A.USERNO = B.USERNO 
+			AND A.USERNO = #{userno}
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectAppInfoByNameSearchList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수강신청자 정보 이름 검색 리스트
+		SELECT 
+			TRIM (A.NAME) AS NAME, A.DEPT, SEARCHDEPTNM (A.DEPT) AS DEPTNM,
+			SCP.DEC_B64('KEY1',B.RESNO) AS RESNO, A.USERNO
+		FROM TB_APP_INFO A, tb_member B
+		WHERE 1=1
+			AND A.USERNO = B.USERNO
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.GRCHK <> 'C'
+			AND A.NAME LIKE '%'||#{searchName}||'%'
+	]]>
+	</select>
+	
+	<select id="selectGrResultChk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 과정 수료 인원 count (개인)
+		SELECT 
+			COUNT(1) AS CNT 
+		FROM TB_GRRESULT 
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND USERNO = #{userno}
+	]]>
+	</select>
+	
+	<insert id="insertAppRejectSpec" parameterType="Map">
+	<![CDATA[
+		-- 퇴교자 등록
+		INSERT INTO TB_APP_REJECT
+			(GRCODE, GRSEQ, USERNO, 
+			 CKIND, NAME, DEPT,
+			 JIK, TELNO, CANCEL_DATE,
+			 REASON, ACCEPT, LUSERNO,
+			 LDATE) 
+		SELECT 
+			#{grcode}, #{grseq}, #{userno},
+			#{ckind}, NAME, DEPT,
+			JIK, SCP.DEC_B64('KEY1',HOME_TEL) AS HOME_TEL, SYSDATE,
+			#{reason}, '1', #{luserno}, 
+			SYSDATE 
+		FROM tb_member 
+		WHERE USERNO = #{userno}
+	]]>
+	</insert>
+	
+	<insert id="insertRejStuLecSpec" parameterType="Map">
+	<![CDATA[
+		-- 퇴교자 수강 정보 백업
+		INSERT INTO TB_REJ_STU_LEC 
+		SELECT
+			A.*
+		FROM TB_STU_LEC A,TB_SUBJSEQ B 
+		WHERE 1=1
+			AND B.SUBJ      = A.SUBJ 
+			AND B.GRCODE    = A.GRCODE 
+			AND B.GRSEQ     = A.GRSEQ 
+			AND B.GRCODE    = #{grcode}
+			AND B.GRSEQ     = #{grseq}
+			AND A.USERNO    = #{userno}
+	]]>
+	</insert>
+	
+	<insert id="insertRejReportSubmitSpec" parameterType="Map">
+	<![CDATA[
+		-- 퇴교자 과제 제출 백업
+		INSERT INTO TB_REJ_REPORT_SUBMIT 
+		SELECT 
+			A.*
+		FROM TB_REPORT_SUBMIT A, TB_SUBJSEQ  B 
+		WHERE B.GRCODE      = #{grcode}
+			AND B.GRSEQ     = #{grseq}
+			AND B.SUBJ      = A.SUBJ 
+			AND B.GRCODE    = A.GRCODE 
+			AND B.GRSEQ     = A.GRSEQ 
+			AND A.USERNO    = #{userno}
+	]]>
+	</insert>
+	
+	<insert id="insertRejExresultSpec" parameterType="Map">
+	<![CDATA[
+		-- 퇴교자 - 과목별 시험채점결과정보 백업
+		INSERT INTO TB_REJ_EXRESULT 
+		SELECT 
+			A.*
+		FROM TB_EXRESULT A, TB_SUBJSEQ B  
+		WHERE B.GRCODE      = #{grcode}
+			AND B.GRSEQ     = #{grseq}
+			AND B.SUBJ      = A.SUBJ 
+			AND B.GRCODE    = A.GRCODE 
+			AND B.GRSEQ     = A.GRSEQ 
+			AND A.USERNO    = #{userno}
+	]]>
+	</insert>
+	
+	<delete id="deleteExResultSpec" parameterType="Map">
+	<![CDATA[
+		-- 과목별 시험채점결과정보 삭제
+		DELETE FROM TB_EXRESULT 
+		WHERE 
+			(SUBJ,GRSEQ,GRCODE) IN 
+			   (SELECT SUBJ,GRSEQ,GRCODE 
+				FROM TB_SUBJSEQ 
+				WHERE GRCODE = #{grcode} 
+					AND GRSEQ = #{grseq})
+			AND USERNO = #{userno}
+	]]>
+	</delete>
+	
+	<delete id="deleteReportSubmitSpec" parameterType="Map">
+	<![CDATA[
+		-- StuOutDAO
+		-- 리포트 제출 정보 삭제
+		DELETE FROM TB_REPORT_SUBMIT 
+		WHERE 
+			(SUBJ,GRSEQ,GRCODE) IN 
+				(SELECT SUBJ,GRSEQ,GRCODE 
+				 FROM TB_SUBJSEQ 
+				 WHERE 
+					GRCODE = #{grcode}
+					AND GRSEQ = #{grseq}) 
+			AND USERNO = #{userno}
+	]]>
+	</delete>
+	
+	<delete id="deleteStuLecSpec" parameterType="Map">
+	<![CDATA[
+		-- 과목수강정보 삭제
+		DELETE FROM TB_STU_LEC 
+		WHERE 
+		(SUBJ,GRSEQ,GRCODE) IN 
+			(SELECT SUBJ,GRSEQ,GRCODE 
+			 FROM TB_SUBJSEQ 
+			 WHERE 
+				GRCODE = #{grcode}
+				AND GRSEQ = #{grseq}) 
+		AND USERNO = #{userno}
+	]]>
+	</delete>
+	
+	<delete id="deleteAppReject" parameterType="Map">
+	<![CDATA[
+		-- 퇴교처리 저장된 로그파일 삭제
+		DELETE FROM TB_APP_REJECT 
+		WHERE GRCODE    = #{grcode}
+			AND GRSEQ   = #{grseq}
+			AND USERNO  = #{userno}
+	]]>
+	</delete>
+	
+	<delete id="deleteRejExResultSpec" parameterType="Map">
+	<![CDATA[
+		-- 퇴교자 - 과목별 시험채점결과정보 삭제
+		DELETE FROM TB_REJ_EXRESULT
+		WHERE (SUBJ, GRSEQ, GRCODE) IN 
+				(SELECT SUBJ, GRSEQ, GRCODE
+				FROM TB_SUBJSEQ
+				WHERE GRCODE = #{grcode} AND GRSEQ = #{grseq})
+				AND USERNO = #{userno}
+	]]>
+	</delete>
+	
+	<delete id="deleteRejReportSubmitSpec" parameterType="Map">
+	<![CDATA[
+		-- 퇴교자 - 리포트 제출 정보 삭제
+		DELETE FROM TB_REJ_REPORT_SUBMIT
+		WHERE (SUBJ, GRSEQ, GRCODE) IN 
+				(SELECT SUBJ, GRSEQ, GRCODE
+				 FROM TB_SUBJSEQ
+				 WHERE GRCODE = #{grcode} AND GRSEQ = #{grseq})
+			AND USERNO = #{userno}
+	]]>
+	</delete>
+	
+	<delete id="deleteRejStuLecSpec" parameterType="Map">
+	<![CDATA[
+		-- 퇴교자 - 과목수강정보 삭제
+		DELETE FROM TB_REJ_STU_LEC
+		WHERE (SUBJ, GRSEQ, GRCODE) IN 
+				(SELECT SUBJ, GRSEQ, GRCODE
+				 FROM TB_SUBJSEQ
+				 WHERE GRCODE = #{grcode} AND GRSEQ = #{grseq})
+			AND USERNO = #{userno}
+	]]>
+	</delete>
+	
+	<delete id="deleteAppInfo" parameterType="Map">
+	<![CDATA[
+		-- 수강신청 정보 삭제
+		DELETE FROM TB_APP_INFO
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND USERNO = #{userno}
+	]]>
+	</delete>
+	
+	<insert id="insertStuLecByRejSpec" parameterType="Map">
+	<![CDATA[
+		-- 수강신청 정보 등록 (퇴소 테이블에서)
+		INSERT INTO TB_STU_LEC
+		SELECT 
+			A.*
+		FROM TB_REJ_STU_LEC A, TB_SUBJSEQ B
+		WHERE B.GRCODE = #{grcode}
+			AND B.GRSEQ = #{grseq}
+			AND B.SUBJ = A.SUBJ
+			AND B.GRCODE = A.GRCODE
+			AND B.GRSEQ = A.GRSEQ
+			AND A.USERNO = #{userno}
+	]]>
+	</insert>
+	
+	<insert id="insertReportSubmitByRejSpec" parameterType="Map">
+	<![CDATA[
+		-- 수강생의 과제 등록 (퇴소 테이블에서)
+		INSERT INTO TB_REPORT_SUBMIT
+		SELECT 
+			A.*
+		FROM TB_REJ_REPORT_SUBMIT A, TB_SUBJSEQ B
+		WHERE B.GRCODE = #{grcode}
+			AND B.GRSEQ = #{grseq}
+			AND B.SUBJ = A.SUBJ
+			AND B.GRCODE = A.GRCODE
+			AND B.GRSEQ = A.GRSEQ
+			AND A.USERNO = #{userno}
+	]]>
+	</insert>
+	
+	<insert id="insertExResultByRejSpec" parameterType="Map">
+	<![CDATA[
+		-- 수강생의 시험 결과 등록 (퇴소 테이블에서)
+		INSERT INTO TB_EXRESULT
+		SELECT
+			A.*
+		FROM TB_REJ_EXRESULT A, TB_SUBJSEQ B
+		WHERE B.GRCODE = #{grcode}
+			AND B.GRSEQ = #{grseq}
+			AND B.SUBJ = A.SUBJ
+			AND B.GRCODE = A.GRCODE
+			AND B.GRSEQ = A.GRSEQ
+			AND A.USERNO = #{userno}
+	]]>
+	</insert>
+</mapper>

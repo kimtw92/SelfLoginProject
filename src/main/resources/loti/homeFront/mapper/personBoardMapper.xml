@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.homeFront.mapper.PersonBoardMapper">
+
+
+	<resultMap type="DataMap" id="clobContent">
+		<result property="CONTENT"  column="CONTENT" javaType="String" jdbcType="CLOB" typeHandler="org.apache.ibatis.type.ClobTypeHandler"></result>
+	</resultMap>
+	
+	<select id="selectBoardPersonListCount" resultType="Integer">
+	<![CDATA[
+		SELECT COUNT(*) FROM (
+		SELECT 
+			NVL(SEQ, 0)
+	  	FROM TB_BOARD_PERSON 
+		)
+	]]>
+	</select> 
+	
+	<select id="selectbbsBoardPersonView" parameterType="Map" resultMap="clobContent">
+		SELECT 
+			SEQ, 
+			USERNAME,
+			PHONE ,
+			TITLE,
+			CONTENT,
+			REGDATE
+	  	FROM TB_BOARD_PERSON b 
+	  	WHERE SEQ =#{seq}
+	</select>
+	
+	<update id="modifyBbsBoardPerson" parameterType="Map">
+	<![CDATA[
+		-- 사용자 게시판 수정
+		UPDATE 
+			TB_BOARD_PERSON
+		SET
+			TITLE	= #{title},
+			CONTENT = #{content},
+			USERNAME = #{username},
+			PHONE = #{phone}
+		WHERE 
+			SEQ		= #{seq}
+	]]>
+	</update>
+	
+	<update id="deleteBbsBoardPerson" parameterType="String">
+	<![CDATA[
+		-- 최소 step값 
+		${value}
+	]]>
+	</update>
+	
+	<select id="selectBoardPersonView" parameterType="Map" resultMap="clobContent">
+		SELECT 
+			SEQ, 
+			USERNAME,
+			PHONE ,
+			TITLE,
+			CONTENT,
+			PASSWD,
+			REGDATE
+	  	FROM TB_BOARD_PERSON b 
+	  	WHERE SEQ =#{seq}
+	</select>
+	
+	<select id="selectBoardPersonList" parameterType="Map" resultMap="clobContent">
+	<![CDATA[
+		SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		SELECT 
+			SEQ, 
+			USERNAME,
+			PHONE,
+			TITLE,
+			PASSWD,
+			REGDATE
+	  	FROM TB_BOARD_PERSON 
+	  	order by REGDATE DESC 
+		) nQuery 
+		WHERE ROWNUM <= #{page.end}
+		) 
+		WHERE nPaging_rnum >= #{page.start}
+	]]>
+	</select>
+	
+	<update id="modifyBoardPerson" parameterType="Map">
+	<![CDATA[
+		UPDATE 
+			TB_BOARD_PERSON
+		SET
+			TITLE	= #{title},
+			CONTENT = #{content},
+			USERNAME = #{username},
+			PHONE = #{phone},
+			PASSWD = #{passwd}
+		WHERE 
+			SEQ		= #{seq}
+	]]>
+	</update>
+	
+	<insert id="insertBoardPerson" parameterType="Map">
+	<![CDATA[
+		-- 사용자 게시판 등록
+		INSERT INTO 
+			TB_BOARD_PERSON
+			(SEQ, TITLE, USERNAME, REMOTE_IP, CONTENT, PHONE, PASSWD, REGDATE)
+		VALUES
+			((SELECT NVL(MAX(SEQ),0)+1 AS SEQ FROM TB_BOARD_PERSON), #{title}, #{username}, #{remoteIp}, #{content}, #{phone}, #{passwd}, SYSDATE)
+	]]>
+	</insert>		
+</mapper>

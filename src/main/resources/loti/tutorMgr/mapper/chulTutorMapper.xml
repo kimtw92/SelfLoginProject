@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="loti.tutorMgr.mapper.ChulTutorMapper">
+
+	<sql id="chulTutorList" >
+		FROM 
+			TV_TUTOR_HISTORY A, tb_member B, TB_TUTOR C
+		WHERE
+			A.TUSERNO = B.USERNO AND A.TUSERNO = C.USERNO
+		
+		<if test="gubun == 'year' and year != ''">
+			AND A.GRSEQ LIKE '%' || #{year} || '%'
+		</if>
+		<if test="gubun == 'date' and date1 != '' and date2 != ''">
+			AND A.TUSERNO = B.USERNO AND A.TUSERNO = C.USERNO AND A.STR_DATE BETWEEN TO_DATE( #{date1}, 'YYYYMMDD') AND TO_DATE(#{date2} || '235959', 'YYYYMMDDHH24MISS')
+		</if>
+		<if test="grcode != ''">
+			AND A.GRCODE = #{grcode}
+		</if>
+		<if test="order != ''">
+			ORDER BY ${order}
+		</if>
+		<if test="order == ''">
+			ORDER BY A.GRCODENM
+		</if>
+		
+	</sql>
+	
+	<select id="selectChulTutorListCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 출강강사 명단 리스트
+		SELECT 
+			count(*)
+	]]>
+		<include refid="chulTutorList"/>
+	</select>
+	<select id="selectChulTutorList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+			-- 출강강사 명단 리스트
+			SELECT 
+				A.GRCODE AS GRCODE ,	A.GRSEQ AS GRSEQ ,	A.SUBJ AS SUBJ , 		A.GRCODENM AS GRCODENM, A.LECNM AS LECNM , 		A.STR_DATE AS STR_DATE, 
+				A.END_DATE AS END_DATE, A.TDATE AS TDATE, 	A.TTIME AS TTIME, 		A.EDUINWON AS EDUINWON, A.TUSERNO AS TUSERNO,	A.TGUBUN AS TGUBUN, 
+				B.NAME AS NAME, B.HOME_ADDR AS HOME_ADDR, 	SCP.DEC_B64('KEY1',B,HOME_TEL) AS HOME_TEL, B.JIKWI AS JIKWI, 		B.DEPTSUB AS DEPTSUB, 	C.TPOSITION AS TPOSITION,
+				C.TLEVEL AS TLEVEL
+	]]>
+		<include refid="chulTutorList"/>
+	<![CDATA[
+		) nQuery WHERE ROWNUM <= #{page.end}) WHERE nPaging_rnum >= #{page.start}
+	]]>
+	</select>
+	<select id="selectChulTutorListExcel" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+			-- 출강강사 명단 리스트
+			SELECT 
+				A.GRCODE AS GRCODE ,	A.GRSEQ AS GRSEQ ,	A.SUBJ AS SUBJ , 		A.GRCODENM AS GRCODENM, A.LECNM AS LECNM , 		A.STR_DATE AS STR_DATE, 
+				A.END_DATE AS END_DATE, A.TDATE AS TDATE, 	A.TTIME AS TTIME, 		A.EDUINWON AS EDUINWON, A.TUSERNO AS TUSERNO,	A.TGUBUN AS TGUBUN, 
+				B.NAME AS NAME, B.HOME_ADDR AS HOME_ADDR, 	SCP.DEC_B64('KEY1',B,HOME_TEL) AS HOME_TEL, B.JIKWI AS JIKWI, 		B.DEPTSUB AS DEPTSUB, 	C.TPOSITION AS TPOSITION,
+				C.TLEVEL AS TLEVEL
+	]]>
+		<include refid="chulTutorList"/>
+	</select>
+	
+	<select id="selectChulTutorAllCountRow" resultType="DataMap">
+	<![CDATA[
+		-- 출강강사 전체 카운트
+		SELECT 
+			TGUBUN, COUNT(*) AS TCNT 
+		FROM 
+			TV_TUTOR_HISTORY 
+		GROUP BY 
+			TGUBUN
+	]]>
+	</select>
+	
+	<select id="selectChulTutorCourseAllCountRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 출강강사 과정별 총카운트
+		SELECT 
+			COUNT(*) AS TOTAL 
+		FROM 
+			TV_TUTOR_HISTORY A, tb_member B, TB_TUTOR C 
+		WHERE 
+			A.TUSERNO = B.USERNO AND A.TUSERNO = C.USERNO AND A.GRCODE = #{value}
+	]]>
+	</select>
+	
+	<select id="selectChulTutorCourseCountRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 출강강사 과정별 카운트 
+		SELECT 
+			TGUBUN, COUNT(*) AS TCNT 
+		FROM 
+			TV_TUTOR_HISTORY 
+		WHERE 
+			GRCODE = #{value} GROUP BY TGUBUN
+
+	]]>
+	</select>
+	
+	<select id="selectCoursorList" resultType="DataMap">
+	<![CDATA[
+		-- 과정별 소계
+		SELECT 
+			GRCODE, GRCODENM 
+		FROM 
+			TB_GRCODE 
+		WHERE use_yn = 'Y'
+		ORDER BY 
+			GRCODENM
+	]]>
+	</select>
+	
+	<sql id="totalList">
+		FROM
+			TV_TUTOR_HISTORY A, tb_member B, TB_TUTOR C, (SELECT GRCODE, GRSEQ, SUBJ, COUNT(*) STU_CNT FROM TB_STU_LEC GROUP BY GRCODE, GRSEQ, SUBJ) D, TB_SUBJ E
+		WHERE
+			A.TUSERNO = B.USERNO AND A.TUSERNO = C.USERNO AND A.GRCODE=D.GRCODE(+) AND A.GRSEQ=D.GRSEQ(+) AND A.SUBJ=D.SUBJ(+) AND A.SUBJ = E.SUBJ AND E.SUBJTYPE != 'S'
+			<if test="grcode == ''">
+				AND A.GRCODE = #{grcode}
+			</if>
+			<if test="sDate != '' and eDate != ''">
+				AND A.STR_DATE BETWEEN TO_DATE(#{sDate}, 'YYYYMMDD') AND TO_DATE(#{eDate} || '235959', 'YYYYMMDDHH24MISS')
+			</if>
+		ORDER BY A.STR_DATE DESC
+	</sql>
+	
+	<select id="selectTotalListCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 출강강사관리 리스트
+		SELECT    
+			count(*)
+	]]>
+		<include refid="totalList"/>
+	</select>
+	<select id="selectTotalList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		-- 출강강사관리 리스트
+		SELECT    
+			A.GRCODE AS GRCODE, A.GRSEQ AS GRSEQ, A.SUBJ AS SUBJ, E.SUBJTYPE, A.GRCODENM AS GRCODENM, A.LECNM AS LECNM, A.STR_DATE AS STR_DATE, A.END_DATE AS END_DATE, A.TDATE AS TDATE 
+			, A.TTIME AS TTIME, DECODE(D.STU_CNT,0,A.EDUINWON,NULL,A.EDUINWON,D.STU_CNT) AS EDUINWON, A.TUSERNO AS TUSERNO, A.TGUBUN AS TGUBUN, B.NAME AS NAME, SCP.DEC_B64('KEY1',B,HOME_TEL) AS HOME_TEL 
+			, B.JIKWI AS JIKWI, C.TPOSITION AS TPOSITION 
+	]]>
+		<include refid="totalList"/>
+	<![CDATA[
+		) nQuery WHERE ROWNUM <= #{page.end}) WHERE nPaging_rnum >= #{page.start}
+	]]>
+	</select>
+
+</mapper>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="loti.homepageMgr.mapper.PopupZoneMapper">
+
+	<select id="selectPopupZoneListCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 홈페이지관리 -> 팝업존 리스트
+         SELECT COUNT(0) AS CNT
+			FROM VD_POPUP_ZONE
+	]]>
+	</select>
+	
+	<select id="selectPopupZoneList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 홈페이지관리 -> 팝업존 리스트
+				         SELECT SEQ, TITLE, DT_YN, START_DT, START_TM, END_DT, END_TM, LINK_YN, LINK_URL, 
+							LINK_TARGET, FILE_NAME, FILE_ALT, USED_YN, REG_DT, MOD_DT, REG_ID, MOD_ID, ORDER_SEQ,
+							(select count(*) from VD_POPUP_ZONE)+1 - row_number() over(ORDER BY SEQ desc) as rm
+							FROM VD_POPUP_ZONE
+							ORDER BY SEQ DESC
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<insert id="insertPopupZone" parameterType="Map">
+	<![CDATA[
+		INSERT INTO VD_POPUP_ZONE
+		(SEQ, TITLE, DT_YN, START_DT, START_TM, END_DT, END_TM, LINK_YN, LINK_URL, 
+		LINK_TARGET, FILE_NAME, FILE_ALT, USED_YN, REG_ID )
+		VALUES
+		(VD_POPUP_ZONE_SEQ.NEXTVAL, #{title}, #{dtYn}, #{sDate}, #{sTime}, #{eDate}, #{eTime}, #{linkYn}, #{linkUrl}, #{linkTarget}, #{fileName}, #{fileAlt}, #{usedYn}, #{regId})
+	]]>
+	</insert>
+	
+	<select id="selectPopupZone" parameterType="String" resultType="DataMap">
+	<![CDATA[
+        SELECT SEQ, TITLE, DT_YN, START_DT, START_TM, END_DT, END_TM, LINK_YN, LINK_URL, 
+			LINK_TARGET, FILE_NAME, FILE_ALT, USED_YN
+			FROM VD_POPUP_ZONE
+		WHERE SEQ = #{seq}
+	]]>
+	</select>
+	
+	<update id="deletePopupZoneFile" parameterType="Map">
+	<![CDATA[
+		UPDATE VD_POPUP_ZONE 
+		SET
+		FILE_NAME = '',
+		MOD_ID = #{regId},
+		MOD_DT = SYSDATE
+		WHERE
+		SEQ = #{seq}
+	]]>
+	</update>
+	
+	<delete id="deletePopupZone" parameterType="Map">
+	<![CDATA[
+		DELETE VD_POPUP_ZONE 
+		WHERE
+		SEQ = #{seq}
+	]]>
+	</delete>
+	
+	<update id="updatePopupZone" parameterType="Map">
+	<![CDATA[
+		UPDATE VD_POPUP_ZONE 
+		SET
+		TITLE = #{title},
+		DT_YN = #{dtYn},
+		START_DT = #{sDate},
+		START_TM = #{sTime},
+		END_DT = #{eDate},
+		END_TM = #{eTime},
+		LINK_YN = #{linkYn},
+		LINK_URL = #{linkUrl},
+		LINK_TARGET = #{linkTarget},
+		${replaceSet}
+		FILE_ALT = #{fileAlt},
+		USED_YN = #{usedYn},
+		MOD_ID = #{modId},
+		MOD_DT = SYSDATE
+		WHERE
+		SEQ = #{seq}
+	]]>
+	</update>
+	
+	<select id="getMainPopupZoneList" resultType="DataMap">
+	<![CDATA[
+		-- 사용자 메인페이지 팝업존리스트
+		SELECT A.*, ROWNUM RM FROM
+		(
+        SELECT SEQ, LINK_TARGET, LINK_URL, LINK_YN, FILE_NAME, FILE_ALT FROM VD_POPUP_ZONE
+        WHERE USED_YN = 'Y'
+        AND DT_YN = 'Y'
+        AND START_DT||START_TM <= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MI')
+        AND END_DT||END_TM >= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MI')
+        UNION ALL
+        SELECT SEQ, LINK_TARGET, LINK_URL, LINK_YN, FILE_NAME, FILE_ALT FROM VD_POPUP_ZONE
+        WHERE USED_YN = 'Y'
+        AND DT_YN = 'N'
+        ORDER BY SEQ DESC
+        )A
+        WHERE ROWNUM <= 3
+ 	]]>
+	</select>
+	
+</mapper>

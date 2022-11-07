@@ -1,0 +1,80 @@
+10월 23 01:05:48.240 오전 INFO - [[ACTIVE] ExecuteThread: '219' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 01:05:49.129 오전 INFO - [[ACTIVE] ExecuteThread: '219' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 01:37:58.367 오후 INFO - [[ACTIVE] ExecuteThread: '226' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 01:37:59.472 오후 INFO - [[ACTIVE] ExecuteThread: '226' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 01:38:22.175 오후 INFO - [[ACTIVE] ExecuteThread: '226' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(360) | START
+10월 23 01:38:23.128 오후 INFO - [[ACTIVE] ExecuteThread: '226' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(404) | END
+10월 23 01:48:52.328 오후 INFO - [[ACTIVE] ExecuteThread: '232' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 01:48:52.541 오후 INFO - [[ACTIVE] ExecuteThread: '232' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 01:49:19.928 오후 INFO - [[ACTIVE] ExecuteThread: '229' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(360) | START
+10월 23 01:49:20.119 오후 INFO - [[ACTIVE] ExecuteThread: '229' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(404) | END
+10월 23 02:46:07.552 오후 INFO - [[ACTIVE] ExecuteThread: '220' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 02:46:07.789 오후 INFO - [[ACTIVE] ExecuteThread: '220' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 02:49:08.941 오후 INFO - [[ACTIVE] ExecuteThread: '224' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 02:49:09.154 오후 INFO - [[ACTIVE] ExecuteThread: '224' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 04:42:10.824 오후 INFO - [[ACTIVE] ExecuteThread: '225' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 04:42:11.064 오후 INFO - [[ACTIVE] ExecuteThread: '225' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 04:56:32.531 오후 INFO - [[ACTIVE] ExecuteThread: '225' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 04:56:32.756 오후 INFO - [[ACTIVE] ExecuteThread: '225' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 04:59:22.973 오후 INFO - [[ACTIVE] ExecuteThread: '236' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 04:59:23.163 오후 INFO - [[ACTIVE] ExecuteThread: '236' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 05:07:27.640 오후 INFO - [[ACTIVE] ExecuteThread: '225' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 05:07:27.885 오후 INFO - [[ACTIVE] ExecuteThread: '225' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 05:07:32.863 오후 INFO - [[ACTIVE] ExecuteThread: '236' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 05:07:33.060 오후 INFO - [[ACTIVE] ExecuteThread: '236' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 05:09:25.288 오후 INFO - [[ACTIVE] ExecuteThread: '224' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 05:09:25.516 오후 INFO - [[ACTIVE] ExecuteThread: '224' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 05:11:07.472 오후 INFO - [[ACTIVE] ExecuteThread: '224' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(360) | START
+10월 23 05:11:07.816 오후 INFO - [[ACTIVE] ExecuteThread: '224' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(404) | END
+10월 23 05:51:56.241 오후 INFO - [[ACTIVE] ExecuteThread: '239' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 05:51:56.503 오후 INFO - [[ACTIVE] ExecuteThread: '239' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 05:55:35.762 오후 INFO - [[ACTIVE] ExecuteThread: '238' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 05:55:35.997 오후 INFO - [[ACTIVE] ExecuteThread: '238' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 05:57:43.032 오후 INFO - [[ACTIVE] ExecuteThread: '222' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(360) | START
+10월 23 05:57:43.405 오후 INFO - [[ACTIVE] ExecuteThread: '222' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(404) | END
+10월 23 06:30:23.921 오후 INFO - [[ACTIVE] ExecuteThread: '225' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 06:30:24.457 오후 INFO - [[ACTIVE] ExecuteThread: '225' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 06:55:20.944 오후 INFO - [[ACTIVE] ExecuteThread: '233' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 06:55:21.133 오후 INFO - [[ACTIVE] ExecuteThread: '233' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 07:01:43.563 오후 INFO - [[ACTIVE] ExecuteThread: '233' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 07:01:43.783 오후 INFO - [[ACTIVE] ExecuteThread: '233' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 07:01:57.953 오후 INFO - [[ACTIVE] ExecuteThread: '233' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 07:01:58.152 오후 INFO - [[ACTIVE] ExecuteThread: '233' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 07:02:06.628 오후 INFO - [[ACTIVE] ExecuteThread: '231' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 07:02:06.869 오후 INFO - [[ACTIVE] ExecuteThread: '231' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 07:02:21.307 오후 INFO - [[ACTIVE] ExecuteThread: '225' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 07:02:21.530 오후 INFO - [[ACTIVE] ExecuteThread: '225' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 07:03:47.771 오후 INFO - [[ACTIVE] ExecuteThread: '231' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 07:03:47.975 오후 INFO - [[ACTIVE] ExecuteThread: '231' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 07:05:10.680 오후 INFO - [[ACTIVE] ExecuteThread: '239' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(360) | START
+10월 23 07:05:10.974 오후 ERROR - [[ACTIVE] ExecuteThread: '239' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseUserAttribute(483) | 응답메시지를 분석하는데 실패했습니다.
+com.etri.saml2.exceptions.SAMLProtocolException
+	at com.etri.saml2.protocol.profiles.SAMLSSOResponse.<init>(SAMLSSOResponse.java:162)
+	at gov.mogaha.gpin.sp.common.SAMLMessageHandler.parseUserAttribute(SAMLMessageHandler.java:479)
+	at gov.mogaha.gpin.sp.common.SAMLMessageHandler.parseSAMLResponse(SAMLMessageHandler.java:403)
+	at gov.mogaha.gpin.sp.proxy.GPinProxy.parseSAMLResponse(GPinProxy.java:86)
+	at jsp_servlet._g_45_pin.__serviceresponse._jspService(__serviceresponse.java:144)
+	at weblogic.servlet.jsp.JspBase.service(JspBase.java:34)
+	at weblogic.servlet.internal.StubSecurityHelper$ServletServiceAction.run(StubSecurityHelper.java:226)
+	at weblogic.servlet.internal.StubSecurityHelper.invokeServlet(StubSecurityHelper.java:124)
+	at weblogic.servlet.internal.ServletStubImpl.execute(ServletStubImpl.java:283)
+	at weblogic.servlet.internal.TailFilter.doFilter(TailFilter.java:26)
+	at weblogic.servlet.internal.FilterChainImpl.doFilter(FilterChainImpl.java:42)
+	at ut.lib.filter.SetCharacterEncodingFilter.doFilter(SetCharacterEncodingFilter.java:45)
+	at weblogic.servlet.internal.FilterChainImpl.doFilter(FilterChainImpl.java:42)
+	at weblogic.servlet.internal.WebAppServletContext$ServletInvocationAction.run(WebAppServletContext.java:3393)
+	at weblogic.security.acl.internal.AuthenticatedSubject.doAs(AuthenticatedSubject.java:321)
+	at weblogic.security.service.SecurityManager.runAs(Unknown Source)
+	at weblogic.servlet.internal.WebAppServletContext.securedExecute(WebAppServletContext.java:2140)
+	at weblogic.servlet.internal.WebAppServletContext.execute(WebAppServletContext.java:2046)
+	at weblogic.servlet.internal.ServletRequestImpl.run(ServletRequestImpl.java:1366)
+	at weblogic.work.ExecuteThread.execute(ExecuteThread.java:200)
+	at weblogic.work.ExecuteThread.run(ExecuteThread.java:172)
+10월 23 07:05:10.979 오후 INFO - [[ACTIVE] ExecuteThread: '239' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(404) | END
+10월 23 07:05:10.987 오후 ERROR - [[ACTIVE] ExecuteThread: '239' for queue: 'weblogic.kernel.Default (self-tuning)']GPinProxy.parseSAMLResponse(89) | 응답을 분석하는데 실패했습니다.
+10월 23 07:05:20.504 오후 INFO - [[ACTIVE] ExecuteThread: '231' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 07:05:20.709 오후 INFO - [[ACTIVE] ExecuteThread: '231' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 07:05:34.376 오후 INFO - [[ACTIVE] ExecuteThread: '233' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+10월 23 07:05:34.637 오후 INFO - [[ACTIVE] ExecuteThread: '233' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END
+10월 23 07:05:48.996 오후 INFO - [[ACTIVE] ExecuteThread: '239' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(360) | START
+10월 23 07:05:49.288 오후 INFO - [[ACTIVE] ExecuteThread: '239' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.parseSAMLResponse(404) | END

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="loti.homeFront.mapper.IndexMailMapper">
+
+	<insert id="sendMail" parameterType="loti.homeFront.vo.PersonVO">
+		
+		INSERT INTO nmail_mailer_queue (
+			mq_from,
+			mq_from_name,
+			mq_type,
+			mq_loginid ,
+			mq_name ,
+			mq_email ,
+			mq_etc ,
+			mq_subject ,
+			mq_body ,
+			mq_date ,
+			mq_ready
+		)
+		VALUES (
+			'﻿lotimail@inpia.net',
+			'공무원교육원',
+			'send_201',
+			#{id, jdbcType=VARCHAR},
+			#{name},
+			#{email, jdbcType=VARCHAR},
+			#{mqEtc, jdbcType=VARCHAR},
+			'패스워드 분실 안내문 입니다.',
+			'',
+			now(),
+			'Y'
+		)
+		
+	</insert>
+
+	
+</mapper>

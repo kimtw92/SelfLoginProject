@@ -1,0 +1,2893 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.statisticsMgr.mapper.StatisticsMgrMapper">
+
+	<select id="tabMenu" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 상단 tab
+		SELECT	MENU_NAME,
+				MENU_URL,
+		        (MENU_DEPTH_1 || '-' || MENU_DEPTH_2 || '-' || MENU_DEPTH_3) MENU_ID         	            
+		FROM	TB_MENU_2
+        WHERE 	TRIM(MENU_GRADE)	= #{sessAuth}
+		AND 	MENU_DEPTH_1 		= #{menuDepth1}
+		AND 	MENU_USE_YN 		!= 'N' 
+		AND 	MENU_STEP_NO 		!= 1
+		AND		MENU_DEPTH_3		BETWEEN 1 AND 15
+		ORDER BY 
+		    	MENU_DEPTH_1, MENU_DEPTH_2, MENU_DEPTH_3, MENU_SORT_NO ASC
+	]]>
+	</select>
+	
+	<select id="majorList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 분야별 통계
+        SELECT    Z.GUBUN,         Z.GUBUNNM,     Z.GRCODE_CNT,     Z.GRSEQ_CNT,     Z.PLAN_INWON,
+                Z.GRSEQ_COUNT,     Z.MALE,     Z.FEMALE,         Z.RESU_INWON,    Z.RATE,
+        FROM
+        (
+        
+            SELECT    ''    AS GUBUN, 
+                    '계'    AS GUBUNNM,
+                    
+                    COUNT(DISTINCT A.GRCODE)    AS GRCODE_CNT, 
+                    NVL(SUM(A.TSEAT),0)         AS PLAN_INWON, 
+                    COUNT(A.GRCODE)             AS GRSEQ_CNT, 
+                    NVL(SUM(C.TOTNO),0)         AS RESU_INWON,
+                    
+                    CASE WHEN SUM(C.TOTNO) > 0 AND SUM(A.TSEAT) > 0 THEN ROUND(SUM(C.TOTNO) / SUM(A.TSEAT),4)*100 
+                    ELSE 0 
+                    END ||'%' AS RATE,
+                    
+                    COUNT(DISTINCT A.GRSEQ)    AS GRSEQ_COUNT, 
+                    SUM(NVL(C.MALE,0))        AS MALE,
+                    SUM(NVL(C.FEMALE,0))     AS FEMALE,        
+                    
+                    'A' AS PFLAG
+        
+            FROM TB_GRSEQ A, TB_GRCODE GC, TB_MAINCODE MC, TB_SUBCODE SC, 
+            (
+                SELECT     C.GRCODE, C.GRSEQ ,
+                        SUM(DECODE( #{dept} , NULL, 1, '', 1, RDEPT, 1, 0)) TOTNO,
+                        SUM(C.MALE) AS MALE,
+                        SUM(C.FEMALE) AS FEMALE        
+                FROM
+                (               
+                    SELECT    A.GRCODE,     A.GRSEQ,
+                            A.RDEPT,
+                            A.RRESNO,
+                            DECODE(Z.SEX,'M',1,0) AS MALE,
+                            DECODE(Z.SEX,'F',1,0) AS FEMALE                                
+                    FROM     TB_GRRESULT A, TB_MEMBER Z
+                    WHERE     A.RGRAYN    =    'Y'
+                      AND A.USERNO = Z.USERNO(+)
+                    
+                ) C
+                GROUP BY 
+                        C.GRCODE,    C.GRSEQ
+            ) C 
+            WHERE TO_CHAR(A.ENDDATE, 'yyyymm') BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+            AND        A.GRCODE    =    C.GRCODE(+) 
+            AND     A.GRSEQ        =    C.GRSEQ(+) 
+            AND     A.GRCODE    =     GC.GRCODE 
+            AND     MC.CD_GUBUN    =    'G' 
+            AND     GC.GRTYPE    =    MC.MAJOR_CODE 
+            AND     SC.CD_GUBUN    =    'G' 
+            AND     GC.GRTYPE    =    SC.MAJOR_CODE 
+            AND     GC.GRSUBCD    =    SC.MINOR_CODE 
+        
+            UNION ALL
+        
+            SELECT    (MC.MAJOR_CODE||SC.MINOR_CODE)    AS GUBUN, 
+                    (MIN(MC.MCODE_NAME)||MIN(SC.SCODE_NAME)||'교육') AS GUBUNNM,
+                    
+                    COUNT(DISTINCT A.GRCODE)    AS GRCODE_CNT, 
+                    NVL(SUM(A.TSEAT),0)         AS PLAN_INWON, 
+                    COUNT(A.GRCODE)             AS GRSEQ_CNT, 
+                    NVL(SUM(C.TOTNO),0)         AS RESU_INWON,
+                    
+                    CASE WHEN SUM(C.TOTNO) > 0 AND SUM(A.TSEAT) > 0 THEN ROUND(SUM(C.TOTNO) / SUM(A.TSEAT),4)*100 
+                    ELSE 0 
+                    END ||'%' AS RATE,
+                    
+                    
+                    COUNT(DISTINCT A.GRSEQ)    AS GRSEQ_COUNT, 
+                    SUM(NVL(C.MALE,0))        AS MALE,
+                    SUM(NVL(C.FEMALE,0))     AS FEMALE,
+                    
+                    'B' AS PFLAG
+        
+            FROM TB_GRSEQ A, TB_GRCODE GC, TB_MAINCODE MC, TB_SUBCODE SC, 
+            (
+                SELECT     C.GRCODE, C.GRSEQ ,
+                        SUM(DECODE( #{dept} , NULL, 1, '', 1, RDEPT, 1, 0)) TOTNO,
+                        SUM(C.MALE) AS MALE,
+                        SUM(C.FEMALE) AS FEMALE
+                FROM
+                (               
+                    SELECT    A.GRCODE,     A.GRSEQ,
+                            A.RDEPT,
+                            A.RRESNO,
+                            DECODE(Z.SEX,'M',1,0) AS MALE,
+                            DECODE(Z.SEX,'F',1,0) AS FEMALE                                
+                    FROM     TB_GRRESULT A, TB_MEMBER Z
+                    WHERE     A.RGRAYN    =    'Y'
+                      AND A.USERNO = Z.USERNO(+)                                                           
+                ) C
+                GROUP BY 
+                        C.GRCODE,    C.GRSEQ
+            ) C 
+            WHERE TO_CHAR(A.ENDDATE, 'yyyymm') BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+            AND        A.GRCODE    =    C.GRCODE(+) 
+            AND     A.GRSEQ        =    C.GRSEQ(+) 
+            AND     A.GRCODE    =     GC.GRCODE 
+            AND     MC.CD_GUBUN    =    'G' 
+            AND     GC.GRTYPE    =    MC.MAJOR_CODE 
+            AND     SC.CD_GUBUN    =    'G' 
+            AND     GC.GRTYPE    =    SC.MAJOR_CODE 
+            AND     GC.GRSUBCD    =    SC.MINOR_CODE 
+            GROUP BY
+                    (MC.MAJOR_CODE||SC.MINOR_CODE) 
+        
+        ) Z
+        ORDER BY
+                Z.PFLAG ASC, Z.GUBUNNM
+
+	]]>
+	</select>
+	
+	<select id="courseStats" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정별 통계
+        SELECT    Z.*
+        FROM
+        (
+            SELECT    P.GUBUN,    P.GUBUNNM,            P.GRCODE,        P.GRCODENIKNM,    P.GRSEQ_CNT,
+                    P.TSEAT,    P.GRSEQ_RESUCNT,    P.MAN_RESUCNT,    P.WO_RESUCNT,    P.TOTNO,
+                    P.RATE,        'C' AS PFLAG
+            FROM
+            (
+                SELECT    (D.GRTYPE || D.GRSUBCD) AS GUBUN,
+                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육') AS GUBUNNM,
+                        A.GRCODE,
+                        A.GRCODENIKNM,
+                        COUNT(DISTINCT A.GRSEQ)     GRSEQ_CNT,
+                        NVL(SUM(A.TSEAT),0)         TSEAT,
+                        COUNT(DISTINCT C.GRSEQ)     GRSEQ_RESUCNT,
+                        NVL(SUM(C.MAN),0)             MAN_RESUCNT,
+                        NVL(SUM(C.WO),0)             WO_RESUCNT,
+                        NVL(SUM(C.TOTNO),0)         TOTNO,
+                        CASE WHEN SUM(C.TOTNO) > 0 AND SUM(A.TSEAT) > 0 THEN ROUND(SUM(C.TOTNO) / SUM(A.TSEAT),4)*100 
+                        ELSE 0 
+                        END ||'%' AS RATE
+                FROM TB_GRSEQ A,TB_MAINCODE MC, TB_SUBCODE SC,
+                (
+                    SELECT    T.GRCODE,T.GRSEQ,
+                            SUM(DECODE(Z.SEX,'M',1,0)) MAN,
+                            SUM(DECODE(Z.SEX,'F',1,0)) WO,
+                            COUNT(T.USERNO) TOTNO
+                    FROM     TB_GRRESULT T, TB_MEMBER Z
+                    WHERE     T.RGRAYN='Y' 
+                      AND T.USERNO = Z.USERNO(+)
+                    GROUP BY 
+                            T.GRCODE,T.GRSEQ
+                ) C , TB_GRCODE D
+                WHERE    A.GRCODE = D.GRCODE
+                AND     A.GRCODE=C.GRCODE(+) 
+                AND     A.GRSEQ=C.GRSEQ(+)
+                AND     (MC.CD_GUBUN(+)='G' AND D.GRTYPE=MC.MAJOR_CODE(+))
+                AND     (SC.CD_GUBUN(+)='G' AND D.GRTYPE=SC.MAJOR_CODE(+) AND D.GRSUBCD=SC.MINOR_CODE(+))
+                AND     TO_CHAR(A.ENDDATE,'yyyymm') BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+                GROUP BY 
+                        (D.GRTYPE || D.GRSUBCD), 
+                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육'),
+                        A.GRCODE,    A.GRCODENIKNM
+            ) P
+            UNION ALL
+            SELECT    P.GUBUN,    P.GUBUNNM,            '소계' AS GRCODE,        '소계' AS GRCODENIKNM,    
+                    SUM(P.GRSEQ_CNT)        AS    GRSEQ_CNT,
+                    SUM(P.TSEAT)            AS    TSEAT,    
+                    SUM(P.GRSEQ_RESUCNT)    AS    GRSEQ_RESUCNT,    
+                    SUM(P.MAN_RESUCNT)        AS    MAN_RESUCNT,    
+                    SUM(P.WO_RESUCNT)        AS    WO_RESUCNT,    
+                    SUM(P.TOTNO)            AS    TOTNO,
+                    CASE WHEN SUM(P.TOTNO) > 0 AND SUM(P.TSEAT) > 0 THEN ROUND(SUM(P.TOTNO) / SUM(P.TSEAT),4)*100 
+                    ELSE 0 
+                    END ||'%' AS RATE,
+                    'B' AS PFLAG
+            FROM
+            (
+                SELECT    (D.GRTYPE || D.GRSUBCD) AS GUBUN,
+                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육') AS GUBUNNM,
+                        A.GRCODE,
+                        A.GRCODENIKNM,
+                        COUNT(DISTINCT A.GRSEQ)     GRSEQ_CNT,
+                        NVL(SUM(A.TSEAT),0)         TSEAT,
+                        COUNT(DISTINCT C.GRSEQ)     GRSEQ_RESUCNT,
+                        NVL(SUM(C.MAN),0)             MAN_RESUCNT,
+                        NVL(SUM(C.WO),0)             WO_RESUCNT,
+                        NVL(SUM(C.TOTNO),0)         TOTNO
+                FROM TB_GRSEQ A,TB_MAINCODE MC, TB_SUBCODE SC,
+                (
+                    SELECT    T.GRCODE,T.GRSEQ,
+                            SUM(DECODE(Z.SEX,'M',1,0)) MAN,
+                            SUM(DECODE(Z.SEX,'F',1,0)) WO,
+                            COUNT(T.USERNO) TOTNO
+                    FROM     TB_GRRESULT T, TB_MEMBER Z
+                    WHERE     T.RGRAYN='Y' 
+                      AND T.USERNO = Z.USERNO(+)
+                    GROUP BY 
+                            GRCODE,GRSEQ
+                ) C , TB_GRCODE D
+                WHERE    A.GRCODE = D.GRCODE
+                AND     A.GRCODE=C.GRCODE(+) 
+                AND     A.GRSEQ=C.GRSEQ(+)
+                AND     (MC.CD_GUBUN(+)='G' AND D.GRTYPE=MC.MAJOR_CODE(+))
+                AND     (SC.CD_GUBUN(+)='G' AND D.GRTYPE=SC.MAJOR_CODE(+) AND D.GRSUBCD=SC.MINOR_CODE(+))
+                AND     TO_CHAR(A.ENDDATE,'yyyymm') BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+                GROUP BY 
+                        (D.GRTYPE || D.GRSUBCD), 
+                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육'),
+                        A.GRCODE,    A.GRCODENIKNM
+            ) P
+            GROUP BY
+                    P.GUBUN,    P.GUBUNNM        
+            UNION ALL
+            SELECT    '000' AS GUBUN,    
+                    '총계' AS GUBUNNM,            
+                    '총계' AS GRCODE,        
+                    '총계' AS GRCODENIKNM,    
+                    SUM(P.GRSEQ_CNT)        AS    GRSEQ_CNT,
+                    SUM(P.TSEAT)            AS    TSEAT,    
+                    SUM(P.GRSEQ_RESUCNT)    AS    GRSEQ_RESUCNT,    
+                    SUM(P.MAN_RESUCNT)        AS    MAN_RESUCNT,    
+                    SUM(P.WO_RESUCNT)        AS    WO_RESUCNT,    
+                    SUM(P.TOTNO)            AS    TOTNO,
+                    CASE WHEN SUM(P.TOTNO) > 0 AND SUM(P.TSEAT) > 0 THEN ROUND(SUM(P.TOTNO) / SUM(P.TSEAT),4)*100 
+                    ELSE 0 
+                    END ||'%' AS RATE,
+                    'A' AS PFLAG
+            FROM
+            (
+                SELECT    (D.GRTYPE || D.GRSUBCD) AS GUBUN,
+                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육') AS GUBUNNM,
+                        A.GRCODE,
+                        A.GRCODENIKNM,
+                        COUNT(DISTINCT A.GRSEQ)     GRSEQ_CNT,
+                        NVL(SUM(A.TSEAT),0)         TSEAT,
+                        COUNT(DISTINCT C.GRSEQ)     GRSEQ_RESUCNT,
+                        NVL(SUM(C.MAN),0)             MAN_RESUCNT,
+                        NVL(SUM(C.WO),0)             WO_RESUCNT,
+                        NVL(SUM(C.TOTNO),0)         TOTNO
+                FROM TB_GRSEQ A,TB_MAINCODE MC, TB_SUBCODE SC,
+                (
+                    SELECT    T.GRCODE,T.GRSEQ,
+                            SUM(DECODE(Z.SEX,'M',1,0)) MAN,
+                            SUM(DECODE(Z.SEX,'F',1,0)) WO,
+                            COUNT(T.USERNO) TOTNO
+                    FROM     TB_GRRESULT T, TB_MEMBER Z
+                    WHERE     T.RGRAYN='Y' 
+                      AND T.USERNO = Z.USERNO(+)
+                    GROUP BY 
+                            GRCODE,GRSEQ
+                ) C , TB_GRCODE D
+                WHERE    A.GRCODE = D.GRCODE
+                AND     A.GRCODE=C.GRCODE(+) 
+                AND     A.GRSEQ=C.GRSEQ(+)
+                AND     (MC.CD_GUBUN(+)='G' AND D.GRTYPE=MC.MAJOR_CODE(+))
+                AND     (SC.CD_GUBUN(+)='G' AND D.GRTYPE=SC.MAJOR_CODE(+) AND D.GRSUBCD=SC.MINOR_CODE(+))
+                AND     TO_CHAR(A.ENDDATE,'yyyymm') BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+                GROUP BY 
+                        (D.GRTYPE || D.GRSUBCD), 
+                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육'),
+                        A.GRCODE,    A.GRCODENIKNM
+            ) P
+        
+        ) Z
+        ORDER BY
+                Z.GUBUN, Z.PFLAG
+	]]>
+	</select>
+	
+	<select id="courseStats2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정별 통계
+        SELECT    Z.*
+        FROM
+        (
+            SELECT    P.GUBUN,    P.GUBUNNM,            P.GRCODE,        P.GRCODENIKNM,    P.GRSEQ_CNT,
+                    P.TSEAT,    P.GRSEQ_RESUCNT,    P.MAN_RESUCNT,    P.WO_RESUCNT,    P.TOTNO,
+                    P.RATE,        'C' AS PFLAG
+            FROM
+            (
+                SELECT    (D.GRTYPE || D.GRSUBCD) AS GUBUN,
+                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육') AS GUBUNNM,
+                        A.GRCODE,
+                        A.GRCODENIKNM,
+                        COUNT(DISTINCT A.GRSEQ)     GRSEQ_CNT,
+                        NVL(SUM(A.TSEAT),0)         TSEAT,
+                        COUNT(DISTINCT C.GRSEQ)     GRSEQ_RESUCNT,
+                        NVL(SUM(C.MAN),0)             MAN_RESUCNT,
+                        NVL(SUM(C.WO),0)             WO_RESUCNT,
+                        NVL(SUM(C.TOTNO),0)         TOTNO,
+                        CASE WHEN SUM(C.TOTNO) > 0 AND SUM(A.TSEAT) > 0 THEN ROUND(SUM(C.TOTNO) / SUM(A.TSEAT),4)*100 
+                        ELSE 0 
+                        END ||'%' AS RATE
+                FROM TB_GRSEQ A,TB_MAINCODE MC, TB_SUBCODE SC,
+                (
+                    SELECT    T.GRCODE,T.GRSEQ, t.rdept,
+                            SUM(DECODE(Z.SEX,'M',1,0)) MAN,
+                            SUM(DECODE(Z.SEX,'F',1,0)) WO,
+                            COUNT(T.USERNO) TOTNO
+                    FROM     TB_GRRESULT T, TB_MEMBER Z
+                    WHERE     T.RGRAYN='Y' 
+                      AND T.USERNO = Z.USERNO(+)
+                    GROUP BY 
+                            T.GRCODE,T.GRSEQ, t.rdept
+                ) C , TB_GRCODE D
+                WHERE    A.GRCODE = D.GRCODE
+                AND     A.GRCODE=C.GRCODE(+) 
+                AND     A.GRSEQ=C.GRSEQ(+)
+                AND     (MC.CD_GUBUN(+)='G' AND D.GRTYPE=MC.MAJOR_CODE(+))
+                AND     (SC.CD_GUBUN(+)='G' AND D.GRTYPE=SC.MAJOR_CODE(+) AND D.GRSUBCD=SC.MINOR_CODE(+))
+                AND     C.RDEPT = #{dept}
+                AND     TO_CHAR(A.ENDDATE,'yyyymm') BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+                GROUP BY 
+                        (D.GRTYPE || D.GRSUBCD), 
+                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육'),
+                        A.GRCODE,    A.GRCODENIKNM
+            ) P
+            UNION ALL
+            SELECT    P.GUBUN,    P.GUBUNNM,            '소계' AS GRCODE,        '소계' AS GRCODENIKNM,    
+                    SUM(P.GRSEQ_CNT)        AS    GRSEQ_CNT,
+                    SUM(P.TSEAT)            AS    TSEAT,    
+                    SUM(P.GRSEQ_RESUCNT)    AS    GRSEQ_RESUCNT,    
+                    SUM(P.MAN_RESUCNT)        AS    MAN_RESUCNT,    
+                    SUM(P.WO_RESUCNT)        AS    WO_RESUCNT,    
+                    SUM(P.TOTNO)            AS    TOTNO,
+                    CASE WHEN SUM(P.TOTNO) > 0 AND SUM(P.TSEAT) > 0 THEN ROUND(SUM(P.TOTNO) / SUM(P.TSEAT),4)*100 
+                    ELSE 0 
+                    END ||'%' AS RATE,
+                    'B' AS PFLAG
+            FROM
+            (
+                SELECT    (D.GRTYPE || D.GRSUBCD) AS GUBUN,
+                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육') AS GUBUNNM,
+                        A.GRCODE,
+                        A.GRCODENIKNM,
+                        COUNT(DISTINCT A.GRSEQ)     GRSEQ_CNT,
+                        NVL(SUM(A.TSEAT),0)         TSEAT,
+                        COUNT(DISTINCT C.GRSEQ)     GRSEQ_RESUCNT,
+                        NVL(SUM(C.MAN),0)             MAN_RESUCNT,
+                        NVL(SUM(C.WO),0)             WO_RESUCNT,
+                        NVL(SUM(C.TOTNO),0)         TOTNO
+                FROM TB_GRSEQ A,TB_MAINCODE MC, TB_SUBCODE SC,
+                (
+                    SELECT    T.GRCODE,T.GRSEQ, t.rdept,
+                            SUM(DECODE(Z.SEX,'M',1,0)) MAN,
+                            SUM(DECODE(Z.SEX,'F',1,0)) WO,
+                            COUNT(T.USERNO) TOTNO
+                    FROM     TB_GRRESULT T, TB_MEMBER Z
+                    WHERE     T.RGRAYN='Y' 
+                      AND T.USERNO = Z.USERNO(+)
+                    GROUP BY 
+                            GRCODE,GRSEQ, t.rdept
+                ) C , TB_GRCODE D
+                WHERE    A.GRCODE = D.GRCODE
+                AND     A.GRCODE=C.GRCODE(+) 
+                AND     A.GRSEQ=C.GRSEQ(+)
+                AND     (MC.CD_GUBUN(+)='G' AND D.GRTYPE=MC.MAJOR_CODE(+))
+                AND     (SC.CD_GUBUN(+)='G' AND D.GRTYPE=SC.MAJOR_CODE(+) AND D.GRSUBCD=SC.MINOR_CODE(+))
+                AND     C.RDEPT = #{dept}
+                AND     TO_CHAR(A.ENDDATE,'yyyymm') BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+                GROUP BY 
+                        (D.GRTYPE || D.GRSUBCD), 
+                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육'),
+                        A.GRCODE,    A.GRCODENIKNM
+            ) P
+            GROUP BY
+                    P.GUBUN,    P.GUBUNNM        
+            UNION ALL
+            SELECT    '000' AS GUBUN,    
+                    '총계' AS GUBUNNM,            
+                    '총계' AS GRCODE,        
+                    '총계' AS GRCODENIKNM,    
+                    SUM(P.GRSEQ_CNT)        AS    GRSEQ_CNT,
+                    SUM(P.TSEAT)            AS    TSEAT,    
+                    SUM(P.GRSEQ_RESUCNT)    AS    GRSEQ_RESUCNT,    
+                    SUM(P.MAN_RESUCNT)        AS    MAN_RESUCNT,    
+                    SUM(P.WO_RESUCNT)        AS    WO_RESUCNT,    
+                    SUM(P.TOTNO)            AS    TOTNO,
+                    CASE WHEN SUM(P.TOTNO) > 0 AND SUM(P.TSEAT) > 0 THEN ROUND(SUM(P.TOTNO) / SUM(P.TSEAT),4)*100 
+                    ELSE 0 
+                    END ||'%' AS RATE,
+                    'A' AS PFLAG
+            FROM
+            (
+                SELECT    (D.GRTYPE || D.GRSUBCD) AS GUBUN,
+                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육') AS GUBUNNM,
+                        A.GRCODE,
+                        A.GRCODENIKNM,
+                        COUNT(DISTINCT A.GRSEQ)     GRSEQ_CNT,
+                        NVL(SUM(A.TSEAT),0)         TSEAT,
+                        COUNT(DISTINCT C.GRSEQ)     GRSEQ_RESUCNT,
+                        NVL(SUM(C.MAN),0)             MAN_RESUCNT,
+                        NVL(SUM(C.WO),0)             WO_RESUCNT,
+                        NVL(SUM(C.TOTNO),0)         TOTNO
+                FROM TB_GRSEQ A,TB_MAINCODE MC, TB_SUBCODE SC,
+                (
+                    SELECT    T.GRCODE,T.GRSEQ, t.rdept,
+                            SUM(DECODE(Z.SEX,'M',1,0)) MAN,
+                            SUM(DECODE(Z.SEX,'F',1,0)) WO,
+                            COUNT(T.USERNO) TOTNO
+                    FROM     TB_GRRESULT T, TB_MEMBER Z
+                    WHERE     T.RGRAYN='Y' 
+                      AND T.USERNO = Z.USERNO(+)
+                    GROUP BY 
+                            GRCODE,GRSEQ, t.rdept
+                ) C , TB_GRCODE D
+                WHERE    A.GRCODE = D.GRCODE
+                AND     A.GRCODE=C.GRCODE(+) 
+                AND     A.GRSEQ=C.GRSEQ(+)
+                AND     (MC.CD_GUBUN(+)='G' AND D.GRTYPE=MC.MAJOR_CODE(+))
+                AND     (SC.CD_GUBUN(+)='G' AND D.GRTYPE=SC.MAJOR_CODE(+) AND D.GRSUBCD=SC.MINOR_CODE(+))
+                AND     C.RDEPT = #{dept}
+                AND     TO_CHAR(A.ENDDATE,'yyyymm') BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+                GROUP BY 
+                        (D.GRTYPE || D.GRSUBCD), 
+                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육'),
+                        A.GRCODE,    A.GRCODENIKNM
+            ) P
+        
+        ) Z
+        ORDER BY
+                Z.GUBUN, Z.PFLAG
+	]]>
+	</select>
+	
+	<select id="accidentStats" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 미등록 미수료자 현황
+		SELECT	*
+		FROM
+		(
+		
+		    SELECT	A.GUBUN,	A.GUBUNNM,	A.GRCODE,	A.GRCODENM,	'C' AS PFLAG,
+		            ( A.ADEPTCOUNT_SUBSUM + A.BDEPTCOUNT_SUBSUM + A.CDEPTCOUNT_SUBSUM ) SUM_TOTAL,
+		            A.ADEPTCOUNT_SUBSUM,
+		            A.ADEPTCOUNT1,	A.ADEPTCOUNT2,	A.ADEPTCOUNT3,	A.ADEPTCOUNT4,	A.ADEPTCOUNT5,
+		            A.ADEPTCOUNT6,	A.ADEPTCOUNT7,	A.ADEPTCOUNT8,	A.ADEPTCOUNT9,	A.ADEPTCOUNT10,
+		            A.ADEPTCOUNT11,	A.ADEPTCOUNT12,	A.ADEPTCOUNT13,
+		
+		            A.BDEPTCOUNT_SUBSUM,
+		            A.BDEPTCOUNT1,	A.BDEPTCOUNT2,	A.BDEPTCOUNT3,	A.BDEPTCOUNT4,	A.BDEPTCOUNT5,
+		            A.BDEPTCOUNT6,	A.BDEPTCOUNT7,	A.BDEPTCOUNT8,	A.BDEPTCOUNT9,	A.BDEPTCOUNT10,
+		            A.BDEPTCOUNT11,	A.BDEPTCOUNT12,	A.BDEPTCOUNT13,
+		            
+		            A.CDEPTCOUNT_SUBSUM,
+		            A.CDEPTCOUNT1,	A.CDEPTCOUNT2,	A.CDEPTCOUNT3,	A.CDEPTCOUNT4,	A.CDEPTCOUNT5,
+		            A.CDEPTCOUNT6,	A.CDEPTCOUNT7,	A.CDEPTCOUNT8,	A.CDEPTCOUNT9,	A.CDEPTCOUNT10,
+		            A.CDEPTCOUNT11,	A.CDEPTCOUNT12,	A.CDEPTCOUNT13  
+		            
+		    FROM
+		    (
+		        SELECT 	GUBUN,	GUBUNNM,	GRCODE,	GRCODENM,
+		                
+		                (
+		                    SUM(ADEPTCOUNT1) + SUM(ADEPTCOUNT2) + SUM(ADEPTCOUNT3) + SUM(ADEPTCOUNT4) + SUM(ADEPTCOUNT5) + 
+		                    SUM(ADEPTCOUNT6) + SUM(ADEPTCOUNT7) + SUM(ADEPTCOUNT8) + SUM(ADEPTCOUNT9) + SUM(ADEPTCOUNT10) +	
+		                    SUM(ADEPTCOUNT11) + SUM(ADEPTCOUNT12) + SUM(ADEPTCOUNT13)
+		                ) ADEPTCOUNT_SUBSUM,
+		                
+		                
+		                SUM(ADEPTCOUNT1) ADEPTCOUNT1,	SUM(ADEPTCOUNT2) ADEPTCOUNT2,	SUM(ADEPTCOUNT3) ADEPTCOUNT3,	SUM(ADEPTCOUNT4) ADEPTCOUNT4,	SUM(ADEPTCOUNT5) ADEPTCOUNT5,
+		                SUM(ADEPTCOUNT6) ADEPTCOUNT6,	SUM(ADEPTCOUNT7) ADEPTCOUNT7,	SUM(ADEPTCOUNT8) ADEPTCOUNT8,	SUM(ADEPTCOUNT9) ADEPTCOUNT9,	SUM(ADEPTCOUNT10) ADEPTCOUNT10,	
+		                SUM(ADEPTCOUNT11) ADEPTCOUNT11,	SUM(ADEPTCOUNT12) ADEPTCOUNT12,	SUM(ADEPTCOUNT13) ADEPTCOUNT13,
+		                
+		                (
+		                    SUM(BDEPTCOUNT1) + SUM(BDEPTCOUNT2) + SUM(BDEPTCOUNT3) + SUM(BDEPTCOUNT4) + SUM(BDEPTCOUNT5) +
+		                    SUM(BDEPTCOUNT6) + SUM(BDEPTCOUNT7) + SUM(BDEPTCOUNT8) + SUM(BDEPTCOUNT9) + SUM(BDEPTCOUNT10) +
+		                    SUM(BDEPTCOUNT11) + SUM(BDEPTCOUNT12) + SUM(BDEPTCOUNT13) 
+		                ) BDEPTCOUNT_SUBSUM,
+		                
+		                
+		                SUM(BDEPTCOUNT1) BDEPTCOUNT1,	SUM(BDEPTCOUNT2) BDEPTCOUNT2,	SUM(BDEPTCOUNT3) BDEPTCOUNT3,	SUM(BDEPTCOUNT4) BDEPTCOUNT4,	SUM(BDEPTCOUNT5) BDEPTCOUNT5,
+		                SUM(BDEPTCOUNT6) BDEPTCOUNT6,	SUM(BDEPTCOUNT7) BDEPTCOUNT7,	SUM(BDEPTCOUNT8) BDEPTCOUNT8,	SUM(BDEPTCOUNT9) BDEPTCOUNT9,	SUM(BDEPTCOUNT10) BDEPTCOUNT10,
+		                SUM(BDEPTCOUNT11) BDEPTCOUNT11,	SUM(BDEPTCOUNT12) BDEPTCOUNT12,	SUM(BDEPTCOUNT13) BDEPTCOUNT13,
+		                
+		                (
+		                    SUM(CDEPTCOUNT1) + SUM(CDEPTCOUNT2) + SUM(CDEPTCOUNT3) + SUM(CDEPTCOUNT4) + SUM(CDEPTCOUNT5) + 
+		                    SUM(CDEPTCOUNT6) + SUM(CDEPTCOUNT7) + SUM(CDEPTCOUNT8) + SUM(CDEPTCOUNT9) + SUM(CDEPTCOUNT10) +
+		                    SUM(CDEPTCOUNT11) + SUM(CDEPTCOUNT12) + SUM(CDEPTCOUNT13)            
+		                ) CDEPTCOUNT_SUBSUM,
+		                
+		                SUM(CDEPTCOUNT1) CDEPTCOUNT1,	SUM(CDEPTCOUNT2) CDEPTCOUNT2,	SUM(CDEPTCOUNT3) CDEPTCOUNT3,	SUM(CDEPTCOUNT4) CDEPTCOUNT4,	SUM(CDEPTCOUNT5) CDEPTCOUNT5,
+		                SUM(CDEPTCOUNT6) CDEPTCOUNT6,	SUM(CDEPTCOUNT7) CDEPTCOUNT7,	SUM(CDEPTCOUNT8) CDEPTCOUNT8,	SUM(CDEPTCOUNT9) CDEPTCOUNT9,	SUM(CDEPTCOUNT10) CDEPTCOUNT10,
+		                SUM(CDEPTCOUNT11) CDEPTCOUNT11,	SUM(CDEPTCOUNT12) CDEPTCOUNT12,	SUM(CDEPTCOUNT13) CDEPTCOUNT13
+		                
+		        FROM	TV_ACCIDENT
+		        WHERE	GRSEQ LIKE #{value} ||'%'
+		        GROUP BY 
+		                GUBUN,GUBUNNM,GRCODE,GRCODENM
+		    ) A     
+		
+		    UNION ALL
+		
+		    SELECT	B.GUBUN,	B.GUBUNNM,	'' AS GRCODE,	'소계' AS GRCODENM,	'B' AS PFLAG,
+		            SUM(B.SUM_TOTAL) SUM_TOTAL,
+		            
+		            SUM(B.ADEPTCOUNT_SUBSUM) ADEPTCOUNT_SUBSUM,
+		            
+		            SUM(B.ADEPTCOUNT1) ADEPTCOUNT1,		SUM(B.ADEPTCOUNT2) ADEPTCOUNT2,		SUM(B.ADEPTCOUNT3) ADEPTCOUNT3,		SUM(B.ADEPTCOUNT4) ADEPTCOUNT4,	SUM(B.ADEPTCOUNT5) ADEPTCOUNT5,
+		            SUM(B.ADEPTCOUNT6) ADEPTCOUNT6,		SUM(B.ADEPTCOUNT7) ADEPTCOUNT7,		SUM(B.ADEPTCOUNT8) ADEPTCOUNT8,		SUM(B.ADEPTCOUNT9) ADEPTCOUNT9,	SUM(B.ADEPTCOUNT10) ADEPTCOUNT10,	
+		            SUM(B.ADEPTCOUNT11) ADEPTCOUNT11,	SUM(B.ADEPTCOUNT12) ADEPTCOUNT12,	SUM(B.ADEPTCOUNT13) ADEPTCOUNT13,
+		            
+		            SUM(B.BDEPTCOUNT_SUBSUM) BDEPTCOUNT_SUBSUM,
+		            
+		            SUM(B.BDEPTCOUNT1) BDEPTCOUNT1,		SUM(B.BDEPTCOUNT2) BDEPTCOUNT2,		SUM(B.BDEPTCOUNT3) BDEPTCOUNT3,		SUM(B.BDEPTCOUNT4) BDEPTCOUNT4,	SUM(B.BDEPTCOUNT5) BDEPTCOUNT5,
+		            SUM(B.BDEPTCOUNT6) BDEPTCOUNT6,		SUM(B.BDEPTCOUNT7) BDEPTCOUNT7,		SUM(B.BDEPTCOUNT8) BDEPTCOUNT8,		SUM(B.BDEPTCOUNT9) BDEPTCOUNT9,	SUM(B.BDEPTCOUNT10) BDEPTCOUNT10,	
+		            SUM(B.BDEPTCOUNT11) BDEPTCOUNT11,	SUM(B.BDEPTCOUNT12) BDEPTCOUNT12,	SUM(B.BDEPTCOUNT13) BDEPTCOUNT13,
+		            
+		            SUM(B.CDEPTCOUNT_SUBSUM) CDEPTCOUNT_SUBSUM,
+		            
+		            SUM(B.CDEPTCOUNT1) CDEPTCOUNT1,		SUM(B.CDEPTCOUNT2) CDEPTCOUNT2,		SUM(B.CDEPTCOUNT3) CDEPTCOUNT3,		SUM(B.CDEPTCOUNT4) CDEPTCOUNT4,	SUM(B.CDEPTCOUNT5) CDEPTCOUNT5,
+		            SUM(B.CDEPTCOUNT6) CDEPTCOUNT6,		SUM(B.CDEPTCOUNT7) CDEPTCOUNT7,		SUM(B.CDEPTCOUNT8) CDEPTCOUNT8,		SUM(B.CDEPTCOUNT9) CDEPTCOUNT9,	SUM(B.CDEPTCOUNT10) CDEPTCOUNT10,	
+		            SUM(B.CDEPTCOUNT11) CDEPTCOUNT11,	SUM(B.CDEPTCOUNT12) CDEPTCOUNT12,	SUM(B.CDEPTCOUNT13) CDEPTCOUNT1
+		            
+		                   
+		    FROM
+		    (
+		        SELECT	A.GUBUN,	A.GUBUNNM,	A.GRCODE,	A.GRCODENM,
+		                ( A.ADEPTCOUNT_SUBSUM + A.BDEPTCOUNT_SUBSUM + A.CDEPTCOUNT_SUBSUM ) SUM_TOTAL,
+		                A.ADEPTCOUNT_SUBSUM,
+		                A.ADEPTCOUNT1,	A.ADEPTCOUNT2,	A.ADEPTCOUNT3,	A.ADEPTCOUNT4,	A.ADEPTCOUNT5,
+		                A.ADEPTCOUNT6,	A.ADEPTCOUNT7,	A.ADEPTCOUNT8,	A.ADEPTCOUNT9,	A.ADEPTCOUNT10,
+		                A.ADEPTCOUNT11,	A.ADEPTCOUNT12,	A.ADEPTCOUNT13,
+		
+		                A.BDEPTCOUNT_SUBSUM,
+		                A.BDEPTCOUNT1,	A.BDEPTCOUNT2,	A.BDEPTCOUNT3,	A.BDEPTCOUNT4,	A.BDEPTCOUNT5,
+		                A.BDEPTCOUNT6,	A.BDEPTCOUNT7,	A.BDEPTCOUNT8,	A.BDEPTCOUNT9,	A.BDEPTCOUNT10,
+		                A.BDEPTCOUNT11,	A.BDEPTCOUNT12,	A.BDEPTCOUNT13,
+		                
+		                A.CDEPTCOUNT_SUBSUM,
+		                A.CDEPTCOUNT1,	A.CDEPTCOUNT2,	A.CDEPTCOUNT3,	A.CDEPTCOUNT4,	A.CDEPTCOUNT5,
+		                A.CDEPTCOUNT6,	A.CDEPTCOUNT7,	A.CDEPTCOUNT8,	A.CDEPTCOUNT9,	A.CDEPTCOUNT10,
+		                A.CDEPTCOUNT11,	A.CDEPTCOUNT12,	A.CDEPTCOUNT13  
+		                
+		        FROM
+		        (
+		            SELECT 	GUBUN,	GUBUNNM,	GRCODE,	GRCODENM,
+		                    
+		                    (
+		                        SUM(ADEPTCOUNT1) + SUM(ADEPTCOUNT2) + SUM(ADEPTCOUNT3) + SUM(ADEPTCOUNT4) + SUM(ADEPTCOUNT5) + 
+		                        SUM(ADEPTCOUNT6) + SUM(ADEPTCOUNT7) + SUM(ADEPTCOUNT8) + SUM(ADEPTCOUNT9) + SUM(ADEPTCOUNT10) +	
+		                        SUM(ADEPTCOUNT11) + SUM(ADEPTCOUNT12) + SUM(ADEPTCOUNT13)
+		                    ) ADEPTCOUNT_SUBSUM,
+		                    
+		                    
+		                    SUM(ADEPTCOUNT1) ADEPTCOUNT1,	SUM(ADEPTCOUNT2) ADEPTCOUNT2,	SUM(ADEPTCOUNT3) ADEPTCOUNT3,	SUM(ADEPTCOUNT4) ADEPTCOUNT4,	SUM(ADEPTCOUNT5) ADEPTCOUNT5,
+		                    SUM(ADEPTCOUNT6) ADEPTCOUNT6,	SUM(ADEPTCOUNT7) ADEPTCOUNT7,	SUM(ADEPTCOUNT8) ADEPTCOUNT8,	SUM(ADEPTCOUNT9) ADEPTCOUNT9,	SUM(ADEPTCOUNT10) ADEPTCOUNT10,	
+		                    SUM(ADEPTCOUNT11) ADEPTCOUNT11,	SUM(ADEPTCOUNT12) ADEPTCOUNT12,	SUM(ADEPTCOUNT13) ADEPTCOUNT13,
+		                    
+		                    (
+		                        SUM(BDEPTCOUNT1) + SUM(BDEPTCOUNT2) + SUM(BDEPTCOUNT3) + SUM(BDEPTCOUNT4) + SUM(BDEPTCOUNT5) +
+		                        SUM(BDEPTCOUNT6) + SUM(BDEPTCOUNT7) + SUM(BDEPTCOUNT8) + SUM(BDEPTCOUNT9) + SUM(BDEPTCOUNT10) +
+		                        SUM(BDEPTCOUNT11) + SUM(BDEPTCOUNT12) + SUM(BDEPTCOUNT13) 
+		                    ) BDEPTCOUNT_SUBSUM,
+		                    
+		                    
+		                    SUM(BDEPTCOUNT1) BDEPTCOUNT1,	SUM(BDEPTCOUNT2) BDEPTCOUNT2,	SUM(BDEPTCOUNT3) BDEPTCOUNT3,	SUM(BDEPTCOUNT4) BDEPTCOUNT4,	SUM(BDEPTCOUNT5) BDEPTCOUNT5,
+		                    SUM(BDEPTCOUNT6) BDEPTCOUNT6,	SUM(BDEPTCOUNT7) BDEPTCOUNT7,	SUM(BDEPTCOUNT8) BDEPTCOUNT8,	SUM(BDEPTCOUNT9) BDEPTCOUNT9,	SUM(BDEPTCOUNT10) BDEPTCOUNT10,
+		                    SUM(BDEPTCOUNT11) BDEPTCOUNT11,	SUM(BDEPTCOUNT12) BDEPTCOUNT12,	SUM(BDEPTCOUNT13) BDEPTCOUNT13,
+		                    
+		                    (
+		                        SUM(CDEPTCOUNT1) + SUM(CDEPTCOUNT2) + SUM(CDEPTCOUNT3) + SUM(CDEPTCOUNT4) + SUM(CDEPTCOUNT5) + 
+		                        SUM(CDEPTCOUNT6) + SUM(CDEPTCOUNT7) + SUM(CDEPTCOUNT8) + SUM(CDEPTCOUNT9) + SUM(CDEPTCOUNT10) +
+		                        SUM(CDEPTCOUNT11) + SUM(CDEPTCOUNT12) + SUM(CDEPTCOUNT13)            
+		                    ) CDEPTCOUNT_SUBSUM,
+		                    
+		                    SUM(CDEPTCOUNT1) CDEPTCOUNT1,	SUM(CDEPTCOUNT2) CDEPTCOUNT2,	SUM(CDEPTCOUNT3) CDEPTCOUNT3,	SUM(CDEPTCOUNT4) CDEPTCOUNT4,	SUM(CDEPTCOUNT5) CDEPTCOUNT5,
+		                    SUM(CDEPTCOUNT6) CDEPTCOUNT6,	SUM(CDEPTCOUNT7) CDEPTCOUNT7,	SUM(CDEPTCOUNT8) CDEPTCOUNT8,	SUM(CDEPTCOUNT9) CDEPTCOUNT9,	SUM(CDEPTCOUNT10) CDEPTCOUNT10,
+		                    SUM(CDEPTCOUNT11) CDEPTCOUNT11,	SUM(CDEPTCOUNT12) CDEPTCOUNT12,	SUM(CDEPTCOUNT13) CDEPTCOUNT13
+		                    
+		            FROM	TV_ACCIDENT
+		            WHERE	GRSEQ LIKE #{value} ||'%'
+		            GROUP BY 
+		                    GUBUN,GUBUNNM,GRCODE,GRCODENM
+		        ) A        
+		    ) B
+		    GROUP BY
+		            B.GUBUN,	B.GUBUNNM
+		
+		    UNION ALL
+		
+		    SELECT	'000' AS GUBUN,	'총계' AS GUBUNNM,	'' AS GRCODE,	'총계' AS GRCODENM,	'A' AS PFLAG,
+		            SUM(B.SUM_TOTAL) SUM_TOTAL,
+		            
+		            SUM(B.ADEPTCOUNT_SUBSUM) ADEPTCOUNT_SUBSUM,
+		            
+		            SUM(B.ADEPTCOUNT1) ADEPTCOUNT1,		SUM(B.ADEPTCOUNT2) ADEPTCOUNT2,		SUM(B.ADEPTCOUNT3) ADEPTCOUNT3,		SUM(B.ADEPTCOUNT4) ADEPTCOUNT4,	SUM(B.ADEPTCOUNT5) ADEPTCOUNT5,
+		            SUM(B.ADEPTCOUNT6) ADEPTCOUNT6,		SUM(B.ADEPTCOUNT7) ADEPTCOUNT7,		SUM(B.ADEPTCOUNT8) ADEPTCOUNT8,		SUM(B.ADEPTCOUNT9) ADEPTCOUNT9,	SUM(B.ADEPTCOUNT10) ADEPTCOUNT10,	
+		            SUM(B.ADEPTCOUNT11) ADEPTCOUNT11,	SUM(B.ADEPTCOUNT12) ADEPTCOUNT12,	SUM(B.ADEPTCOUNT13) ADEPTCOUNT13,
+		            
+		            SUM(B.BDEPTCOUNT_SUBSUM) BDEPTCOUNT_SUBSUM,
+		            
+		            SUM(B.BDEPTCOUNT1) BDEPTCOUNT1,		SUM(B.BDEPTCOUNT2) BDEPTCOUNT2,		SUM(B.BDEPTCOUNT3) BDEPTCOUNT3,		SUM(B.BDEPTCOUNT4) BDEPTCOUNT4,	SUM(B.BDEPTCOUNT5) BDEPTCOUNT5,
+		            SUM(B.BDEPTCOUNT6) BDEPTCOUNT6,		SUM(B.BDEPTCOUNT7) BDEPTCOUNT7,		SUM(B.BDEPTCOUNT8) BDEPTCOUNT8,		SUM(B.BDEPTCOUNT9) BDEPTCOUNT9,	SUM(B.BDEPTCOUNT10) BDEPTCOUNT10,	
+		            SUM(B.BDEPTCOUNT11) BDEPTCOUNT11,	SUM(B.BDEPTCOUNT12) BDEPTCOUNT12,	SUM(B.BDEPTCOUNT13) BDEPTCOUNT13,
+		            
+		            SUM(B.CDEPTCOUNT_SUBSUM) CDEPTCOUNT_SUBSUM,
+		            
+		            SUM(B.CDEPTCOUNT1) CDEPTCOUNT1,		SUM(B.CDEPTCOUNT2) CDEPTCOUNT2,		SUM(B.CDEPTCOUNT3) CDEPTCOUNT3,		SUM(B.CDEPTCOUNT4) CDEPTCOUNT4,	SUM(B.CDEPTCOUNT5) CDEPTCOUNT5,
+		            SUM(B.CDEPTCOUNT6) CDEPTCOUNT6,		SUM(B.CDEPTCOUNT7) CDEPTCOUNT7,		SUM(B.CDEPTCOUNT8) CDEPTCOUNT8,		SUM(B.CDEPTCOUNT9) CDEPTCOUNT9,	SUM(B.CDEPTCOUNT10) CDEPTCOUNT10,	
+		            SUM(B.CDEPTCOUNT11) CDEPTCOUNT11,	SUM(B.CDEPTCOUNT12) CDEPTCOUNT12,	SUM(B.CDEPTCOUNT13) CDEPTCOUNT1
+		            
+		                   
+		    FROM
+		    (
+		        SELECT	A.GUBUN,	A.GUBUNNM,	A.GRCODE,	A.GRCODENM,
+		                ( A.ADEPTCOUNT_SUBSUM + A.BDEPTCOUNT_SUBSUM + A.CDEPTCOUNT_SUBSUM ) SUM_TOTAL,
+		                A.ADEPTCOUNT_SUBSUM,
+		                A.ADEPTCOUNT1,	A.ADEPTCOUNT2,	A.ADEPTCOUNT3,	A.ADEPTCOUNT4,	A.ADEPTCOUNT5,
+		                A.ADEPTCOUNT6,	A.ADEPTCOUNT7,	A.ADEPTCOUNT8,	A.ADEPTCOUNT9,	A.ADEPTCOUNT10,
+		                A.ADEPTCOUNT11,	A.ADEPTCOUNT12,	A.ADEPTCOUNT13,
+		
+		                A.BDEPTCOUNT_SUBSUM,
+		                A.BDEPTCOUNT1,	A.BDEPTCOUNT2,	A.BDEPTCOUNT3,	A.BDEPTCOUNT4,	A.BDEPTCOUNT5,
+		                A.BDEPTCOUNT6,	A.BDEPTCOUNT7,	A.BDEPTCOUNT8,	A.BDEPTCOUNT9,	A.BDEPTCOUNT10,
+		                A.BDEPTCOUNT11,	A.BDEPTCOUNT12,	A.BDEPTCOUNT13,
+		                
+		                A.CDEPTCOUNT_SUBSUM,
+		                A.CDEPTCOUNT1,	A.CDEPTCOUNT2,	A.CDEPTCOUNT3,	A.CDEPTCOUNT4,	A.CDEPTCOUNT5,
+		                A.CDEPTCOUNT6,	A.CDEPTCOUNT7,	A.CDEPTCOUNT8,	A.CDEPTCOUNT9,	A.CDEPTCOUNT10,
+		                A.CDEPTCOUNT11,	A.CDEPTCOUNT12,	A.CDEPTCOUNT13  
+		                
+		        FROM
+		        (
+		            SELECT 	GUBUN,	GUBUNNM,	GRCODE,	GRCODENM,
+		                    
+		                    (
+		                        SUM(ADEPTCOUNT1) + SUM(ADEPTCOUNT2) + SUM(ADEPTCOUNT3) + SUM(ADEPTCOUNT4) + SUM(ADEPTCOUNT5) + 
+		                        SUM(ADEPTCOUNT6) + SUM(ADEPTCOUNT7) + SUM(ADEPTCOUNT8) + SUM(ADEPTCOUNT9) + SUM(ADEPTCOUNT10) +	
+		                        SUM(ADEPTCOUNT11) + SUM(ADEPTCOUNT12) + SUM(ADEPTCOUNT13)
+		                    ) ADEPTCOUNT_SUBSUM,
+		                    
+		                    
+		                    SUM(ADEPTCOUNT1) ADEPTCOUNT1,	SUM(ADEPTCOUNT2) ADEPTCOUNT2,	SUM(ADEPTCOUNT3) ADEPTCOUNT3,	SUM(ADEPTCOUNT4) ADEPTCOUNT4,	SUM(ADEPTCOUNT5) ADEPTCOUNT5,
+		                    SUM(ADEPTCOUNT6) ADEPTCOUNT6,	SUM(ADEPTCOUNT7) ADEPTCOUNT7,	SUM(ADEPTCOUNT8) ADEPTCOUNT8,	SUM(ADEPTCOUNT9) ADEPTCOUNT9,	SUM(ADEPTCOUNT10) ADEPTCOUNT10,	
+		                    SUM(ADEPTCOUNT11) ADEPTCOUNT11,	SUM(ADEPTCOUNT12) ADEPTCOUNT12,	SUM(ADEPTCOUNT13) ADEPTCOUNT13,
+		                    
+		                    (
+		                        SUM(BDEPTCOUNT1) + SUM(BDEPTCOUNT2) + SUM(BDEPTCOUNT3) + SUM(BDEPTCOUNT4) + SUM(BDEPTCOUNT5) +
+		                        SUM(BDEPTCOUNT6) + SUM(BDEPTCOUNT7) + SUM(BDEPTCOUNT8) + SUM(BDEPTCOUNT9) + SUM(BDEPTCOUNT10) +
+		                        SUM(BDEPTCOUNT11) + SUM(BDEPTCOUNT12) + SUM(BDEPTCOUNT13) 
+		                    ) BDEPTCOUNT_SUBSUM,
+		                    
+		                    
+		                    SUM(BDEPTCOUNT1) BDEPTCOUNT1,	SUM(BDEPTCOUNT2) BDEPTCOUNT2,	SUM(BDEPTCOUNT3) BDEPTCOUNT3,	SUM(BDEPTCOUNT4) BDEPTCOUNT4,	SUM(BDEPTCOUNT5) BDEPTCOUNT5,
+		                    SUM(BDEPTCOUNT6) BDEPTCOUNT6,	SUM(BDEPTCOUNT7) BDEPTCOUNT7,	SUM(BDEPTCOUNT8) BDEPTCOUNT8,	SUM(BDEPTCOUNT9) BDEPTCOUNT9,	SUM(BDEPTCOUNT10) BDEPTCOUNT10,
+		                    SUM(BDEPTCOUNT11) BDEPTCOUNT11,	SUM(BDEPTCOUNT12) BDEPTCOUNT12,	SUM(BDEPTCOUNT13) BDEPTCOUNT13,
+		                    
+		                    (
+		                        SUM(CDEPTCOUNT1) + SUM(CDEPTCOUNT2) + SUM(CDEPTCOUNT3) + SUM(CDEPTCOUNT4) + SUM(CDEPTCOUNT5) + 
+		                        SUM(CDEPTCOUNT6) + SUM(CDEPTCOUNT7) + SUM(CDEPTCOUNT8) + SUM(CDEPTCOUNT9) + SUM(CDEPTCOUNT10) +
+		                        SUM(CDEPTCOUNT11) + SUM(CDEPTCOUNT12) + SUM(CDEPTCOUNT13)            
+		                    ) CDEPTCOUNT_SUBSUM,
+		                    
+		                    SUM(CDEPTCOUNT1) CDEPTCOUNT1,	SUM(CDEPTCOUNT2) CDEPTCOUNT2,	SUM(CDEPTCOUNT3) CDEPTCOUNT3,	SUM(CDEPTCOUNT4) CDEPTCOUNT4,	SUM(CDEPTCOUNT5) CDEPTCOUNT5,
+		                    SUM(CDEPTCOUNT6) CDEPTCOUNT6,	SUM(CDEPTCOUNT7) CDEPTCOUNT7,	SUM(CDEPTCOUNT8) CDEPTCOUNT8,	SUM(CDEPTCOUNT9) CDEPTCOUNT9,	SUM(CDEPTCOUNT10) CDEPTCOUNT10,
+		                    SUM(CDEPTCOUNT11) CDEPTCOUNT11,	SUM(CDEPTCOUNT12) CDEPTCOUNT12,	SUM(CDEPTCOUNT13) CDEPTCOUNT13
+		                    
+		            FROM	TV_ACCIDENT
+		            WHERE	GRSEQ LIKE #{value} ||'%'
+		            GROUP BY 
+		                    GUBUN,GUBUNNM,GRCODE,GRCODENM
+		        ) A        
+		    ) B
+		
+		) Z
+		ORDER BY
+				Z.GUBUN, Z.PFLAG, Z.GUBUNNM
+	]]>
+	</select>
+	
+	<select id="selectJikr" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 대상별 교육훈려실적 - 직렬별 col 리스트
+		SELECT	Z.CODE, Z.CODENM, Z.TCOUNT,
+				ROWNUM ROW_INDEX
+		FROM
+		(
+		    SELECT 	NVL(C.CODE,'999') CODE, 
+		            NVL(MIN(C.CODENM),'기타') CODENM,	
+		            COUNT(*) TCOUNT 
+		    FROM 	TB_GRRESULT A,TB_JIK B,TB_JIKGUBUN C 
+		    WHERE 	A.RJIK			=	B.JIK(+) 
+		    AND 	B.JIKR			=	C.CODE(+) 
+		    AND 	C.JIKGUBUN(+)	=	'jikr' 
+		    AND 	A.GRSEQ 		LIKE #{value} ||'%' 
+		    AND 	A.RGRAYN		=	'Y' 
+		    GROUP BY 
+		            C.CODE,C.CODENM 
+		    ORDER BY 
+		            C.CODE
+		) Z
+	]]>
+	</select>
+	
+	<select id="targetEduStatsByJikr" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 대상별 교육훈려실적 - 직렬별
+		SELECT	Z.*
+		FROM
+		(        
+		
+		    SELECT	C.GUBUNNM, C.GRCODENM, C.GRCODE, C.GRSEQ, 'C' AS PFLAG,
+		    		
+		            ( 
+		                ${totalSql}
+		            ) TOTAL_SUM,
+		
+		            ${sumSql}
+		    		
+		    FROM
+		    (
+		        SELECT	A.GUBUNNM, A.GRCODENM, A.GRCODE, A.GRSEQ,
+		        
+		                ${decodeSql}
+		        FROM
+		        (
+		            /* 과정 */       
+		            SELECT	(D.GRTYPE || D.GRSUBCD) AS GUBUN,
+		                    A.GRCODE, A.GRSEQ,  
+		                    (MIN(MC.MCODE_NAME) || MIN(SC.SCODE_NAME) || '교육') AS GUBUNNM,  
+		            		
+		                    DECODE(SUBSTR(A.GRSEQ,6,1),'1',MIN(D.GRCODENM) ||'(1)',MIN(D.GRCODENM)||'('||SUBSTR(A.GRSEQ,6,1)||')') GRCODENM
+		                    
+		            FROM 	TB_GRSEQ A,TB_MAINCODE MC, TB_SUBCODE SC, TB_GRRESULT GR, TB_GRCODE D
+		            WHERE 	A.GRCODE	= 	D.GRCODE 
+		            AND 	A.GRCODE	=	GR.GRCODE 
+		            AND 	A.GRSEQ		=	GR.GRSEQ 
+		            AND 	(MC.CD_GUBUN(+)='G' AND D.GRTYPE=MC.MAJOR_CODE(+)) 
+		            AND 	(SC.CD_GUBUN(+)='G' AND D.GRTYPE=SC.MAJOR_CODE(+) AND D.GRSUBCD=SC.MINOR_CODE(+)) 
+		            AND 	A.GRSEQ LIKE #{searchDay} ||'%' 
+		            GROUP BY
+		                    (D.GRTYPE || D.GRSUBCD) , A.GRCODE, A.GRSEQ  
+		        ) A
+		
+		        LEFT OUTER JOIN
+		
+		        (
+		            /* 직렬별 합계 */
+		            SELECT 	(D.GRTYPE || D.GRSUBCD) GUBUN , 
+		                    A.GRCODE, A.GRSEQ,  
+		                    NVL(JG.CODE,'999') AS  CODE,
+		                    COUNT(*) JIKR_CNT
+		                         
+		            FROM 	TB_GRSEQ A,TB_MAINCODE MC, TB_SUBCODE SC, TB_GRRESULT GR, TB_JIK JK, TB_JIKGUBUN JG, TB_GRCODE D
+		            WHERE 	A.GRCODE 	= 	D.GRCODE 
+		            AND 	A.GRCODE	=	GR.GRCODE(+) 
+		            AND 	A.GRSEQ		=	GR.GRSEQ(+) 
+		            AND 	GR.RJIK		=	JK.JIK 
+		            AND 	(JG.JIKGUBUN(+)='jikr' AND JK.JIKR=JG.CODE(+))
+		            AND 	MC.CD_GUBUN	=	'G' 
+		            AND 	D.GRTYPE	=	MC.MAJOR_CODE
+		            AND 	SC.CD_GUBUN	=	'G' 
+		            AND 	D.GRTYPE	=	SC.MAJOR_CODE 
+		            AND 	D.GRSUBCD	=	SC.MINOR_CODE 
+		            AND 	A.GRSEQ 	LIKE #{searchDay} ||'%' 
+		            AND 	GR.RGRAYN	=	'Y'
+		            GROUP BY 
+		                    (D.GRTYPE || D.GRSUBCD), 
+		                    A.GRCODE, A.GRSEQ,  
+		                    JG.CODE
+		        ) B
+		        ON		A.GUBUN		=	B.GUBUN
+		        AND		A.GRCODE	=	B.GRCODE
+		        AND		A.GRSEQ		=	B.GRSEQ
+		
+		    ) C
+		    GROUP BY
+		            C.GUBUNNM, C.GRCODENM, C.GRCODE, C.GRSEQ
+		
+		    UNION ALL
+		
+		
+		    SELECT	C.GUBUNNM, '소계' GRCODENM, MIN(GRCODE) GRCODE, MIN(GRSEQ) GRSEQ, 'B' AS PFLAG,
+		    		
+		            SUM(C.TOTAL_SUM) AS TOTAL_SUM,
+		
+		            ${sumSql}
+		    		
+		    FROM
+		    (
+		        
+		        SELECT	C.GUBUNNM, C.GRCODENM, C.GRCODE, C.GRSEQ,
+		        		
+		                ( 
+		                    ${totalSql}
+		                ) TOTAL_SUM,
+		
+		                ${sumSql}
+		        		
+		        FROM
+		        (
+		            SELECT	A.GUBUNNM, A.GRCODENM, A.GRCODE, A.GRSEQ,
+		            
+		                    ${decodeSql}
+		            FROM
+		            (
+		                /* 과정 */       
+		                SELECT	(D.GRTYPE || D.GRSUBCD) AS GUBUN,
+		                        A.GRCODE, A.GRSEQ,  
+		                        (MIN(MC.MCODE_NAME) || MIN(SC.SCODE_NAME) || '교육') AS GUBUNNM,  
+		                		
+		                        DECODE(SUBSTR(A.GRSEQ,6,1),'1',MIN(D.GRCODENM) ||'(1)',MIN(D.GRCODENM)||'('||SUBSTR(A.GRSEQ,6,1)||')') GRCODENM
+		                        
+		                FROM 	TB_GRSEQ A,TB_MAINCODE MC, TB_SUBCODE SC, TB_GRRESULT GR, TB_GRCODE D
+		                WHERE 	A.GRCODE	= 	D.GRCODE 
+		                AND 	A.GRCODE	=	GR.GRCODE 
+		                AND 	A.GRSEQ		=	GR.GRSEQ 
+		                AND 	(MC.CD_GUBUN(+)='G' AND D.GRTYPE=MC.MAJOR_CODE(+)) 
+		                AND 	(SC.CD_GUBUN(+)='G' AND D.GRTYPE=SC.MAJOR_CODE(+) AND D.GRSUBCD=SC.MINOR_CODE(+)) 
+		                AND 	A.GRSEQ LIKE #{searchDay} ||'%' 
+		                GROUP BY
+		                        (D.GRTYPE || D.GRSUBCD) , A.GRCODE, A.GRSEQ  
+		            ) A
+		
+		            LEFT OUTER JOIN
+		
+		            (
+		                /* 직렬별 합계 */
+		                SELECT 	(D.GRTYPE || D.GRSUBCD) GUBUN , 
+		                        A.GRCODE, A.GRSEQ,  
+		                        NVL(JG.CODE,'999') AS  CODE,
+		                        COUNT(*) JIKR_CNT
+		                             
+		                FROM 	TB_GRSEQ A,TB_MAINCODE MC, TB_SUBCODE SC, TB_GRRESULT GR, TB_JIK JK, TB_JIKGUBUN JG, TB_GRCODE D
+		                WHERE 	A.GRCODE 	= 	D.GRCODE 
+		                AND 	A.GRCODE	=	GR.GRCODE(+) 
+		                AND 	A.GRSEQ		=	GR.GRSEQ(+) 
+		                AND 	GR.RJIK		=	JK.JIK 
+		                AND 	(JG.JIKGUBUN(+)='jikr' AND JK.JIKR=JG.CODE(+))
+		                AND 	MC.CD_GUBUN	=	'G' 
+		                AND 	D.GRTYPE	=	MC.MAJOR_CODE
+		                AND 	SC.CD_GUBUN	=	'G' 
+		                AND 	D.GRTYPE	=	SC.MAJOR_CODE 
+		                AND 	D.GRSUBCD	=	SC.MINOR_CODE 
+		                AND 	A.GRSEQ 	LIKE #{searchDay} ||'%' 
+		                AND 	GR.RGRAYN	=	'Y'
+		                GROUP BY 
+		                        (D.GRTYPE || D.GRSUBCD), 
+		                        A.GRCODE, A.GRSEQ,  
+		                        JG.CODE
+		            ) B
+		            ON		A.GUBUN		=	B.GUBUN
+		            AND		A.GRCODE	=	B.GRCODE
+		            AND		A.GRSEQ		=	B.GRSEQ
+		
+		        ) C
+		        GROUP BY
+		                C.GUBUNNM, C.GRCODENM, C.GRCODE, C.GRSEQ
+		
+		        
+		    ) C
+		    GROUP BY
+		            C.GUBUNNM
+		            
+		            
+		    UNION ALL
+		    
+		
+		    SELECT	'' GUBUNNM, '총계' GRCODENM, '000' GRCODE, '000' GRSEQ, 'A' AS PFLAG,
+		            ( 
+		                ${totalSql}
+		            ) TOTAL_SUM,
+		
+		            ${sumSql}
+		    FROM
+		    (
+		        SELECT
+		                ${decodeSql}
+		                            
+		        FROM
+		        (
+		            SELECT 	NVL(C.CODE,'9999') CODE, 
+		                    NVL(MIN(C.CODENM),'기타') CODENM,	
+		                    COUNT(*) JIKR_CNT 
+		            FROM 	TB_GRRESULT A,TB_JIK B,TB_JIKGUBUN C 
+		            WHERE 	A.RJIK			=	B.JIK(+) 
+		            AND 	B.JIKR			=	C.CODE(+) 
+		            AND 	C.JIKGUBUN(+)	=	'jikr' 
+		            AND 	A.GRSEQ 		LIKE #{searchDay} ||'%' 
+		            AND 	A.RGRAYN		=	'Y' 
+		            GROUP BY 
+		                    C.CODE,C.CODENM     
+		        ) B
+		    ) C
+		
+		) Z
+		ORDER BY
+				Z.GRCODE, Z.PFLAG, Z.GRSEQ
+		
+	]]>
+	</select>
+	
+	<select id="targetEduStatsByHuman" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 대상별 교육훈련실적 - 남여별
+		SELECT	Z.*
+		FROM
+		(
+		
+		    SELECT	P.GUBUN, P.NAME, P.TOTAL, P.MAN, P.WO,
+		            'C' AS PFLAG
+		    FROM
+		    (
+		        SELECT	A.GRCODE, A.GUBUN, A.NAME, NVL(SUM(1), 0) TOTAL, 
+		                NVL(SUM(DECODE(SUBSTR(B.RRESNO,7,1), '1', 1, 0)),0) MAN, 
+		                NVL(SUM(DECODE(SUBSTR(B.RRESNO,7,1), '2', 1, 0)),0) WO
+		        FROM 
+		        (
+		            SELECT	GC.GRCODE, GS.GRSEQ, MC.MAJOR_CODE, SC.MINOR_CODE,
+		                    (MC.MCODE_NAME||SC.SCODE_NAME||'교육') GUBUN,
+		                    (GC.GRCODENM||'('||SUBSTR(GS.GRSEQ, 6, 1)||')') NAME
+		            FROM 	TB_GRCODE GC, TB_GRSEQ GS,	TB_MAINCODE MC,	TB_SUBCODE SC
+		            WHERE 	GC.GRCODE		=	GS.GRCODE
+		            AND 	GC.GRTYPE		=	MC.MAJOR_CODE
+		            AND 	MC.CD_GUBUN		=	SC.CD_GUBUN
+		            AND 	MC.MAJOR_CODE	=	SC.MAJOR_CODE
+		            AND 	GC.GRSUBCD		=	SC.MINOR_CODE
+		            AND 	GS.GRSEQ 		LIKE #{value} || '%'
+		            AND 	CLOSING			=	'Y'
+		            
+		        ) A,TB_GRRESULT B
+		        WHERE	A.GRCODE	=	B.GRCODE(+)
+		        AND 	A.GRSEQ		=	B.GRSEQ(+)
+		        AND 	B.RGRAYN	=	'Y'
+		        GROUP BY 
+		                A.GRCODE, A.GUBUN, A.NAME, A.GRSEQ, A.MAJOR_CODE, A.MINOR_CODE
+		    ) P
+		
+		    UNION ALL
+		
+		    SELECT	P.GUBUN, '소계' AS NAME, 
+		            SUM(P.TOTAL) 	AS TOTAL, 
+		            SUM(P.MAN)		AS MAN, 
+		            SUM(P.WO)		AS WO,
+		            'B' AS PFLAG
+		    FROM
+		    (
+		        SELECT	A.GRCODE, A.GUBUN, A.NAME, NVL(SUM(1), 0) TOTAL, 
+		                NVL(SUM(DECODE(SUBSTR(B.RRESNO,7,1), '1', 1, 0)),0) MAN, 
+		                NVL(SUM(DECODE(SUBSTR(B.RRESNO,7,1), '2', 1, 0)),0) WO
+		        FROM 
+		        (
+		            SELECT	GC.GRCODE, GS.GRSEQ, MC.MAJOR_CODE, SC.MINOR_CODE,
+		                    (MC.MCODE_NAME||SC.SCODE_NAME||'교육') GUBUN,
+		                    (GC.GRCODENM||'('||SUBSTR(GS.GRSEQ, 6, 1)||')') NAME
+		            FROM 	TB_GRCODE GC, TB_GRSEQ GS,	TB_MAINCODE MC,	TB_SUBCODE SC
+		            WHERE 	GC.GRCODE		=	GS.GRCODE
+		            AND 	GC.GRTYPE		=	MC.MAJOR_CODE
+		            AND 	MC.CD_GUBUN		=	SC.CD_GUBUN
+		            AND 	MC.MAJOR_CODE	=	SC.MAJOR_CODE
+		            AND 	GC.GRSUBCD		=	SC.MINOR_CODE
+		            AND 	GS.GRSEQ 		LIKE #{value} || '%'
+		            AND 	CLOSING			=	'Y'
+		            
+		        ) A,TB_GRRESULT B
+		        WHERE	A.GRCODE	=	B.GRCODE(+)
+		        AND 	A.GRSEQ		=	B.GRSEQ(+)
+		        AND 	B.RGRAYN	=	'Y'
+		        GROUP BY 
+		                A.GRCODE, A.GUBUN, A.NAME, A.GRSEQ, A.MAJOR_CODE, A.MINOR_CODE
+		    ) P
+		    GROUP BY
+		            P.GUBUN
+		
+		    UNION ALL
+		
+		    SELECT	' ' AS GUBUN, '총계' AS NAME, 
+		            SUM(P.TOTAL) 	AS TOTAL, 
+		            SUM(P.MAN)		AS MAN, 
+		            SUM(P.WO)		AS WO,
+		            'A' AS PFLAG
+		    FROM
+		    (
+		        SELECT	A.GRCODE, A.GUBUN, A.NAME, NVL(SUM(1), 0) TOTAL, 
+		                NVL(SUM(DECODE(SUBSTR(B.RRESNO,7,1), '1', 1, 0)),0) MAN, 
+		                NVL(SUM(DECODE(SUBSTR(B.RRESNO,7,1), '2', 1, 0)),0) WO
+		        FROM 
+		        (
+		            SELECT	GC.GRCODE, GS.GRSEQ, MC.MAJOR_CODE, SC.MINOR_CODE,
+		                    (MC.MCODE_NAME||SC.SCODE_NAME||'교육') GUBUN,
+		                    (GC.GRCODENM||'('||SUBSTR(GS.GRSEQ, 6, 1)||')') NAME
+		            FROM 	TB_GRCODE GC, TB_GRSEQ GS,	TB_MAINCODE MC,	TB_SUBCODE SC
+		            WHERE 	GC.GRCODE		=	GS.GRCODE
+		            AND 	GC.GRTYPE		=	MC.MAJOR_CODE
+		            AND 	MC.CD_GUBUN		=	SC.CD_GUBUN
+		            AND 	MC.MAJOR_CODE	=	SC.MAJOR_CODE
+		            AND 	GC.GRSUBCD		=	SC.MINOR_CODE
+		            AND 	GS.GRSEQ 		LIKE #{value} || '%'
+		            AND 	CLOSING			=	'Y'
+		            
+		        ) A,TB_GRRESULT B
+		        WHERE	A.GRCODE	=	B.GRCODE(+)
+		        AND 	A.GRSEQ		=	B.GRSEQ(+)
+		        AND 	B.RGRAYN	=	'Y'
+		        GROUP BY 
+		                A.GRCODE, A.GUBUN, A.NAME, A.GRSEQ, A.MAJOR_CODE, A.MINOR_CODE
+		    ) P
+		) Z
+		ORDER BY
+				Z.GUBUN, Z.PFLAG, Z.NAME
+	]]>
+	</select>
+	
+	<select id="eduPlanAvgScore" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 교육훈련성적 (평균성적 )
+		SELECT	G.GUBUN,		G.GUBUNNM,	G.GRCODE,	G.GRCODENM,	G.TOTNO, 
+				G.SAVLCOUNT,	G.AVLCOUNT, G.AVREPORT, G.AVCOURSE, G.SILCOUNT, 
+		        G.BUNCOUNT, 	G.MISCOUNT, G.BONCOUNT, G.PACCEPT, 	G.MAXPOINT, 
+		        G.MINPOINT, 
+		        (
+		        	NVL(G.AVLCOUNT,0)	+ NVL(G.AVREPORT,0) 	+ NVL(G.AVCOURSE,0) 	+ NVL(G.SILCOUNT, 0) + 
+		        	NVL(G.BUNCOUNT, 0) 	+ NVL(G.MISCOUNT, 0) 	+ NVL(G.BONCOUNT, 0) 	+ ROUND(NVL(G.SUMADDPOINT,0)/G.TOTNO,3)
+		        ) AS SUBCNT,     
+		        ROUND(NVL(G.SUMADDPOINT,0)/TOTNO,3) AS ADDPOINT, 
+		        (
+		        	SELECT 	ROUND(AVG(PACCEPT),2) 
+		            FROM 	TB_GRRESULT 
+		            WHERE 	GRCODE	=	G.GRCODE 
+		            AND 	GRSEQ 	LIKE #{searchYear} || SUBSTR(G.GRSEQ,5,2) 
+		        ) AS OLDPOINT
+		FROM 
+		(
+			SELECT	(C.GRTYPE || C.GRSUBCD) AS GUBUN,
+					(MIN(MC.MCODE_NAME) || MIN(SC.SCODE_NAME) || '교육') AS GUBUNNM,
+		            
+					B.GRCODE, B.GRSEQ,
+		            
+					MIN(C.GRCODENM)||'('||SUBSTR(B.GRSEQ,6,1)||')' AS GRCODENM,
+		            
+		            COUNT(DISTINCT B.USERNO) AS TOTNO,
+		            SUM(AVLCOUNT) AS SAVLCOUNT,
+		            
+		            NVL(ROUND(SUM(DECODE(SUBSTR(D.SUBJ,1,3),'SIL',0,'BUN',0,'MIS',0,'BON',0,'GUN',0,D.AVLCOUNT))/COUNT(DISTINCT B.USERNO),2),0) AS AVLCOUNT,
+		            NVL(ROUND(SUM(DECODE(SUBSTR(D.SUBJ,1,3),'SIL',0,'BUN',0,'MIS',0,'BON',0,'GUN',0,D.AVREPORT))/COUNT(DISTINCT B.USERNO),2),0)	AS AVREPORT,
+		            NVL(ROUND(SUM(DECODE(SUBSTR(D.SUBJ,1,3),'SIL',0,'BUN',0,'MIS',0,'BON',0,D.AVCOURSE))/COUNT(DISTINCT B.USERNO),2),0)			AS AVCOURSE,
+		            NVL(ROUND(SUM(DECODE(SUBSTR(D.SUBJ,1,3),'SIL',D.PACCEPT,0))/COUNT(DISTINCT B.USERNO),2),0)	AS SILCOUNT,
+		            NVL(ROUND(SUM(DECODE(SUBSTR(D.SUBJ,1,3),'BUN',D.PACCEPT,0))/COUNT(DISTINCT B.USERNO),2),0)	AS BUNCOUNT,
+		            NVL(ROUND(SUM(DECODE(SUBSTR(D.SUBJ,1,3),'MIS',D.PACCEPT,0))/COUNT(DISTINCT B.USERNO),2),0)	AS MISCOUNT,
+		            NVL(ROUND(SUM(DECODE(SUBSTR(D.SUBJ,1,3),'BON',D.PACCEPT,0))/COUNT(DISTINCT B.USERNO),2),0)	AS BONCOUNT,
+		            
+					(NVL(SUM(B.PACCEPT),0) / COUNT(B.USERNO))	AS PACCEPT, 
+		            
+		            MAX(B.PACCEPT) 	AS MAXPOINT, 
+		            MIN(B.PACCEPT)	AS MINPOINT,
+		            
+		            (SELECT SUM(ADDPOINT) FROM TB_GRSTUMAS WHERE GRCODE=B.GRCODE AND GRSEQ=B.GRSEQ) AS SUMADDPOINT
+		            
+		    FROM	TB_MAINCODE MC,
+		    		TB_SUBCODE SC,
+		            TB_GRRESULT B,
+		            TB_GRCODE C,
+		            TB_SUBJRESULT D
+		            
+			WHERE	(MC.CD_GUBUN(+)='G' AND C.GRTYPE=MC.MAJOR_CODE(+)) 
+		    AND 	C.GRTYPE || C.GRSUBCD IN ('101', '201','202')
+			AND 	(SC.CD_GUBUN(+)='G' AND C.GRTYPE=SC.MAJOR_CODE(+) AND C.GRSUBCD=SC.MINOR_CODE(+))
+			AND  	B.GRCODE	=	C.GRCODE
+			AND 	B.GRCODE	=	D.GRCODE 
+		    AND 	B.GRSEQ		=	D.GRSEQ 
+		    AND 	B.USERNO	=	D.USERNO
+			AND 	B.GRSEQ 	LIKE #{oldYear} || '%'
+			GROUP BY (C.GRTYPE || C.GRSUBCD),B.GRCODE,B.GRSEQ
+		    
+		) G
+		ORDER BY	G.GUBUN
+	]]>
+	</select>
+	
+	<select id="eduPlanRange" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 교육훈련성적 (성적분포 )
+		SELECT	G.GUBUN, 		G.GUBUNNM, 		G.GRCODE, 		G.GRSEQ, 		G.GRCODENM, 
+				G.TOTNO, 		G.PACCEPT, 		G.TOTCOUNT1, 	G.TOTCOUNT2, 	G.TOTCOUNT3, 
+		        G.TOTCOUNT4, 	G.TOTCOUNT5, 	G.MAXPOINT, 	G.MINPOINT, 
+		        (
+		        	SELECT 	ROUND(AVG(PACCEPT),2) 
+		            FROM 	TB_GRRESULT 
+		            WHERE 	GRCODE	=	G.GRCODE AND 
+		            GRSEQ 	LIKE #{oldYear} || SUBSTR(G.GRSEQ,5,2) 
+		        ) AS OLDPOINT
+		FROM 
+		(
+			SELECT	B.GRCODE, B.GRSEQ, 
+		    
+		    		(C.GRTYPE || C.GRSUBCD) AS GUBUN,
+		            (MIN(MC.MCODE_NAME) || MIN(SC.SCODE_NAME) || '교육') AS GUBUNNM,            
+		            MIN(C.GRCODENM)||'('||SUBSTR(B.GRSEQ,6,1)||')' AS GRCODENM,
+		            
+		            COUNT(DISTINCT B.USERNO)	AS	TOTNO,
+		            
+		            SUM(CASE WHEN B.PACCEPT < 60 THEN 1 ELSE 0 END)	AS	TOTCOUNT1,
+		            SUM(CASE WHEN B.PACCEPT > 60 AND B.PACCEPT < 70 THEN 1 ELSE 0 END)	AS TOTCOUNT2,
+		            SUM(CASE WHEN B.PACCEPT > 70 AND B.PACCEPT < 80 THEN 1 ELSE 0 END)	AS TOTCOUNT3,
+		            SUM(CASE WHEN B.PACCEPT > 80 AND B.PACCEPT < 90 THEN 1 ELSE 0 END)	AS TOTCOUNT4,
+		            SUM(CASE WHEN B.PACCEPT > 90 THEN 1 ELSE 0 END)	AS TOTCOUNT5,
+		            
+		            ROUND(AVG(B.PACCEPT),2)	AS PACCEPT,
+		             
+		            MAX(B.PACCEPT)	AS MAXPOINT, 
+		            MIN(B.PACCEPT)	AS MINPOINT
+		            
+			FROM	TB_MAINCODE MC,
+		            TB_SUBCODE SC,
+		            TB_GRRESULT B,
+		            TB_GRCODE C
+		            
+		    WHERE	(MC.CD_GUBUN(+)='G' AND C.GRTYPE=MC.MAJOR_CODE(+)) 
+		    AND 	C.GRTYPE || C.GRSUBCD IN ('101', '201','202')
+		    AND 	(SC.CD_GUBUN(+)='G' AND C.GRTYPE=SC.MAJOR_CODE(+) AND C.GRSUBCD=SC.MINOR_CODE(+))
+		    AND  	B.GRCODE=C.GRCODE
+		    AND 	B.GRSEQ LIKE #{searchYear} || '%'
+		    GROUP BY 
+		    		(C.GRTYPE || C.GRSUBCD),B.GRCODE,B.GRSEQ
+		) G
+	]]>
+	</select>
+	
+	<select id="cyberCourseStats" parameterType="Map"  resultType="DataMap">
+	<![CDATA[
+		-- 사이버교육
+       
+
+SELECT SUM (DEPT1) AS DEPT1,
+       SUM (SUCC_SUM1) AS SUCC_SUM1,
+       SUM (FAIL_SUM1) AS FAIL_SUM1,  
+       ROUND(SUM(SUCC_SUM1) * 100 / SUM(DEPT1),1) AS RATE1,
+       SUM (DEPT2) AS DEPT2,
+       SUM (SUCC_SUM2) AS SUCC_SUM2,       
+       SUM (FAIL_SUM2) AS FAIL_SUM2, 
+       ROUND(SUM(SUCC_SUM2) * 100 / SUM(DEPT2),1) AS RATE2,
+       SUM (DEPT3) AS DEPT3,
+       SUM (SUCC_SUM3) AS SUCC_SUM3,       
+       SUM (FAIL_SUM3) AS FAIL_SUM3,
+       ROUND(SUM(SUCC_SUM3) * 100 / SUM(DEPT3),1) AS RATE3,
+       SUM (DEPT4) AS DEPT4,
+       SUM (SUCC_SUM4) AS SUCC_SUM4,       
+       SUM (FAIL_SUM4) AS FAIL_SUM4,
+       ROUND(SUM(SUCC_SUM4) * 100 / SUM(DEPT4),1) AS RATE4,
+       SUM (DEPT5) AS DEPT5,
+       SUM (SUCC_SUM5) AS SUCC_SUM5,       
+       SUM (FAIL_SUM5) AS FAIL_SUM5,
+       ROUND(SUM(SUCC_SUM5) * 100 / SUM(DEPT5),1) AS RATE5,
+       SUM (DEPT6) AS DEPT6,
+       SUM (SUCC_SUM6) AS SUCC_SUM6,       
+       SUM (FAIL_SUM6) AS FAIL_SUM6,
+       ROUND(SUM(SUCC_SUM6) * 100 / SUM(DEPT6),1) AS RATE6,
+       SUM (DEPT7) AS DEPT7,
+       SUM (SUCC_SUM7) AS SUCC_SUM7,       
+       SUM (FAIL_SUM7) AS FAIL_SUM7,
+       ROUND(SUM(SUCC_SUM7) * 100 / SUM(DEPT7),1) AS RATE7,
+       SUM (DEPT8) AS DEPT8,
+       SUM (SUCC_SUM8) AS SUCC_SUM8,       
+       SUM (FAIL_SUM8) AS FAIL_SUM8,
+       ROUND(SUM(SUCC_SUM8) * 100 / SUM(DEPT8),1) AS RATE8,
+       SUM (DEPT9) AS DEPT9,
+       SUM (SUCC_SUM9) AS SUCC_SUM9,
+       SUM (FAIL_SUM9) AS FAIL_SUM9,
+       ROUND(SUM(SUCC_SUM9) * 100 / SUM(DEPT9),1) AS RATE9,
+       SUM (DEPT10) AS DEPT10,
+       SUM (SUCC_SUM10) AS SUCC_SUM10,       
+       SUM (FAIL_SUM10) AS FAIL_SUM10,
+       ROUND(SUM(SUCC_SUM10) * 100 / SUM(DEPT10),1) AS RATE10,
+       SUM (DEPT11) AS DEPT11,
+       SUM (SUCC_SUM11) AS SUCC_SUM11,       
+       SUM (FAIL_SUM11) AS FAIL_SUM11,
+       ROUND(SUM(SUCC_SUM11) * 100 / SUM(DEPT11),1) AS RATE11,
+       SUM (DEPT12) AS DEPT12,
+       SUM (SUCC_SUM12) AS SUCC_SUM12,       
+       SUM (FAIL_SUM12) AS FAIL_SUM12,       
+       ROUND(SUM(SUCC_SUM12) * 100 / SUM(DEPT12),1) AS RATE12,
+       SUM (DEPT13) AS DEPT13,
+       SUM (SUCC_SUM13) AS SUCC_SUM13,       
+       SUM (FAIL_SUM13) AS FAIL_SUM13,    
+       ROUND(SUM(SUCC_SUM13) * 100 / SUM(DEPT13),1) AS RATE13
+  FROM (SELECT DECODE (C.DEPT, '6280000', C.COUNT_SUM, 0) AS DEPT1,
+               DECODE (C.DEPT, '6280000', C.SUCC_SUM, 0) AS SUCC_SUM1,               
+               DECODE (C.DEPT, '6280000', C.FAIL_SUM, 0) AS FAIL_SUM1,
+               DECODE (C.DEPT, '3490000', C.COUNT_SUM, 0) AS DEPT2,
+               DECODE (C.DEPT, '3490000', C.SUCC_SUM, 0) AS SUCC_SUM2,               
+               DECODE (C.DEPT, '3490000', C.FAIL_SUM, 0) AS FAIL_SUM2,
+               DECODE (C.DEPT, '3500000', C.COUNT_SUM, 0) AS DEPT3,
+               DECODE (C.DEPT, '3500000', C.SUCC_SUM, 0) AS SUCC_SUM3,               
+               DECODE (C.DEPT, '3500000', C.FAIL_SUM, 0) AS FAIL_SUM3,
+               DECODE (C.DEPT, '3510000', C.COUNT_SUM, 0) AS DEPT4,
+               DECODE (C.DEPT, '3510000', C.SUCC_SUM, 0) AS SUCC_SUM4,               
+               DECODE (C.DEPT, '3510000', C.FAIL_SUM, 0) AS FAIL_SUM4,
+               DECODE (C.DEPT, '3520000', C.COUNT_SUM, 0) AS DEPT5,
+               DECODE (C.DEPT, '3520000', C.SUCC_SUM, 0) AS SUCC_SUM5,               
+               DECODE (C.DEPT, '3520000', C.FAIL_SUM, 0) AS FAIL_SUM5,
+               DECODE (C.DEPT, '3530000', C.COUNT_SUM, 0) AS DEPT6,
+               DECODE (C.DEPT, '3530000', C.SUCC_SUM, 0) AS SUCC_SUM6,
+               DECODE (C.DEPT, '3530000', C.FAIL_SUM, 0) AS FAIL_SUM6,
+               DECODE (C.DEPT, '3540000', C.COUNT_SUM, 0) AS DEPT7,
+               DECODE (C.DEPT, '3540000', C.SUCC_SUM, 0) AS SUCC_SUM7,               
+               DECODE (C.DEPT, '3540000', C.FAIL_SUM, 0) AS FAIL_SUM7,
+               DECODE (C.DEPT, '3550000', C.COUNT_SUM, 0) AS DEPT8,
+               DECODE (C.DEPT, '3550000', C.SUCC_SUM, 0) AS SUCC_SUM8,
+               DECODE (C.DEPT, '3550000', C.FAIL_SUM, 0) AS FAIL_SUM8,
+               DECODE (C.DEPT, '3560000', C.COUNT_SUM, 0) AS DEPT9,
+               DECODE (C.DEPT, '3560000', C.SUCC_SUM, 0) AS SUCC_SUM9,               
+               DECODE (C.DEPT, '3560000', C.FAIL_SUM, 0) AS FAIL_SUM9,
+               DECODE (C.DEPT, '3570000', C.COUNT_SUM, 0) AS DEPT10,
+               DECODE (C.DEPT, '3570000', C.SUCC_SUM, 0) AS SUCC_SUM10,               
+               DECODE (C.DEPT, '3570000', C.FAIL_SUM, 0) AS FAIL_SUM10,
+               DECODE (C.DEPT, '3580000', C.COUNT_SUM, 0) AS DEPT11,
+               DECODE (C.DEPT, '3580000', C.SUCC_SUM, 0) AS SUCC_SUM11,               
+               DECODE (C.DEPT, '3580000', C.FAIL_SUM, 0) AS FAIL_SUM11,
+               DECODE (C.DEPT, '6289999', C.COUNT_SUM, 0) AS DEPT12,
+               DECODE (C.DEPT, '6289999', C.SUCC_SUM, 0) AS SUCC_SUM12, 
+               DECODE (C.DEPT, '6289999', C.FAIL_SUM, 0) AS FAIL_SUM12,
+           	   DECODE (C.DEPT, '6280053', C.COUNT_SUM, 0) AS DEPT13,
+               DECODE (C.DEPT, '6280053', C.SUCC_SUM, 0) AS SUCC_SUM13, 
+               DECODE (C.DEPT, '6280053', C.FAIL_SUM, 0) AS FAIL_SUM13
+          FROM (  
+          		SELECT 
+                    COUNT (GRR.GRCODE) COUNT_SUM,
+                    SUM (DECODE (GRR.RGRAYN, 'Y', 1, 0)) SUCC_SUM, 
+                    SUM (DECODE (GRR.RGRAYN, 'N', 1, 0)) FAIL_SUM,                         
+                    dp.DEPT,
+                    dp.DEPTNM
+               FROM TB_GRRESULT GRR, tb_member M, TB_DEPT DP, TB_JIK JK, TB_GRSEQ GQ, TB_GRCODE GR, TB_STU_LEC sl
+               WHERE GRR.USERNO = M.USERNO
+                   AND GQ.F_CYBER = 'Y'
+                   AND GRR.GRSEQ like '2017%'
+                   AND GRR.RDEPT = DP.DEPT(+)
+                   AND GRR.RJIK = JK.JIK(+)
+                   AND GRR.GRCODE = GQ.GRCODE
+                   AND GRR.GRSEQ = GQ.GRSEQ
+                   AND GQ.GRCODE = GR.GRCODE
+                   AND GRR.GRCODE = SL.GRCODE
+                   AND GRR.GRSEQ = SL.GRSEQ
+                   AND GRR.USERNO = SL.USERNO
+                    AND GQ.CAFE_YN = 'N' 
+               group by dp.dept, dp.DEPTNM) C) D          
+	]]>
+	</select>
+	
+	<select id="courseRgister" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+         select grcode, grcodeniknm, to_char(man_resucnt,'9,999,999') man_resucnt, to_char(wo_resucnt,'9,999,999') wo_resucnt, to_char(totno,'9,999,999') totno
+         from
+         (
+             select p.grcode, p.grcodeniknm,
+             p.man_resucnt, p.wo_resucnt, p.totno
+             from
+             (
+                 select 
+                   a.grcode,
+                   a.grcodeniknm,
+                   nvl(sum(c.man),0) man_resucnt,
+                   nvl(sum(c.wo),0) wo_resucnt,
+                   nvl(sum(c.totno),0) totno
+                 from tb_grseq a,tb_maincode mc, tb_subcode sc,
+                 (
+                     select t.grcode,t.grseq,
+                       sum(decode(z.sex,'M',1,0)) man,
+                       sum(decode(z.sex,'F',1,0)) wo,
+                       count(t.userno) totno
+                     from     tb_grresult t, tb_member z
+                     where 1=1  
+                     	and t.rgrayn = #{rgrayn} 
+                       and t.userno(+) = z.userno
+                       and grseq = #{grseq}
+                     group by
+                       t.grcode,t.grseq
+                 ) c , tb_grcode d
+                 where a.grcode = d.grcode
+                 and a.grcode=c.grcode(+)
+                 and a.grseq=c.grseq(+)
+                 and (mc.cd_gubun(+)='G' and d.grtype=mc.major_code(+))
+                 and (sc.cd_gubun(+)='G' and d.grtype=sc.major_code(+)
+                 and d.grsubcd=sc.minor_code(+))
+                 and a.grseq = #{grseq}
+                 group by 
+                   a.grcode, a.grcodeniknm
+             ) p
+         ) z
+         where grcodeniknm like 'e-%'
+         order by grcodeniknm asc
+	]]>
+	</select>
+	
+	<select id="cyberGrseqInfo" parameterType="String" resultType="DataMap"> 
+	<![CDATA[
+	-- 계정삭제된 사람들은 여자로 처리
+	select
+	    a.grcode as grcode ,a.grcodeniknm as grcodeniknm
+	    , to_char((select count(*) from tb_app_info ta, tb_member b where ta.grcode = a.grcode and ta.userno = b.userno(+) and b.sex = 'M' and ta.grseq = a.grseq),'9,999,999') as man
+	    , to_char((select count(*) from tb_app_info ta, tb_member b where ta.grcode = a.grcode and ta.userno = b.userno(+) and (b.sex = 'F' or b.sex is null) and ta.grseq = a.grseq),'9,999,999') as wo
+	     , to_char((select count(*) from tb_app_info ta where ta.grcode = a.grcode and ta.grseq = a.grseq),'9,999,999') as total_cnt 
+	 from 
+	 (
+	     select 
+	         grcode,grcodeniknm,grseq, tseat,
+	         to_char(eapplyst, 'yy.mm.dd') || '~' || to_char(eapplyed, 'mm.dd') as apply_date, 
+	         to_char(started, 'mm.dd') || '~' || to_char(enddate, 'mm.dd') as study_date , started started_ory
+	     from tb_grseq 
+	     where use_yn='Y' 
+	       and grseq = #{value}
+	 ) a
+	 ,(select grcode, grgubun from tb_grcode) c
+	 where 1=1
+	 and a.grcode = c.grcode
+	 and a.grcodeniknm like 'e-%'
+	 order by  a.started_ory asc, a.grcodeniknm asc
+	]]>
+	</select>
+	
+	<select id="cyberDeptInfo" parameterType="String" resultType="DataMap"> 
+	<![CDATA[
+          select t.dept, lownm,
+            to_char(sum(decode(z.sex,'M',1,0)),'9,999,999') man,
+            to_char(sum(decode(z.sex,'F',1,0)),'9,999,999') wo,
+            to_char(count(t.userno),'9,999,999') totno             
+          from tb_app_info t, tb_member z, tb_dept d, tb_grseq g
+          where 1=1 
+            and t.dept = d.dept(+)
+            and t.userno = z.userno(+)
+            and t.grseq = #{value}
+            and t.grcode = g.grcode(+)
+            and t.grseq = g.grseq(+)
+            and g.grcodeniknm like 'e-%'
+          group by
+            t.dept, lownm
+          order by decode(t.dept,6280000,1,6280053,12,3490000,2,3500000,4,3510000,5,3520000,6,3530000,7,3540000,8,3550000,9,3560000,10,3570000,11,3580000,12,6289999,15,17)
+	]]>
+	</select>	
+	
+	<select id="departBestStats" parameterType="String" resultType="DataMap"> 
+	<![CDATA[
+          select * from(
+			select dept, decode(lownm,'인천광역시','시청','소방안전본부(소방직)','시청(소방직)',lownm) as lownm ,grcode,subj,totno,seat, nou, (row_number() over(partition by dept order by nou desc, totno desc )) as ran  from (
+			select dept, lownm,grcode,totno,seat, ((totno / seat) * 100) as nou, subj 
+			from (        
+			        select t.dept, lownm,t.grcode,g.GRCODENIKNM as subj,            
+			            count(t.userno)  totno,
+			            (select tseat from tb_grseq where grseq = #{value} and grcode = t.grcode ) as seat			                                     
+			          from tb_app_info t, tb_member z, tb_dept d, tb_grseq g
+			          where 1=1 
+			            and t.dept = d.dept(+)
+			            and t.userno = z.userno(+)
+			            and t.grseq = #{value}
+			            and t.grcode = g.grcode(+)
+			            and t.grseq = g.grseq(+)
+			            and g.grcodeniknm like 'e-%'
+			            and t.grcode != '0080000020'
+			          group by
+			            t.dept, lownm, t.grcode, g.GRCODENIKNM			          
+			) 
+			)
+			) where ran = 1 
+			order by decode(dept,6280000,1,6280053,2,3490000,3,3500000,4,3510000,5,3520000,6,3530000,7,3540000,8,3550000,9,3560000,10,3570000,11,3580000,12,6289999,15,17)
+	]]>
+	</select>	
+	
+	
+	
+	<select id="ageBestStats" parameterType="String" resultType="DataMap"> 
+	<![CDATA[
+        select * from(
+		            select userage, grcode,subj,totno,seat, nou, (row_number() over(partition by userage order by nou desc, totno desc )) as ran  from (
+			select userage,grcode, subj,totno,seat, ((totno / seat) * 100) as nou from (
+			select z.userage,                        
+			                        t.grcode,g.GRCODENIKNM as subj,            
+			    count(t.userno)  totno,
+			    (select tseat from tb_grseq where grseq = #{value} and grcode = t.grcode ) as seat                      
+			  from tb_app_info t, 
+			  (select CASE    WHEN    		TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - substr(birthdate,0,4))) BETWEEN 20 AND 29     THEN 20
+			                                WHEN    TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - substr(birthdate,0,4))) BETWEEN 30 AND 39     THEN 30
+			                                WHEN    TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - substr(birthdate,0,4))) BETWEEN 40 AND 49     THEN 40
+			                                WHEN    TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - substr(birthdate,0,4))) BETWEEN 50 AND 59     THEN 50
+			                                WHEN    TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - substr(birthdate,0,4))) BETWEEN 60 AND 69     THEN 60			                        
+			                        END    USERAGE, userno from tb_member )
+			   z, tb_dept d, tb_grseq g
+			  where 1=1 
+			    and t.dept = d.dept(+)
+			    and t.userno = z.userno(+)
+			    and t.grseq = #{value}
+			    and t.grcode = g.grcode(+)
+			    and t.grseq = g.grseq(+)
+			    and g.grcodeniknm like 'e-%'
+			    and t.grcode != '0080000020'			    
+			  group by
+			    USERAGE, t.grcode, g.GRCODENIKNM
+			  ORDER BY USERAGE ASC
+			)  
+			)) where ran = 1 and rownum < 6
+	]]>
+	</select>	
+	
+	
+	
+	<select id="genderManBestStats" parameterType="String" resultType="DataMap"> 
+	<![CDATA[
+          select grcode,man,totno,seat, ((man / seat) * 100) as nou, subj 
+            from (        
+                    select t.grcode,g.GRCODENIKNM as subj,
+                        sum(decode(z.sex,'M',1,0)) man,            
+                        count(t.userno)  totno,
+                        (select tseat from tb_grseq where grseq = #{value} and grcode = t.grcode ) as seat                        
+                      from tb_app_info t, tb_member z, tb_dept d, tb_grseq g
+                      where 1=1 
+                        and t.dept = d.dept(+)
+                        and t.userno = z.userno(+)
+                        and t.grseq = #{value}
+                        and t.grcode = g.grcode(+)
+                        and t.grseq = g.grseq(+)
+                        and g.grcodeniknm like 'e-%'
+                        and t.grcode != '0080000020'
+                      group by
+                        t.grcode, g.GRCODENIKNM
+            ) order by nou desc
+	]]>
+	</select>	
+	
+	<select id="genderWomanBestStats" parameterType="String" resultType="DataMap"> 
+	<![CDATA[
+          select grcode,totno,seat, ((woman / seat) * 100) as nou, subj 
+            from (        
+                    select t.grcode,g.GRCODENIKNM as subj,
+                        sum(decode(z.sex,'F',1,0)) woman,            
+                        count(t.userno)  totno,
+                        (select tseat from tb_grseq where grseq = #{value} and grcode = t.grcode ) as seat                      
+                      from tb_app_info t, tb_member z, tb_dept d, tb_grseq g
+                      where 1=1 
+                        and t.dept = d.dept(+)
+                        and t.userno = z.userno(+)                        
+                        and t.grseq = #{value}
+                        and t.grcode = g.grcode(+)
+                        and t.grseq = g.grseq(+)
+                        and g.grcodeniknm like 'e-%'
+                        and t.grcode != '0080000020'
+                      group by
+                        t.grcode, g.GRCODENIKNM
+            ) order by nou desc
+	]]>
+	</select>	
+	
+	
+	
+	
+	
+	<select id="cyberDeptRgister" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	      select rdept, lownm,
+	        to_char(sum(decode(z.sex,'M',1,0)),'9,999,999') man,
+	        to_char(sum(decode(z.sex,'F',1,0)),'9,999,999') wo,
+	        to_char(count(t.userno),'9,999,999') totno	         
+	      from tb_grresult t, tb_member z, tb_dept d, tb_grseq g
+	      where 1=1 
+	        and t.rdept = d.dept(+)  
+	]]>
+	        <if test="rgrayn.equals('Y')">
+	        	and t.rgrayn = 'Y'
+	        </if>  
+	<![CDATA[
+	        and t.userno(+) = z.userno
+	        and t.grseq = #{grseq}
+	        and t.grcode = g.grcode(+)
+	        and t.grseq = g.grseq(+)
+	        and g.grcodeniknm like 'e-%'
+	      group by
+	        rdept, lownm
+	      order by decode(rdept,6280000,1,6280053,12,3490000,2,3500000,4,3510000,5,3520000,6,3530000,7,3540000,8,3550000,9,3560000,10,3570000,11,3580000,12,6289999,15,17)
+	]]>
+	</select>	
+	
+	<select id="cyberDetailDeptRgister" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+           select rdept, lownm, rdeptsub ,
+             to_char(count(t.userno),'9,999,999') totno             
+           from tb_grresult t, tb_member z, tb_dept d, tb_grseq g
+           where 1=1 
+             and t.rdept = d.dept(+)
+   	]]>
+	        <if test="rgrayn.equals('Y')">
+	        	and t.rgrayn = 'Y'
+	        </if>  
+	<![CDATA[
+             and t.userno(+) = z.userno
+             and t.grseq = #{grseq}
+             and t.grcode = g.grcode(+)
+             and t.grseq = g.grseq(+)
+             and g.grcodeniknm like 'e-%'
+           group by
+             rdept, lownm, rdeptsub
+           order by decode(rdept,6280000,1,6280053,12,3490000,2,3500000,4,3510000,5,3520000,6,3530000,7,3540000,8,3550000,9,3560000,10,3570000,11,3580000,12,6289999,15,17)
+	]]>
+	</select>	
+	
+	<select id="courseRgisterTotal" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+          select to_char(count(grcode),'9,999,999') grcode_cnt, to_char(sum(cnt),'9,999,999') total_cnt, to_char(sum(man_resucnt),'9,999,999') man_resucnt_cnt, to_char(sum(wo_resucnt),'9,999,999') wo_resucnt_cnt
+          from
+          (
+              select p.grcode, p.grcodeniknm, sum(totno) cnt, man_resucnt, wo_resucnt
+              from
+              (
+                  select 
+                    a.grcode,
+                    a.grcodeniknm,
+                    nvl(sum(c.man),0) man_resucnt,
+                    nvl(sum(c.wo),0) wo_resucnt,
+                    nvl(sum(c.totno),0) totno
+                  from tb_grseq a,tb_maincode mc, tb_subcode sc,
+                  (
+                      select t.grcode,t.grseq,
+                        sum(decode(z.sex,'M',1,0)) man,
+                        sum(decode(z.sex,'F',1,0)) wo,
+                        count(t.userno) totno
+                      from     tb_grresult t, tb_member z
+                      where 1=1  
+                        and t.rgrayn = #{rgrayn}                      
+                        and t.userno(+) = z.userno
+                        and grseq = #{grseq}
+                      group by
+                        t.grcode,t.grseq
+                  ) c , tb_grcode d
+                  where a.grcode = d.grcode
+                  and a.grcode=c.grcode(+)
+                  and a.grseq=c.grseq(+)
+                  and (mc.cd_gubun(+)='G' and d.grtype=mc.major_code(+))
+                  and (sc.cd_gubun(+)='G' and d.grtype=sc.major_code(+)
+                  and d.grsubcd=sc.minor_code(+))
+                  and a.grseq = #{grseq}
+                  group by 
+                    a.grcode, a.grcodeniknm
+              ) p
+              group by p.grcode, p.grcodeniknm, man_resucnt, wo_resucnt
+          ) z
+          where grcodeniknm like 'e-%'
+	]]>
+	</select>
+	
+	<select id="cyberGrseqInfoTotal" parameterType="String" resultType="DataMap">
+	<![CDATA[
+	select to_char(sum(man),'9,999,999') as total_man, to_char(sum(wo),'9,999,999') as total_wo, to_char(sum(total_cnt),'9,999,999') as total_cnt  
+	from (
+	select
+	    a.grcode,a.grcodeniknm
+	    , (select count(*) from tb_app_info ta, tb_member b where ta.grcode = a.grcode and ta.userno = b.userno(+) and b.sex = 'M' and ta.grseq = a.grseq) as man
+	    , (select count(*) from tb_app_info ta, tb_member b where ta.grcode = a.grcode and ta.userno = b.userno(+) and (b.sex = 'F' or b.sex is null) and ta.grseq = a.grseq) as wo
+	     , (select count(*) from tb_app_info ta where ta.grcode = a.grcode and ta.grseq = a.grseq) as total_cnt 
+	 from 
+	 (
+	     select 
+	         grcode,grcodeniknm,grseq, tseat,
+	         to_char(eapplyst, 'yy.mm.dd') || '~' || to_char(eapplyed, 'mm.dd') as apply_date, 
+	         to_char(started, 'mm.dd') || '~' || to_char(enddate, 'mm.dd') as study_date , started started_ory
+	     from tb_grseq 
+	     where use_yn='Y' 
+	       and grseq = #{value}
+	 ) a
+	 ,(select grcode, grgubun from tb_grcode) c
+	 where 1=1
+	 and a.grcode = c.grcode
+	 and a.grcodeniknm like 'e-%'
+	 )
+		]]>
+	</select>
+	
+	<select id="cyberDeptInfoTotal" parameterType="String" resultType="DataMap">
+		<![CDATA[
+				select to_char(sum(totno),'9,999,999') total_cnt, to_char(count(*),'9,999,999') dept_cnt
+				 from 
+				 (
+					  select t.dept, lownm,
+					    to_char(sum(decode(z.sex,'M',1,0)),'9,999,999') man,
+					    to_char(sum(decode(z.sex,'F',1,0)),'9,999,999') wo,
+					    count(t.userno) totno             
+					  from tb_app_info t, tb_member z, tb_dept d, tb_grseq g
+					  where 1=1 
+					    and t.dept = d.dept(+)
+					    and t.userno = z.userno(+)
+					    and t.grseq = #{value}
+					    and t.grcode = g.grcode(+)
+					    and t.grseq = g.grseq(+)
+					    and g.grcodeniknm like 'e-%'
+					  group by
+					    t.dept, lownm
+					  order by decode(t.dept,6280000,1,6280053,12,3490000,2,3500000,4,3510000,5,3520000,6,3530000,7,3540000,8,3550000,9,3560000,10,3570000,11,3580000,12,6289999,15,17)
+				 )
+		]]>
+	</select>	
+	
+	<select id="cyberDeptRgisterTotal" parameterType="Map" resultType="DataMap">
+		<![CDATA[
+				select to_char(sum(totno),'9,999,999') total_cnt, to_char(count(*),'9,999,999') dept_cnt
+				 from 
+				 (
+				    select rdept, lownm,
+				    sum(decode(z.sex,'M',1,0)) man,
+				    sum(decode(z.sex,'F',1,0)) wo,
+				    count(t.userno) totno
+				  from tb_grresult t, tb_member z, tb_dept d, tb_grseq g
+				  where 1=1 
+				    and t.rdept = d.dept(+) 
+   	]]>
+	        <if test="rgrayn.equals('Y')">
+	        	and t.rgrayn = 'Y'
+	        </if>  
+	<![CDATA[			     
+				    and t.userno(+) = z.userno
+				    and t.grseq = #{grseq}
+				    and t.grcode = g.grcode(+)
+				    and t.grseq = g.grseq(+)
+				    and g.grcodeniknm like 'e-%'
+				  group by
+				    rdept, lownm
+				  order by decode(rdept,6280000,1,6280053,12,3490000,2,3500000,4,3510000,5,3520000,6,3530000,7,3540000,8,3550000,9,3560000,10,3570000,11,3580000,12,6289999,15,17)
+				 )
+		]]>
+	</select>	
+	
+	<select id="cyberDetailDeptRgisterTotal" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+            select to_char(sum(totno),'9,999,999') total_cnt, to_char(count(rdeptsub),'9,999,999') rdeptsub_cnt
+            from (
+               select 
+                 count(t.userno) totno, rdeptsub      
+               from tb_grresult t, tb_member z, tb_dept d, tb_grseq g
+               where 1=1 
+                 and t.rdept = d.dept(+) 
+   	]]>
+	        <if test="rgrayn.equals('Y')">
+	        	and t.rgrayn = 'Y'
+	        </if>  
+	<![CDATA[	
+                 and t.userno(+) = z.userno
+                 and t.grseq = #{grseq}
+                 and t.grcode = g.grcode(+)
+                 and t.grseq = g.grseq(+)
+                 and g.grcodeniknm like 'e-%'
+               group by
+                 rdept, lownm, rdeptsub
+               order by decode(rdept,6280000,1,6280053,12,3490000,2,3500000,4,3510000,5,3520000,6,3530000,7,3540000,8,3550000,9,3560000,10,3570000,11,3580000,12,6289999,15,17)
+            )
+	]]>
+	</select>
+	
+	<select id="pollStatsQuestion" resultType="DataMap">
+	<![CDATA[
+		-- 관련 설문 배제한 문항 리스트
+		SELECT 	DISTINCT QUESTION 
+		FROM 	TB_GRINQ_QUESTION_SET 
+		WHERE 	QUESTION_GUBUN		=	1
+		AND 	QUESTION_CHECKED_NO = 	0
+		ORDER BY
+				QUESTION 
+	]]>
+	</select>
+	
+	<select id="pollStatsByGrseq" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 과정별 설문통계 (기수별)
+		SELECT	Z.QUESTION,	Z.GRCODE, 	
+				Z.GRNM,	
+		        Z.ANS_NO,	
+		        Z.NUM1,		Z.NUM1_AVG,
+		        Z.NUM2,		Z.NUM2_AVG,
+		        Z.NUM3,		Z.NUM3_AVG,
+		        Z.NUM4,		Z.NUM4_AVG,
+		        Z.NUM5,		Z.NUM5_AVG,		        
+		        Z.PFLAG
+		FROM
+		(		
+		    SELECT	P.QUESTION,
+		            P.GRCODE,
+		            (SEARCHGRCODENM(P.GRCODE,P.GRSEQ) || '(' || P.GRSEQ || ')') AS GRNM,
+		            
+		            P.ANS_NO,
+		            
+		            P.NUM1,        
+		            CASE WHEN P.NUM1 > 0 THEN	ROUND(((P.NUM1 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM1_AVG,
+		
+		            P.NUM2,
+		            CASE WHEN P.NUM2 > 0 THEN	ROUND(((P.NUM2 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM2_AVG,
+		            
+		            P.NUM3,
+		            CASE WHEN P.NUM3 > 0 THEN	ROUND(((P.NUM3 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM3_AVG,
+		            
+		            P.NUM4,
+		            CASE WHEN P.NUM4 > 0 THEN	ROUND(((P.NUM4 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM4_AVG,
+		            
+		            P.NUM5,
+		            CASE WHEN P.NUM5 > 0 THEN	ROUND(((P.NUM5 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM5_AVG,
+		            
+		            'C' AS PFLAG
+		            
+		    FROM
+		    (
+		        SELECT	NVL(COUNT(D.ANS_NO),0)	AS 	ANS_NO,
+		                NVL(SUM(D.NUM1),0)		AS	NUM1,
+		                NVL(SUM(D.NUM2),0)		AS	NUM2,
+		                NVL(SUM(D.NUM3),0)		AS	NUM3,
+		                NVL(SUM(D.NUM4),0)		AS	NUM4,
+		                NVL(SUM(D.NUM5),0)		AS	NUM5,
+		                
+		                D.GRCODE,
+		                D.GRSEQ,
+		                D.QUESTION
+		        FROM
+		        (
+		            SELECT	B.ANS_NO,
+		                    DECODE(B.ANS_NO, 1, 1, 0)	AS	NUM1,
+		                    DECODE(B.ANS_NO, 2, 1, 0)	AS	NUM2,
+		                    DECODE(B.ANS_NO, 3, 1, 0)	AS	NUM3,
+		                    DECODE(B.ANS_NO, 4, 1, 0)	AS	NUM4,
+		                    DECODE(B.ANS_NO, 5, 1, 0)	AS	NUM5,
+		                                                    
+		                    C.GRCODE,	C.GRSEQ,	C.TITLE_NO,
+		                    A.QUESTION
+		                    
+		            FROM	TB_GRINQ_QUESTION_SET A	INNER JOIN TB_GRINQ_ANSWER B
+		            ON		A.TITLE_NO			=	B.TITLE_NO
+		            AND		A.SET_NO			=	B.SET_NO
+		            AND		A.QUESTION_NO		=	B.QUESTION_NO 
+		
+		            INNER JOIN	TB_GRINQ_TTL C
+		            ON		A.TITLE_NO			=	C.TITLE_NO
+		            
+		            INNER JOIN
+		            (
+		                SELECT 	DISTINCT QUESTION 
+		                FROM 	TB_GRINQ_QUESTION_SET 
+		                WHERE 	QUESTION_GUBUN		=	1
+		                AND 	QUESTION_CHECKED_NO = 	0
+		            ) D
+		            ON		A.QUESTION			=	D.QUESTION
+		
+		            WHERE	A.QUESTION_GUBUN	=	1		            
+		            ${value}
+		        ) D				        		
+		        GROUP BY
+		                D.QUESTION,	D.GRCODE, D.GRSEQ        
+		    ) P
+		
+		    UNION ALL
+		
+		    SELECT	P.QUESTION,
+		            P.GRCODE,
+		            '소계' AS GRNM,
+		            
+		            P.ANS_NO,
+		            
+		            P.NUM1,        
+		            CASE WHEN P.NUM1 > 0 THEN	ROUND(((P.NUM1 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM1_AVG,
+		
+		            P.NUM2,
+		            CASE WHEN P.NUM2 > 0 THEN	ROUND(((P.NUM2 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM2_AVG,
+		            
+		            P.NUM3,
+		            CASE WHEN P.NUM3 > 0 THEN	ROUND(((P.NUM3 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM3_AVG,
+		            
+		            P.NUM4,
+		            CASE WHEN P.NUM4 > 0 THEN	ROUND(((P.NUM4 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM4_AVG,
+		            
+		            P.NUM5,
+		            CASE WHEN P.NUM5 > 0 THEN	ROUND(((P.NUM5 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM5_AVG,
+		            
+		            'B' AS PFLAG		            
+		    FROM
+		    (
+		        SELECT	NVL(COUNT(D.ANS_NO),0)	AS 	ANS_NO,
+		                NVL(SUM(D.NUM1),0)		AS	NUM1,
+		                NVL(SUM(D.NUM2),0)		AS	NUM2,
+		                NVL(SUM(D.NUM3),0)		AS	NUM3,
+		                NVL(SUM(D.NUM4),0)		AS	NUM4,
+		                NVL(SUM(D.NUM5),0)		AS	NUM5,
+		                
+		                D.GRCODE,           
+		                D.QUESTION
+		        FROM
+		        (
+		            SELECT	B.ANS_NO,
+		                    DECODE(B.ANS_NO, 1, 1, 0)	AS	NUM1,
+		                    DECODE(B.ANS_NO, 2, 1, 0)	AS	NUM2,
+		                    DECODE(B.ANS_NO, 3, 1, 0)	AS	NUM3,
+		                    DECODE(B.ANS_NO, 4, 1, 0)	AS	NUM4,
+		                    DECODE(B.ANS_NO, 5, 1, 0)	AS	NUM5,
+		                                                    
+		                    C.GRCODE,	C.GRSEQ,	C.TITLE_NO,
+		                    A.QUESTION
+		                    
+		            FROM	TB_GRINQ_QUESTION_SET A	INNER JOIN TB_GRINQ_ANSWER B
+		            ON		A.TITLE_NO			=	B.TITLE_NO
+		            AND		A.SET_NO			=	B.SET_NO
+		            AND		A.QUESTION_NO		=	B.QUESTION_NO 
+		
+		            INNER JOIN	TB_GRINQ_TTL C
+		            ON		A.TITLE_NO			=	C.TITLE_NO
+		            
+		            INNER JOIN
+		            (
+		                SELECT 	DISTINCT QUESTION 
+		                FROM 	TB_GRINQ_QUESTION_SET 
+		                WHERE 	QUESTION_GUBUN		=	1
+		                AND 	QUESTION_CHECKED_NO = 	0
+		            ) D
+		            ON		A.QUESTION			=	D.QUESTION
+		
+		            WHERE	A.QUESTION_GUBUN	=	1		            
+		            ${value}
+		        ) D
+		        GROUP BY
+		                D.QUESTION,	D.GRCODE       
+		    ) P
+		    
+		    UNION ALL
+		    
+		    SELECT	P.QUESTION,
+		            '0' AS GRCODE,
+		            '총계' AS GRNM,
+		            
+		            P.ANS_NO,
+		            
+		            P.NUM1,        
+		            CASE WHEN P.NUM1 > 0 THEN	ROUND(((P.NUM1 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM1_AVG,
+		
+		            P.NUM2,
+		            CASE WHEN P.NUM2 > 0 THEN	ROUND(((P.NUM2 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM2_AVG,
+		            
+		            P.NUM3,
+		            CASE WHEN P.NUM3 > 0 THEN	ROUND(((P.NUM3 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM3_AVG,
+		            
+		            P.NUM4,
+		            CASE WHEN P.NUM4 > 0 THEN	ROUND(((P.NUM4 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM4_AVG,
+		            
+		            P.NUM5,
+		            CASE WHEN P.NUM5 > 0 THEN	ROUND(((P.NUM5 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM5_AVG,
+		            
+		            'A' AS PFLAG		            
+		    FROM
+		    (
+		        SELECT	NVL(COUNT(D.ANS_NO),0)	AS 	ANS_NO,
+		                NVL(SUM(D.NUM1),0)		AS	NUM1,
+		                NVL(SUM(D.NUM2),0)		AS	NUM2,
+		                NVL(SUM(D.NUM3),0)		AS	NUM3,
+		                NVL(SUM(D.NUM4),0)		AS	NUM4,
+		                NVL(SUM(D.NUM5),0)		AS	NUM5,
+		                
+		                D.GRCODE,           
+		                D.QUESTION
+		        FROM
+		        (
+		            SELECT	B.ANS_NO,
+		                    DECODE(B.ANS_NO, 1, 1, 0)	AS	NUM1,
+		                    DECODE(B.ANS_NO, 2, 1, 0)	AS	NUM2,
+		                    DECODE(B.ANS_NO, 3, 1, 0)	AS	NUM3,
+		                    DECODE(B.ANS_NO, 4, 1, 0)	AS	NUM4,
+		                    DECODE(B.ANS_NO, 5, 1, 0)	AS	NUM5,
+		                                                    
+		                    C.GRCODE,	C.GRSEQ,	C.TITLE_NO,
+		                    A.QUESTION
+		                    
+		            FROM	TB_GRINQ_QUESTION_SET A	INNER JOIN TB_GRINQ_ANSWER B
+		            ON		A.TITLE_NO			=	B.TITLE_NO
+		            AND		A.SET_NO			=	B.SET_NO
+		            AND		A.QUESTION_NO		=	B.QUESTION_NO 
+		
+		            INNER JOIN	TB_GRINQ_TTL C
+		            ON		A.TITLE_NO			=	C.TITLE_NO
+		            
+		            INNER JOIN
+		            (
+		                SELECT 	DISTINCT QUESTION 
+		                FROM 	TB_GRINQ_QUESTION_SET 
+		                WHERE 	QUESTION_GUBUN		=	1
+		                AND 	QUESTION_CHECKED_NO = 	0
+		            ) D
+		            ON		A.QUESTION			=	D.QUESTION
+		
+		            WHERE	A.QUESTION_GUBUN	=	1
+		            ${value}
+		        ) D
+		        GROUP BY
+		                D.QUESTION      
+		    ) P
+		) Z
+		ORDER BY
+				Z.QUESTION, Z.GRCODE, Z.PFLAG
+	]]>
+	</select>
+	
+	<select id="pollStatsByGrcode" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 과정별 설문통계 (과정별)
+		SELECT	Z.QUESTION,	Z.GRCODE, 	
+				Z.GRNM,	
+		        Z.ANS_NO,	
+		        Z.NUM1,		Z.NUM1_AVG,
+		        Z.NUM2,		Z.NUM2_AVG,
+		        Z.NUM3,		Z.NUM3_AVG,
+		        Z.NUM4,		Z.NUM4_AVG,
+		        Z.NUM5,		Z.NUM5_AVG,		        
+		        Z.PFLAG
+		FROM
+		(
+		
+		    SELECT	P.QUESTION,
+		            P.GRCODE,
+		            P.GRNM,
+		            
+		            P.ANS_NO,
+		            
+		            P.NUM1,        
+		            CASE WHEN P.NUM1 > 0 THEN	ROUND(((P.NUM1 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM1_AVG,
+		
+		            P.NUM2,
+		            CASE WHEN P.NUM2 > 0 THEN	ROUND(((P.NUM2 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM2_AVG,
+		            
+		            P.NUM3,
+		            CASE WHEN P.NUM3 > 0 THEN	ROUND(((P.NUM3 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM3_AVG,
+		            
+		            P.NUM4,
+		            CASE WHEN P.NUM4 > 0 THEN	ROUND(((P.NUM4 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM4_AVG,
+		            
+		            P.NUM5,
+		            CASE WHEN P.NUM5 > 0 THEN	ROUND(((P.NUM5 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM5_AVG,
+		            
+		            'C' AS PFLAG		            
+		    FROM
+		    (
+		        SELECT	NVL(COUNT(D.ANS_NO),0)	AS 	ANS_NO,
+		                NVL(SUM(D.NUM1),0)		AS	NUM1,
+		                NVL(SUM(D.NUM2),0)		AS	NUM2,
+		                NVL(SUM(D.NUM3),0)		AS	NUM3,
+		                NVL(SUM(D.NUM4),0)		AS	NUM4,
+		                NVL(SUM(D.NUM5),0)		AS	NUM5,
+		                
+		                D.GRCODE,                
+		                D.QUESTION,                
+		                MAX(D.GRNM) AS GRNM
+		        FROM
+		        (
+		            SELECT	B.ANS_NO,
+		                    DECODE(B.ANS_NO, 1, 1, 0)	AS	NUM1,
+		                    DECODE(B.ANS_NO, 2, 1, 0)	AS	NUM2,
+		                    DECODE(B.ANS_NO, 3, 1, 0)	AS	NUM3,
+		                    DECODE(B.ANS_NO, 4, 1, 0)	AS	NUM4,
+		                    DECODE(B.ANS_NO, 5, 1, 0)	AS	NUM5,
+		                                                    
+		                    C.GRCODE,	C.GRSEQ,	C.TITLE_NO,
+		                    A.QUESTION,
+		                    
+		                    SEARCHGRCODENM(C.GRCODE,C.GRSEQ)	AS GRNM
+		                    
+		            FROM	TB_GRINQ_QUESTION_SET A	INNER JOIN TB_GRINQ_ANSWER B
+		            ON		A.TITLE_NO			=	B.TITLE_NO
+		            AND		A.SET_NO			=	B.SET_NO
+		            AND		A.QUESTION_NO		=	B.QUESTION_NO 
+		
+		            INNER JOIN	TB_GRINQ_TTL C
+		            ON		A.TITLE_NO			=	C.TITLE_NO
+		            
+		            INNER JOIN
+		            (
+		                SELECT 	DISTINCT QUESTION 
+		                FROM 	TB_GRINQ_QUESTION_SET 
+		                WHERE 	QUESTION_GUBUN		=	1
+		                AND 	QUESTION_CHECKED_NO = 	0
+		            ) D
+		            ON		A.QUESTION			=	D.QUESTION
+		
+		            WHERE	A.QUESTION_GUBUN	=	1
+		            ${value}
+		        ) D        
+		        GROUP BY
+		                D.QUESTION,	D.GRCODE, D.GRNM
+		    ) P
+		
+		    UNION ALL
+		    		    
+		    SELECT	P.QUESTION,
+		            '0' AS GRCODE,
+		            '총계' AS GRNM,
+		            
+		            P.ANS_NO,
+		            
+		            P.NUM1,        
+		            CASE WHEN P.NUM1 > 0 THEN	ROUND(((P.NUM1 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM1_AVG,
+		
+		            P.NUM2,
+		            CASE WHEN P.NUM2 > 0 THEN	ROUND(((P.NUM2 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM2_AVG,
+		            
+		            P.NUM3,
+		            CASE WHEN P.NUM3 > 0 THEN	ROUND(((P.NUM3 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM3_AVG,
+		            
+		            P.NUM4,
+		            CASE WHEN P.NUM4 > 0 THEN	ROUND(((P.NUM4 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM4_AVG,
+		            
+		            P.NUM5,
+		            CASE WHEN P.NUM5 > 0 THEN	ROUND(((P.NUM5 / P.ANS_NO) * 100),2)
+		            ELSE	0
+		            END NUM5_AVG,
+		            
+		            'A' AS PFLAG
+		            
+		    FROM
+		    (
+		        SELECT	NVL(COUNT(D.ANS_NO),0)	AS 	ANS_NO,
+		                NVL(SUM(D.NUM1),0)		AS	NUM1,
+		                NVL(SUM(D.NUM2),0)		AS	NUM2,
+		                NVL(SUM(D.NUM3),0)		AS	NUM3,
+		                NVL(SUM(D.NUM4),0)		AS	NUM4,
+		                NVL(SUM(D.NUM5),0)		AS	NUM5,
+		                
+		                                
+		                D.QUESTION                
+		        FROM
+		        (
+		            SELECT	B.ANS_NO,
+		                    DECODE(B.ANS_NO, 1, 1, 0)	AS	NUM1,
+		                    DECODE(B.ANS_NO, 2, 1, 0)	AS	NUM2,
+		                    DECODE(B.ANS_NO, 3, 1, 0)	AS	NUM3,
+		                    DECODE(B.ANS_NO, 4, 1, 0)	AS	NUM4,
+		                    DECODE(B.ANS_NO, 5, 1, 0)	AS	NUM5,
+		                                                    
+		                    C.GRCODE,	C.GRSEQ,	C.TITLE_NO,
+		                    A.QUESTION,
+		                    
+		                    SEARCHGRCODENM(C.GRCODE,C.GRSEQ)	AS GRNM
+		                    
+		            FROM	TB_GRINQ_QUESTION_SET A	INNER JOIN TB_GRINQ_ANSWER B
+		            ON		A.TITLE_NO			=	B.TITLE_NO
+		            AND		A.SET_NO			=	B.SET_NO
+		            AND		A.QUESTION_NO		=	B.QUESTION_NO 
+		
+		            INNER JOIN	TB_GRINQ_TTL C
+		            ON		A.TITLE_NO			=	C.TITLE_NO
+		            
+		            INNER JOIN
+		            (
+		                SELECT 	DISTINCT QUESTION 
+		                FROM 	TB_GRINQ_QUESTION_SET 
+		                WHERE 	QUESTION_GUBUN		=	1
+		                AND 	QUESTION_CHECKED_NO = 	0
+		            ) D
+		            ON		A.QUESTION			=	D.QUESTION
+		
+		            WHERE	A.QUESTION_GUBUN	=	1
+		            ${value}
+		        ) D        
+		        GROUP BY
+		                D.QUESTION      
+		    ) P		    		
+		) Z
+		ORDER BY
+				Z.QUESTION, Z.GRCODE, Z.PFLAG		
+	]]>
+	</select>
+	
+	<select id="logStatsByDay" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 접속통계 일자별
+		SELECT	Z.REG_DATE,
+				Z.COUNT_NLOGIN, Z.COUNT_LOGIN,
+		        (Z.COUNT_NLOGIN + Z.COUNT_LOGIN) AS TOTAL_COUNT,
+		        Z.PFLAG
+		FROM
+		(
+		    SELECT	A.REG_DATE,
+		            SUM(A.COUNT_NLOGIN)	AS 	COUNT_NLOGIN,
+		            SUM(A.COUNT_LOGIN)	AS	COUNT_LOGIN,
+		            'B' AS PFLAG        
+		    FROM
+		    (
+		        SELECT	TO_CHAR(REG_DATE,'yyyy.mm.dd') 	AS REG_DATE,
+		                DECODE(TY_GUBUN,'1',1,0) 		AS COUNT_NLOGIN,
+		                DECODE(TY_GUBUN,'2',1,0) 		AS COUNT_LOGIN
+		        FROM	TB_LOGINSTATIS
+		        WHERE	TO_CHAR(REG_DATE,'yyyymmdd') BETWEEN #{sDate} AND #{eDate}
+		    ) A
+		    GROUP BY
+		            A.REG_DATE
+		            
+		    UNION ALL        
+		
+		    SELECT	A.REG_DATE,
+		            SUM(A.COUNT_NLOGIN)	AS 	COUNT_NLOGIN,
+		            SUM(A.COUNT_LOGIN)	AS	COUNT_LOGIN,
+		            'A' AS PFLAG
+		    FROM
+		    (
+		        SELECT	TO_CHAR(REG_DATE,'yyyy.mm') 	AS REG_DATE,
+		                DECODE(TY_GUBUN,'1',1,0) 		AS COUNT_NLOGIN,
+		                DECODE(TY_GUBUN,'2',1,0) 		AS COUNT_LOGIN
+		        FROM	TB_LOGINSTATIS
+		        WHERE	TO_CHAR(REG_DATE,'yyyymmdd') BETWEEN #{sDate} AND #{eDate}
+		    ) A
+		    GROUP BY
+		            A.REG_DATE
+		) Z        
+		ORDER BY
+				Z.REG_DATE, Z.PFLAG
+	]]>
+	</select>
+	
+	<select id="logStatsByMonth" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 접속통계 월별
+		SELECT	Z.REG_DATE,
+				Z.COUNT_NLOGIN, Z.COUNT_LOGIN,
+		        (Z.COUNT_NLOGIN + Z.COUNT_LOGIN) AS TOTAL_COUNT,
+		        Z.PFLAG
+		FROM
+		(
+		    SELECT	A.REG_DATE,
+		            SUM(A.COUNT_NLOGIN)	AS 	COUNT_NLOGIN,
+		            SUM(A.COUNT_LOGIN)	AS	COUNT_LOGIN,
+		            'B' AS PFLAG      
+		    FROM
+		    (
+		        SELECT	TO_CHAR(REG_DATE,'yyyy.mm') 	AS REG_DATE,
+		                DECODE(TY_GUBUN,'1',1,0) 		AS COUNT_NLOGIN,
+		                DECODE(TY_GUBUN,'2',1,0) 		AS COUNT_LOGIN
+		        FROM	TB_LOGINSTATIS
+		        WHERE	TO_CHAR(REG_DATE,'yyyymm') BETWEEN #{sDate} AND #{eDate}
+		    ) A
+		    GROUP BY
+		            A.REG_DATE
+		
+		    UNION ALL
+		
+		    SELECT	A.REG_DATE,
+		            SUM(A.COUNT_NLOGIN)	AS 	COUNT_NLOGIN,
+		            SUM(A.COUNT_LOGIN)	AS	COUNT_LOGIN,
+		            'A' AS PFLAG
+		    FROM
+		    (
+		        SELECT	TO_CHAR(REG_DATE,'yyyy') 	AS REG_DATE,
+		                DECODE(TY_GUBUN,'1',1,0) 	AS COUNT_NLOGIN,
+		                DECODE(TY_GUBUN,'2',1,0) 	AS COUNT_LOGIN
+		        FROM	TB_LOGINSTATIS
+		        WHERE	TO_CHAR(REG_DATE,'yyyymm') BETWEEN #{sDate} AND #{eDate}
+		    ) A
+		    GROUP BY
+		            A.REG_DATE
+		) Z        
+		ORDER BY
+				Z.REG_DATE, Z.PFLAG
+	]]>
+	</select>
+	
+	<select id="selectPeriodMemberStatsList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	--가입회원 통계 월별 리스트 
+	
+		SELECT	
+			${field}
+		FROM
+		(
+			SELECT
+		          ${subField}	
+		    FROM
+		    (
+				SELECT TO_CHAR(M.INDATE, 'YYYYMM') AS INDATE FROM tb_member M WHERE TO_CHAR(INDATE,'YYYYMM') BETWEEN #{sDate} AND #{eDate}     
+		    ) P
+		   	
+		) W
+	
+	]]>
+	</select>
+	
+	<select id="selectDeptMemberStatsList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--가입회원 통계 기관별 리스트
+		SELECT
+			${field}
+		FROM
+		(
+		    SELECT
+				${subField}	
+		    FROM
+		    (
+				SELECT 
+					I.DEPT, I.DEPTNM, TO_CHAR(M.INDATE, 'YYYYMM') AS INDATE 
+				FROM 
+					tb_member M , TB_DEPT I 
+				WHERE 
+					M.DEPT = I.DEPT 
+					AND TO_CHAR(INDATE,'YYYYMM') BETWEEN #{sDate} AND #{eDate}     
+		    ) P
+		   	
+		) W
+		GROUP BY
+				W.DEPT, W.DEPTNM
+	
+	]]>
+	</select>
+	
+	<select id="selectJiktMemberStatsList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--가입회원 통계 직급별 리스트
+		
+		SELECT	
+			${field}
+		FROM
+		(
+		    SELECT
+				${subField}	
+		    FROM
+		    (
+				SELECT 
+					I.JIK, I.JIKNM, TO_CHAR(M.INDATE, 'YYYYMM') AS INDATE 
+				FROM 
+					tb_member M , TB_JIK I 
+				WHERE 
+					M.JIK = I.JIK 
+					AND TO_CHAR(INDATE,'YYYYMM') BETWEEN #{sDate} AND #{eDate}     
+		    ) P
+		   	
+		) W
+		GROUP BY
+				W.JIK, W.JIKNM
+	
+	]]>
+	</select>
+	
+	<select id="selectSigunMemberStatsList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--가입회원 통계 시군별 리스트
+		
+		
+		SELECT	W.SIGUGUN,
+			${field}
+		FROM
+		(
+		    SELECT
+			   	P.SIGUGUN,
+				${subField}			
+		    FROM
+		    (
+		        SELECT A.SIGUGUN, A.ZIP_CODE
+		        FROM
+		        (        
+		            SELECT  (SIDO || ' ' || GUGUN) AS SIGUGUN,
+		                    SUBSTR(ZIPCODE,1,3) ZIP_CODE 
+		            FROM	ZIPCODE
+		            WHERE	SIDO	=	'인천'
+		        ) A
+		        GROUP BY
+		                A.SIGUGUN, A.ZIP_CODE
+		    ) P
+		   	LEFT OUTER JOIN
+		    (	    
+		        SELECT  HOME_POST1, USERNO, TO_CHAR(INDATE,'YYYYMM') AS INDATE
+		        FROM    tb_member
+		        WHERE   SUBSTR(HOME_ADDR,1,2) = '인천'
+		        AND     TO_CHAR(INDATE,'YYYYMM') BETWEEN #{sDate} AND #{eDate}
+		    ) Q
+		       
+		    ON  P.ZIP_CODE = Q.HOME_POST1
+		) W
+		GROUP BY
+				W.SIGUGUN
+		        
+		        
+		UNION ALL        
+		        
+		        
+		SELECT	'기타' AS SIGUGUN,
+			${field}
+		FROM
+		(
+		    SELECT	P.SIGUGUN,
+				${subField}		
+		    FROM
+		    (
+		        SELECT A.SIGUGUN, A.ZIP_CODE
+		        FROM
+		        (        
+		            SELECT  (SIDO || ' ' || GUGUN) AS SIGUGUN,
+		                    SUBSTR(ZIPCODE,1,3) ZIP_CODE 
+		            FROM	ZIPCODE
+		            WHERE	SIDO	!=	'인천'
+		        ) A
+		        GROUP BY
+		                A.SIGUGUN, A.ZIP_CODE
+		    ) P
+		   	LEFT OUTER JOIN
+		    (	    
+		        SELECT  HOME_POST1, USERNO, TO_CHAR(INDATE,'YYYYMM') AS INDATE
+		        FROM    tb_member
+		        WHERE   SUBSTR(HOME_ADDR,1,2) != '인천'
+		        AND     TO_CHAR(INDATE,'YYYYMM') BETWEEN #{sDate} AND #{eDate}
+		    ) Q
+		       
+		    ON  P.ZIP_CODE = Q.HOME_POST1
+		) W
+	
+	]]>
+	</select>
+	
+	<select id="selectScholarshipMemberStatsList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--가입회원 통계 학력별 리스트
+		SELECT	
+			${field}
+		FROM
+		(
+		    SELECT	P.SCHOOL,
+				${subField}		
+		    FROM
+		    (
+				SELECT M.SCHOOL, TO_CHAR(M.INDATE, 'YYYYMM') AS INDATE FROM tb_member M WHERE TO_CHAR(INDATE,'YYYYMM') BETWEEN #{sDate} AND #{eDate}
+		    ) P
+		   	
+		) W
+		GROUP BY
+				W.SCHOOL
+	]]>
+	</select>
+	
+	<select id="selectAgeMemberStatsList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--가입회원 통계 연령별 리스트
+		SELECT	T.USER_AGE,
+				${field}
+		FROM
+		(
+			SELECT	TO_NUMBER(TO_CHAR(NUM) || '0') AS USER_AGE
+			FROM	TB_COPYT
+			WHERE	NUM <= 7 
+		) T
+		LEFT OUTER JOIN
+		(
+			SELECT	${subField}		
+					C.USER_AGE
+			FROM
+			(
+				SELECT	            
+						
+						 CASE	WHEN	TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - B.USERYEAR)) BETWEEN 0 AND 19 	THEN 10
+								WHEN	TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - B.USERYEAR)) BETWEEN 20 AND 29 	THEN 20
+								WHEN	TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - B.USERYEAR)) BETWEEN 30 AND 39 	THEN 30
+								WHEN	TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - B.USERYEAR)) BETWEEN 40 AND 49 	THEN 40
+								WHEN	TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - B.USERYEAR)) BETWEEN 50 AND 59 	THEN 50
+								WHEN	TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - B.USERYEAR)) BETWEEN 60 AND 69 	THEN 60
+						ELSE	70
+						END	USER_AGE,
+							
+						TRUNC(TO_CHAR(SYSDATE,'YYYY') - B.USERYEAR),
+							
+						B.USERYEAR,
+						B.INDATE
+				FROM
+				(
+					SELECT	A.USERNO, A.INDATE,	A.USERYEAR
+					FROM
+					(
+						SELECT	USERNO, 
+								CASE	WHEN ( TO_NUMBER(SUBSTR(SCP.DEC_B64('KEY1',RESNO),7,1)) = 1 OR TO_NUMBER(SUBSTR(SCP.DEC_B64('KEY1',RESNO),7,1)) = 2 ) THEN '19'
+										WHEN ( TO_NUMBER(SUBSTR(SCP.DEC_B64('KEY1',RESNO),7,1)) = 3 OR TO_NUMBER(SUBSTR(SCP.DEC_B64('KEY1',RESNO),7,1)) = 4 ) THEN '20'
+								END	|| SUBSTR(SCP.DEC_B64('KEY1',RESNO),1,2) AS USERYEAR,
+									
+								TO_CHAR(INDATE,'yyyymm') AS INDATE
+									
+						FROM	tb_member
+						WHERE	RESNO IS NOT NULL
+					) A
+					WHERE	LENGTH(A.USERYEAR) = 4
+					AND		A.INDATE	BETWEEN #{sDate} AND #{eDate}
+				) B
+			) C
+		) D
+		ON		T.USER_AGE	=	D.USER_AGE
+		GROUP BY
+				T.USER_AGE
+	]]>
+	</select>
+	
+	<select id="selectMemberAgeStatsList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--가입회원 통계 연령별 리스트
+		SELECT	T.USER_AGE,
+				${field}
+		FROM
+		(
+			SELECT	TO_NUMBER(TO_CHAR(NUM) || '0') AS USER_AGE
+			FROM	TB_COPYT
+			WHERE	NUM <= 7 
+		) T
+		LEFT OUTER JOIN
+		(
+			SELECT	${subField}
+					C.USER_AGE
+			FROM
+			(
+				SELECT	            
+						
+						 CASE	WHEN	TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - B.USERYEAR)) BETWEEN 0 AND 19 	THEN 10
+								WHEN	TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - B.USERYEAR)) BETWEEN 20 AND 29 	THEN 20
+								WHEN	TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - B.USERYEAR)) BETWEEN 30 AND 39 	THEN 30
+								WHEN	TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - B.USERYEAR)) BETWEEN 40 AND 49 	THEN 40
+								WHEN	TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - B.USERYEAR)) BETWEEN 50 AND 59 	THEN 50
+								WHEN	TO_NUMBER(TRUNC(TO_CHAR(SYSDATE,'YYYY') - B.USERYEAR)) BETWEEN 60 AND 69 	THEN 60
+						ELSE	70
+						END	USER_AGE,
+							
+						TRUNC(TO_CHAR(SYSDATE,'YYYY') - B.USERYEAR),
+							
+						B.USERYEAR,
+						B.INDATE
+				FROM
+				(
+					SELECT	A.USERNO, A.INDATE,	A.USERYEAR
+					FROM
+					(
+						SELECT	USERNO, 
+								CASE	WHEN ( TO_NUMBER(SUBSTR(SCP.DEC_B64('KEY1',RESNO),7,1)) = 1 OR TO_NUMBER(SUBSTR(SCP.DEC_B64('KEY1',RESNO),7,1)) = 2 ) THEN '19'
+										WHEN ( TO_NUMBER(SUBSTR(SCP.DEC_B64('KEY1',RESNO),7,1)) = 3 OR TO_NUMBER(SUBSTR(SCP.DEC_B64('KEY1',RESNO),7,1)) = 4 ) THEN '20'
+								END	|| SUBSTR(SCP.DEC_B64('KEY1',RESNO),1,2) AS USERYEAR,
+									
+								TO_CHAR(INDATE,'yyyymm') AS INDATE
+									
+						FROM	tb_member
+						WHERE	RESNO IS NOT NULL
+					) A
+					WHERE	LENGTH(A.USERYEAR) = 4
+					AND		A.INDATE	BETWEEN #{sDate} AND #{eDate}
+				) B
+			) C
+		) D
+		ON		T.USER_AGE	=	D.USER_AGE
+		GROUP BY
+				T.USER_AGE
+	]]>
+	</select>
+	
+	<sql id="selectTutorWorkStatsDateListCommon">
+			--강사개인별 활동현황 조회 리스트
+
+		SELECT A.NAME,
+		  DECODE(B.PFLAG,'A',COUNT_NUM,0) AS COUNT_LOGIN,
+				DECODE(B.PFLAG,'B',COUNT_NUM,0) AS COUNT_GRNOTICE,
+				DECODE(B.PFLAG,'C',COUNT_NUM,0) AS COUNT_GRSUGGESTION,
+				DECODE(B.PFLAG,'D',COUNT_NUM,0) AS COUNT_TITLE,
+				DECODE(B.PFLAG,'E',COUNT_NUM,0) AS COUNT_REPLY,
+				DECODE(B.PFLAG,'F',COUNT_NUM,0) AS COUNT_MAIL,
+				B.REGDATE,B.USERNO
+		FROM TB_TUTOR A INNER JOIN
+		(
+
+			SELECT USERNO, TO_CHAR(REG_DATE, 'YYYYMMDD') AS REGDATE, COUNT(USERNO) AS COUNT_NUM, 'A' AS PFLAG
+			FROM TB_LOGINSTATIS
+			WHERE TY_GUBUN = '2'
+			<if test="'' != sDate">
+				AND TO_CHAR(REG_DATE,'YYYYMMDD') BETWEEN #{sDate} AND #{eDate}
+			</if>
+			
+	<![CDATA[
+			GROUP BY
+					USERNO, TO_CHAR(REG_DATE, 'YYYYMMDD')
+					
+			UNION ALL        
+
+			SELECT USERNO, TO_CHAR(REGDATE, 'YYYYMMDD'), COUNT(USERNO) AS COUNT_NUM, 'B' AS PFLAG
+			FROM TB_GRNOTICE
+	]]>			
+			<if test="'' != sDate">
+				WHERE TO_CHAR(REGDATE,'YYYYMMDD') BETWEEN #{sDate} AND #{eDate}
+			</if>
+
+	<![CDATA[
+			GROUP BY
+					USERNO, TO_CHAR(REGDATE, 'YYYYMMDD')
+					
+			UNION ALL        
+								
+			SELECT USERNO, TO_CHAR(REGDATE, 'YYYYMMDD'), COUNT(USERNO) AS COUNT_NUM, 'C' AS PFLAG
+			FROM  TB_GRSUGGESTION
+	]]>			
+			<if test="'' != sDate">
+				WHERE TO_CHAR(REGDATE,'YYYYMMDD') BETWEEN #{sDate} AND #{eDate}
+			</if>
+
+	<![CDATA[
+			
+			GROUP BY
+					USERNO, TO_CHAR(REGDATE, 'YYYYMMDD')
+					
+			UNION ALL        
+								
+			SELECT USERNO, TO_CHAR(REGDATE, 'YYYYMMDD'), COUNT(USERNO) AS COUNT_NUM, 'D' AS PFLAG
+			FROM  TB_GRSUGGESTION
+	]]>			
+			<if test="'' != sDate">
+				WHERE TO_CHAR(REGDATE,'YYYYMMDD') BETWEEN #{sDate} AND #{eDate} AND DEPTH = '0'
+			</if>
+
+	<![CDATA[
+			GROUP BY
+					USERNO, TO_CHAR(REGDATE, 'YYYYMMDD')
+						 
+			UNION ALL        
+								
+			SELECT USERNO, TO_CHAR(REGDATE, 'YYYYMMDD'), COUNT(USERNO) AS COUNT_NUM, 'E' AS PFLAG
+			FROM  TB_GRSUGGESTION
+	]]>			
+			<if test="'' != sDate">
+				WHERE TO_CHAR(REGDATE,'YYYYMMDD') BETWEEN #{sDate} AND #{eDate} AND DEPTH != '0'
+			</if>
+	<![CDATA[
+			GROUP BY
+					USERNO, TO_CHAR(REGDATE, 'YYYYMMDD')
+			
+			UNION ALL
+			
+			SELECT D.USERNO ,TO_CHAR(C.SEND_DATE, 'YYYYMMDD') AS REGDATE ,  COUNT(D.USERNO) AS COUNT_NUM, 'F' AS PFLAG
+            FROM TB_MAIL_SEND C
+            INNER JOIN
+            (
+                SELECT A.NAME, B.USER_ID, A.USERNO
+                FROM TB_TUTOR A INNER JOIN tb_member B
+                ON   A.USERNO = B.USERNO
+                GROUP BY A.USERNO, A.NAME, B.USER_ID
+            ) D
+            ON  C.USERNAME = D.NAME
+            AND  C.USERID = D.USER_ID
+	]]>			
+			<if test="'' != sDate">
+				WHERE TO_CHAR(C.SEND_DATE, 'YYYYMMDD') BETWEEN #{sDate} AND #{eDate}
+			</if>
+	<![CDATA[
+            GROUP BY D.USERNO, TO_CHAR(C.SEND_DATE, 'YYYYMMDD')
+					
+					
+		) B
+		ON  A.USERNO = B.USERNO
+	]]>			
+			<if test="'' != name">
+				WHERE A.NAME LIKE '%' || #{name} || '%'
+			</if>
+		ORDER BY A.NAME, B.REGDATE DESC
+	</sql>
+	<select id="selectTutorWorkStatsDateListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount2"></include>
+		<include refid="selectTutorWorkStatsDateListCommon"></include>
+		<include refid="page.pageTotalCount2Foot"></include>
+	</select>
+	<select id="selectTutorWorkStatsDateList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<include refid="selectTutorWorkStatsDateListCommon"></include>
+		<include refid="page.pageFoot"></include>		
+	</select>
+	
+	<sql id="selectTutorWorkStatsMonthListCommon">
+			--강사개인별 활동현황 조회 리스트
+
+		SELECT A.NAME,
+		  NVL(SUM(CASE WHEN B.PFLAG = 'A' THEN COUNT_NUM END),0) AS COUNT_LOGIN,
+			   NVL(SUM(CASE WHEN B.PFLAG = 'B' THEN COUNT_NUM END),0) AS COUNT_GRNOTICE,
+ 			   NVL(SUM(CASE WHEN B.PFLAG = 'C' THEN COUNT_NUM END),0) AS COUNT_GRSUGGESTION,
+ 			   NVL(SUM(CASE WHEN B.PFLAG = 'D' THEN COUNT_NUM END),0) AS COUNT_TITLE,
+ 			   NVL(SUM(CASE WHEN B.PFLAG = 'E' THEN COUNT_NUM END),0) AS COUNT_REPLY,
+ 			   NVL(SUM(CASE WHEN B.PFLAG = 'F' THEN COUNT_NUM END),0) AS COUNT_MAIL,
+				B.REGDATE,B.USERNO
+		FROM TB_TUTOR A INNER JOIN
+		(
+
+			SELECT USERNO, TO_CHAR(REG_DATE, 'YYYYMM') AS REGDATE, COUNT(USERNO) AS COUNT_NUM, 'A' AS PFLAG
+			FROM TB_LOGINSTATIS
+			WHERE TY_GUBUN = '2'
+			<if test="'' != sDate">
+				AND TO_CHAR(REG_DATE,'YYYYMM') BETWEEN #{sDate} AND #{eDate}
+			</if>
+	<![CDATA[
+			GROUP BY
+					USERNO, TO_CHAR(REG_DATE, 'YYYYMM')
+					
+			UNION ALL        
+
+			SELECT USERNO, TO_CHAR(REGDATE, 'YYYYMM'), COUNT(USERNO) AS COUNT_NUM, 'B' AS PFLAG
+			FROM TB_GRNOTICE
+	]]>			
+			<if test="'' != sDate">
+				WHERE TO_CHAR(REGDATE,'YYYYMM') BETWEEN #{sDate} AND #{eDate}
+			</if>
+	<![CDATA[
+			GROUP BY
+					USERNO, TO_CHAR(REGDATE, 'YYYYMM')
+					
+			UNION ALL        
+								
+			SELECT USERNO, TO_CHAR(REGDATE, 'YYYYMM'), COUNT(USERNO) AS COUNT_NUM, 'C' AS PFLAG
+			FROM  TB_GRSUGGESTION
+	]]>			
+			<if test="'' != sDate">
+				WHERE TO_CHAR(REGDATE,'YYYYMM') BETWEEN #{sDate} AND #{eDate}
+			</if>
+	<![CDATA[
+			GROUP BY
+					USERNO, TO_CHAR(REGDATE, 'YYYYMM')
+					
+			UNION ALL        
+								
+			SELECT USERNO, TO_CHAR(REGDATE, 'YYYYMM'), COUNT(USERNO) AS COUNT_NUM, 'D' AS PFLAG
+			FROM  TB_GRSUGGESTION
+	]]>			
+			<if test="'' != sDate">
+				WHERE TO_CHAR(REGDATE,'YYYYMM') BETWEEN #{sDate} AND #{eDate} AND DEPTH = '0'
+			</if>
+	<![CDATA[
+			GROUP BY
+					USERNO, TO_CHAR(REGDATE, 'YYYYMM')
+						 
+			UNION ALL        
+								
+			SELECT USERNO, TO_CHAR(REGDATE, 'YYYYMM'), COUNT(USERNO) AS COUNT_NUM, 'E' AS PFLAG
+			FROM  TB_GRSUGGESTION
+	]]>			
+			<if test="'' != sDate">
+				WHERE TO_CHAR(REGDATE,'YYYYMM') BETWEEN #{sDate} AND #{eDate} AND DEPTH != '0'
+			</if>
+	<![CDATA[
+			GROUP BY
+					USERNO, TO_CHAR(REGDATE, 'YYYYMM')
+
+			UNION ALL
+			
+			SELECT D.USERNO ,TO_CHAR(C.SEND_DATE, 'YYYYMM') AS REGDATE ,  COUNT(D.USERNO) AS COUNT_NUM, 'F' AS PFLAG
+            FROM TB_MAIL_SEND C
+            INNER JOIN
+            (
+                SELECT A.NAME, B.USER_ID, A.USERNO
+                FROM TB_TUTOR A INNER JOIN tb_member B
+                ON   A.USERNO = B.USERNO
+                GROUP BY A.USERNO, A.NAME, B.USER_ID
+            ) D
+            ON  C.USERNAME = D.NAME
+            AND  C.USERID = D.USER_ID
+	]]>			
+			<if test="'' != sDate">
+				WHERE TO_CHAR(C.SEND_DATE, 'YYYYMM') BETWEEN #{sDate} AND #{eDate}
+			</if>
+	<![CDATA[
+            GROUP BY D.USERNO, TO_CHAR(C.SEND_DATE, 'YYYYMM')
+            
+		) B
+		ON  A.USERNO = B.USERNO
+	]]>			
+			<if test="'' != name">
+				WHERE A.NAME LIKE '%' || #{name} || '%'
+			</if>
+	<![CDATA[
+		group by A.NAME, b.regdate, b.userno 
+		ORDER BY A.NAME, B.REGDATE DESC
+		
+	]]>
+		
+	</sql>
+	<select id="selectTutorWorkStatsMonthListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount2"></include>
+		<include refid="selectTutorWorkStatsMonthListCommon"></include>
+		<include refid="page.pageTotalCount2Foot"></include>
+	</select>
+	<select id="selectTutorWorkStatsMonthList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<include refid="selectTutorWorkStatsMonthListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+
+	<sql id="selectMobileMonthListCommon">
+      FROM ( 
+	     SELECT
+	      TO_CHAR(LOG_DATE, 'YYYY-MM') AS LOGDATE 
+	       , TO_CHAR(SUM(DECODE(LOGINYN,'Y',1,0)), 'FM999,999,999') LOGINSUM 
+	       , TO_CHAR(SUM(DECODE(LOGINYN,'N',1,0)), 'FM999,999,999') NOLOGINSUM 
+	       , TO_CHAR(SUM(1), 'FM999,999,999') TOTAL 
+	      FROM TB_MLOG 
+	      <if test="sDate != '' or eDate != ''">
+	      	WHERE TO_CHAR(LOG_DATE,'YYYYMM') BETWEEN substr(#{sDate},1,6) AND substr(#{eDate},1, 6)
+	      </if>
+	      GROUP BY TO_CHAR(LOG_DATE, 'YYYY-MM') ORDER BY LOGDATE DESC 
+	     ) 
+	     ORDER BY LOGDATE DESC 
+		
+	</sql>	
+	<select id="selectMobileMonthListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount"></include>
+		<include refid="selectMobileMonthListCommon"></include>
+	</select>
+	<select id="selectMobileMonthList" parameterType="Map" resultType="DataMap">
+	<include refid="page.pageHead"></include>
+	<![CDATA[
+		-- 모바일 월별 쿼리
+	     SELECT *
+	]]>
+	<include refid="selectMobileMonthListCommon"></include>
+	<include refid="page.pageFoot"></include>
+	</select>
+
+	<sql id="selectMobileDayListCommon">
+	     FROM  ( 
+	     SELECT
+	      TO_CHAR(LOG_DATE, 'YYYY-MM-DD') AS LOGDATE 
+	       , TO_CHAR(SUM(DECODE(LOGINYN,'Y',1,0)), 'FM999,999,999') LOGINSUM 
+	       , TO_CHAR(SUM(DECODE(LOGINYN,'N',1,0)), 'FM999,999,999') NOLOGINSUM 
+	       , TO_CHAR(SUM(1), 'FM999,999,999') TOTAL
+	       , MAX(DECODE(TO_CHAR(LOG_DATE, 'D'),'1','일','2','월','3','화','4','수','5','목','6','금','토')) DY
+	      FROM TB_MLOG 
+	      <choose>
+		      <when test="sDate != '' or eDate != ''">
+		      	WHERE TO_CHAR(LOG_DATE,'YYYYMMDD') BETWEEN #{sDate} AND #{eDate}
+		      </when>
+		      <otherwise>
+		      	WHERE TO_CHAR(LOG_DATE,'YYYYMMDD') BETWEEN TO_CHAR(SYSDATE,'YYYYMM') || '-01' AND TO_CHAR(LAST_DAY(SYSDATE), 'YYYYMMDD')
+		      </otherwise>
+	      </choose>
+	      GROUP BY TO_CHAR(LOG_DATE, 'YYYY-MM-DD') ORDER BY LOGDATE DESC 
+	     ) 
+	     ORDER BY LOGDATE DESC
+	</sql>	
+	<select id="selectMobileDayListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount"></include>
+		<include refid="selectMobileDayListCommon"></include>
+	</select>
+	<select id="selectMobileDayList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<![CDATA[
+			-- 모바일 일별 쿼리
+		     SELECT *
+		]]>
+		<include refid="selectMobileDayListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<select id="mobileMemberCnt" resultType="Integer">
+	<![CDATA[
+		-- 모바일  회원수
+		SELECT COUNT(*) CNT
+		FROM TB_MEMBER
+		WHERE MLGLAST IS NOT NULL 
+	]]>
+	</select>
+	
+	<select id="getMaxGrSeq" resultType="String">
+	<![CDATA[
+		SELECT NVL(MAX(GRSEQ), '') AS GRSEQ 
+		FROM TB_GRRESULT
+	]]>
+	</select>
+	
+	
+	<select id="tierBestStats" parameterType="String" resultType="DataMap"> 
+	<![CDATA[
+	SELECT *
+  		FROM (SELECT codenm,
+               subj,
+               totno,
+               seat,
+               nou,
+               (ROW_NUMBER ()
+                   OVER (PARTITION BY codenm ORDER BY nou DESC, totno DESC))
+                  AS ran
+          FROM (SELECT codenm,
+                       totno,
+                       seat,
+                       ( (totno / seat) * 100) AS nou,
+                       subj
+                  FROM (  SELECT codenm,
+                                 subj,
+                                 COUNT (*) totno,
+                                 seat
+                            FROM (SELECT A.GRCODE,
+                                         A.GRSEQ,
+                                         DECODE (B.DOGS,
+                                                 '028', '019',
+                                                 '029', '019',
+                                                 '027', '018',
+                                                 '026', '017',
+                                                 '025', '016',
+                                                 B.DOGS)
+                                            DOGS,
+                                         B.CODE,
+                                         g.GRCODENIKNM AS subj,
+                                         (SELECT tseat
+                                            FROM tb_grseq
+                                           WHERE     grseq = #{value}
+                                                 AND grcode = A.grcode)
+                                            AS seat,
+                                         DECODE (
+                                            (SELECT CODENM
+                                               FROM TB_JIKGUBUN
+                                              WHERE     JIKGUBUN = 'dogs'
+                                                    AND CODE = B.DOGS),
+                                            '기능10급', '9급',
+                                            '기능9급', '9급',
+                                            '기능8급', '8급',
+                                            '기능7급', '7급',
+                                            '기능6급', '6급',
+                                            NVL (
+                                               (SELECT CODENM
+                                                  FROM TB_JIKGUBUN
+                                                 WHERE     JIKGUBUN = 'dogs'
+                                                       AND CODE = B.DOGS),
+                                               '기타'))
+                                            AS CODENM
+                                    FROM TB_APP_INFO A,
+                                         TB_JIK B,
+                                         TB_DEPT C,
+                                         tb_grseq g
+                                   WHERE     A.JIK = B.JIK(+)
+                                         AND NVL (TRIM (B.JIKR), 'ETC') <>
+                                                'ETC'
+                                         AND A.GRSEQ = #{value}
+                                         AND A.GRCHK = 'Y'
+                                         AND A.DEPT = c.DEPT(+)
+                                         AND C.USE_YN = 'Y'
+                                         AND A.grcode = g.grcode(+)
+                                         AND A.grseq = g.grseq(+)
+                                         AND g.grcodeniknm LIKE 'e-%')
+                        GROUP BY codenm, subj, seat)))
+ 		WHERE     ran = 1
+       		AND codenm IN ('5급', '6급', '7급', '8급', '9급', '기타')                               
+	]]>
+	</select>
+</mapper>

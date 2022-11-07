@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.movieMgr.mapper.MovieMapper">
+
+	<select id="selectDivList" resultType="DataMap">
+	<![CDATA[
+		-- MovieDAO.java
+		-- 동영상강의 분류 리스트
+		SELECT 
+			div_code, div_name, ldate, luserno,
+			(SELECT count(*) FROM TB_MOV_CONTENT a WHERE a.div_code = b.div_code) mov_cnt
+		FROM TB_MOV_DIV b
+	]]>
+	</select>
+
+	<sql id="selectContListCommon">
+		FROM   TB_MOV_CONTENT A, TB_MOV_DIV B
+		WHERE  1 = 1
+		AND A.div_code = B.div_code
+		
+		<choose>
+			<when test="divCode != ''">
+				<choose>
+					<when test="'88785' == divCode">
+						AND A.div_code = '89322'
+					</when>
+					<otherwise>
+						AND A.div_code = #{divCode}
+					</otherwise>
+				</choose>
+			</when>
+			<otherwise>
+				AND A.div_code = '89322'
+			</otherwise>
+		</choose>
+		<if test="s_searchText != ''">
+			AND A.cont_name LIKE '%' || #{s_searchText} || '%'
+		</if>
+
+	</sql>	
+	<select id="selectContListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount"></include>
+		<include refid="selectContListCommon"></include>
+	</select>
+	<select id="selectContList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<![CDATA[
+			SELECT  subj, cont_code, cont_name, cont_summary, A.luserno, B.div_name, mov_time, mov_min, visit, 
+					TO_CHAR(A.ldate, 'YYYY-MM-DD hh24:mi:ss') AS ldate, groupfile_no, mov_ent_date,
+					(select '/pds'||file_path from TB_UPLOAD where groupfile_no = A.groupfile_no) as file_path
+		]]>
+		<include refid="selectContListCommon"></include>
+				ORDER BY LDATE DESC
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<sql id="selectContList_common">
+		FROM   TB_MOV_CONTENT A, TB_MOV_DIV B
+		WHERE  1 = 1
+		AND A.div_code = B.div_code
+		
+		<choose>
+			<when test="divCode != ''">
+				<choose>
+					<when test="'88785' == divCode">
+						AND A.div_code = '89322'
+					</when>
+					<otherwise>
+						AND A.div_code = #{divCode}
+					</otherwise>
+				</choose>
+			</when>
+			<otherwise>
+				AND A.div_code = '89322'
+			</otherwise>
+		</choose>
+		<if test="s_searchText != ''">
+			AND A.cont_name LIKE '%' || #{s_searchText} || '%'
+		</if>
+		
+		ORDER BY a.LDATE DESC
+	</sql>
+	<select id="selectContList_count" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount"></include>
+		<include refid="selectContList_common"></include>
+	</select>
+	<select id="selectContList_" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<![CDATA[
+			SELECT  subj, cont_code, cont_name, cont_summary, A.luserno, B.div_name, mov_time, mov_min, visit, 
+					TO_CHAR(A.ldate, 'YYYY-MM-DD') AS ldate, groupfile_no, mov_ent_date,
+					(select '/pds'||file_path from TB_UPLOAD where groupfile_no = A.groupfile_no) as file_path
+		]]>
+		<include refid="selectContList_common"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<select id="selectContListBySubj" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT  cont_code, cont_name, cont_summary, luserno, mov_time, mov_min,
+				TO_CHAR(ldate, 'YYYY-MM-DD hh24:mi:ss') AS ldate, subj, groupfile_no, mov_ent_date,
+				(select '/pds'||file_path from TB_UPLOAD where groupfile_no = A.groupfile_no) as file_path
+		FROM   TB_MOV_CONTENT A
+		WHERE  1 = 1
+		AND subj = #{value}
+	]]>
+	</select>
+	
+	<select id="selectContListBySubj_" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT  cont_code, cont_name, cont_summary, luserno, mov_time, mov_min,
+				TO_CHAR(ldate, 'YYYY-MM-DD hh24:mi:ss') AS ldate, subj, groupfile_no, mov_ent_date,
+				(select '/pds'||file_path from TB_UPLOAD where groupfile_no = A.groupfile_no) as file_path
+		FROM   TB_MOV_CONTENT A
+		WHERE  1 = 1
+		AND subj = #{value}
+		ORDER BY CONT_NAME
+	]]>
+	</select>
+	
+	<select id="selectDivRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- MovieDAO.java
+		-- 동영상강의 분류 상세정보
+		SELECT div_code, div_name, ldate, luserno
+		FROM   TB_MOV_DIV
+		WHERE  div_code = #{value}
+	]]>
+	</select>
+		
+	<select id="selectContRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- MovieDAO.java
+		-- 동영상강의 학습 상세정보
+		SELECT 
+			cont_code, cont_name, cont_summary, ldate, mov_time, mov_min, mov_url, groupfile_no, mov_ent_date,
+			(select '/pds'||file_path from TB_UPLOAD where groupfile_no = A.groupfile_no) as file_path
+		FROM TB_MOV_CONTENT A
+		WHERE cont_code = #{value}
+	]]>
+	</select>
+	
+	<select id="selectContRowLec" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- MovieDAO.java
+		-- 동영상강의 학습 상세정보(LCMS_CMI 학습시간정보 출력)
+		
+		SELECT 
+			cont_code, cont_name, cont_summary, ldate, mov_time, mov_min, mov_url, b.time_hh, b.time_mm, b.time_ss, b.time_ms
+		FROM TB_MOV_CONTENT a, LCMSINCH.LCMS_CMI b
+   		WHERE b.grcode       = #{strGrcode}
+		    AND b.grseq      = #{strGrseq}
+		    AND b.subj       = #{subj}
+		    AND b.STUDENT_ID = #{strUserId}
+		    AND b.org_dir    = #{orgDir}
+		    AND a.subj       = b.subj
+		    AND a.cont_code  = b.org_dir
+	]]>
+	</select>
+	
+	<update id="insertDivInfo" parameterType="Map">
+	<![CDATA[
+		-- MovieDAO.java
+		-- 동영상강의 분류 입력
+		INSERT INTO TB_MOV_DIV
+			(div_code, div_name, luserno, ldate)
+		VALUES
+			(CMMX_SEQNO.NEXTVAL, #{divName}, #{luserno}, SYSDATE)
+	]]>
+	</update>
+	
+	<update id="insertItem" parameterType="Map">
+	<![CDATA[
+		-- MovieDAO.java
+		-- LCMS에 동영상강의 학습객체(ITEM) 입력
+		INSERT INTO LCMSINCH.LCMS_ITEM ( 
+			org_dir, 			org_id, 			item_id,
+			org_item_no, 		item_ref_no, 		item_level, 
+			item_title, 		item_type, 			item_open, 
+			item_max_time, 		item_start_file, 	item_tl_action, 
+			item_parameters, 	item_max_time_num, 	item_prerequisites, 
+			item_datafromlms, 	item_cp_threshold, 	item_mn_measure, 
+			item_persist_state, item_nav_next, 		item_nav_previous, 
+			item_nav_exit, 		item_nav_abandon, 	item_objectives, 
+			cp_id, 				insert_date, 		update_date, 
+			gubun, 				contents_id,		item_id_ref
+		) VALUES (
+			#{contCode},					#{contCode},					#{contCode},
+			0,					0,					0,
+			#{contName},					'M',				'N',
+			'',					'',					'',
+			'',					'',					'',
+			'',					'',					'',
+			'',					'',					'',
+			'',					'',					'',
+			'admin',			SYSDATE,			SYSDATE,
+			'',					'',					''
+		)
+	]]>
+	</update>
+	
+	<update id="insertContInfo" parameterType="Map">
+	<![CDATA[
+		-- MovieDAO.java
+		-- 동영상강의 학습 입력
+		INSERT INTO TB_MOV_CONTENT (
+				cont_code,
+				cont_name,		cont_summary,	luserno,
+				ldate,			visit,			mov_time,
+				mov_min, 		div_code,		mov_url,
+				subj, 			groupfile_no, 	mov_ent_date
+		) VALUES (
+				--(SELECT LPAD( NVL( MAX(cont_code)+1, 1), 10, 0) FROM TB_MOV_CONTENT),		--학습코드 최대값
+				#{contCode},				 
+				#{contName},				#{contSummary},				#{luserno},
+				SYSDATE,		0,				#{movTime}, 
+				#{movMin}, 				#{divCode}, 				#{movUrl}, 
+				#{subj},				#{groupfileNo}, 				#{movEntDate}
+		)
+	]]>
+	</update>
+	
+	<update id="updateDivInfo" parameterType="Map">
+	<![CDATA[
+		-- MovieDAO.java
+		-- 동영상강의 분류 수정
+		UPDATE TB_MOV_DIV SET 
+			div_name = #{divName}
+		WHERE div_code = #{divCode}
+	]]>
+	</update>
+	
+	<update id="updateContInfo" parameterType="Map">
+	<![CDATA[
+		-- MovieDAO.java
+		-- 동영상강의 학습 수정
+		UPDATE TB_MOV_CONTENT SET
+			cont_name 		= #{contName},
+			cont_summary 	= #{contSummary},
+			mov_url 		= #{movUrl},
+			mov_time 		= #{movTime},
+			mov_min 		= #{movMin},
+	]]>
+			<if test="groupfileNo > 0">
+				groupfile_no   = #{groupfileNo},
+			</if>
+			mov_ent_date    = #{movEntDate}
+		WHERE cont_code = #{contCode}
+	</update>
+	
+	<update id="updateVisitCountMov" parameterType="Map"> 
+	<![CDATA[
+		-- MovieDAO.java
+		-- 동영상강의 조회수 갱신
+		UPDATE TB_MOV_CONTENT SET
+			visit = ( SELECT visit+1
+					  FROM TB_MOV_CONTENT 
+					  WHERE cont_code = #{contCode})
+		WHERE cont_code = #{contCode}
+	]]>
+	</update>
+	
+	<update id="updateCmiTime" parameterType="Map">
+	<![CDATA[
+		-- MovieDAO.java
+		-- 동영상강의 학습시간 갱신
+		UPDATE LCMSINCH.LCMS_CMI SET
+		    time_hh = #{timeHh},
+		    time_mm = #{timeMm},
+		    time_ss = #{timeSs}
+		WHERE   grcode     = #{strGrcode}
+		    AND grseq      = #{strGrseq}
+		    AND subj       = #{subj}
+		    AND org_dir    = #{orgDir}
+		    AND student_id = #{strUserId}
+	]]>
+	</update>
+	
+	<update id="deleteDivInfo" parameterType="Map">
+	<![CDATA[
+		-- MovieDAO.java
+		-- 동영상강의 분류 삭제
+		DELETE TB_MOV_DIV WHERE div_code = #{divCode}
+	]]>
+	</update>
+	
+	<update id="deleteContInfo" parameterType="Map">
+	<![CDATA[
+		-- MovieDAO.java
+		-- 동영상강의  학습 삭제(학습코드별)
+		DELETE TB_MOV_CONTENT WHERE cont_code = #{contCode}
+	]]>
+	</update>
+	
+	<update id="deleteItem" parameterType="Map">
+	<![CDATA[
+		-- MovieDAO.java
+		-- LCMS DB에서 학습객체 (ITEM) 학습정보 삭제(동영상)
+		DELETE LCMSINCH.LCMS_ITEM WHERE item_id = #{contCode}
+	]]>
+	</update>
+	
+	<select id="selectSequence" resultType="String">
+	<![CDATA[
+		-- MovieDAO.java
+		-- 시퀀스 생성
+		SELECT CMMX_SEQNO.NEXTVAL AS seq FROM DUAL
+	]]>
+	</select>
+	
+	<select id="selectSubjCode" resultType="String">
+	<![CDATA[
+		-- MovieDAO.java
+		-- 과목코드 생성
+		SELECT ('NUM' || LPAD( NVL( TO_NUMBER( SUBSTR( MAX(SUBJ),4, LENGTH( MAX(SUBJ) ) ) + 1), '0000001'), 7,0) ) subj 
+		FROM TB_SUBJ
+		WHERE subj LIKE 'NUM' || '%'
+	]]>
+	</select>
+	
+</mapper>

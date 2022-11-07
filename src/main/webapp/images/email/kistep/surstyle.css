@@ -1,0 +1,21 @@
+.bordercolor	{ 
+	background-color: #999999;
+	}
+.td1	{ 
+	color : #000000;
+	background-color: #E5F2FF;
+	}
+.td2	{ 
+	color : #000000;
+	background-color: #C9E3FE;
+	}
+
+body {  font-family: '±¼¸²'; font-size: 9pt; color: #333333}
+td { font-family: '±¼¸²'; font-size: 9pt; line-height: 135%; color: #666666}
+
+a:link {  color: #333333; text-decoration: none}
+a:visited {  color: #333333; text-decoration: none}
+a:active {  color: #000000; text-decoration: underline}
+a:hover {  color: #000000; text-decoration: underline}
+
+.select { font-family: '±¼¸²'; font-size: 9pt; color: #666666}

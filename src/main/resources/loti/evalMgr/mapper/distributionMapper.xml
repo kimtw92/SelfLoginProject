@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.evalMgr.mapper.DistributionMapper">
+
+	<select id="selectTotList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	 	-- 기간별 총계리스트 
+		SELECT SUM(CASE WHEN A.PACCEPT < 60 THEN 1 ELSE 0 END) AS TOT_60LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 60 AND A.PACCEPT < 70 THEN 1 ELSE 0 END) AS TOT_70LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 70 AND A.PACCEPT < 80 THEN 1 ELSE 0 END) AS TOT_80LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 80 AND A.PACCEPT < 90 THEN 1 ELSE 0 END) AS TOT_90LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 90 THEN 1 ELSE 0 END) AS TOT_90HIGH
+		     , ROUND(AVG(A.PACCEPT),2) AS TOT_AVG
+		     , COUNT(*) AS TOT_STUCNT 
+		  FROM TB_GRRESULT A
+		     , TB_GRSEQ D
+		 WHERE 1=1
+		   AND A.GRCODE = D.GRCODE
+		   AND A.GRSEQ = D.GRSEQ
+	]]>
+	<if test="(started != null and started != '') or (enddate != null and enddate != '')">
+	<![CDATA[
+           AND TO_CHAR(D.ENDDATE,'YYYYMMDD') BETWEEN #{started} AND #{enddate}
+	]]>
+	</if>
+	</select>
+	
+	<select id="selectJikList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기간별 직급리스트 
+		SELECT IS_DOGNM(B.CODE) AS DOGNM
+		     , SUM(CASE WHEN A.PACCEPT < 60 THEN 1 ELSE 0 END) AS TOT_60LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 60 AND A.PACCEPT < 70 THEN 1 ELSE 0 END) AS TOT_70LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 70 AND A.PACCEPT < 80 THEN 1 ELSE 0 END) AS TOT_80LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 80 AND A.PACCEPT < 90 THEN 1 ELSE 0 END) AS TOT_90LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 90 THEN 1 ELSE 0 END) AS TOT_90HIGH
+		     , ROUND(AVG(A.PACCEPT),2) AS TOT_AVG
+		     , COUNT(*) AS TOT_STUCNT 
+		  FROM TB_GRRESULT A
+		     , TB_JIKGUBUN B
+		     , TB_JIK C
+		     , TB_GRSEQ D
+		 WHERE 1=1
+		   AND B.JIKGUBUN = 'dogs'
+		   AND A.RJIK = C.JIK
+		   AND C.DOGS = B.CODE
+		   AND A.GRCODE = D.GRCODE
+		   AND A.GRSEQ = D.GRSEQ
+	]]>
+	<if test="(started != null and started != '') or (enddate != null and enddate != '')">
+	<![CDATA[
+           AND TO_CHAR(D.ENDDATE,'YYYYMMDD') BETWEEN #{started} AND #{enddate}
+	]]>
+	</if>
+	<![CDATA[
+		 GROUP BY IS_DOGNM(B.CODE)
+	]]>
+	</select>
+	
+	<select id="selectDeptList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기관별 기관리스트 
+		SELECT DECODE(B.DEPT, '6280000', B.DEPTNM, '3490000', B.DEPTNM, '3500000', B.DEPTNM
+		                    , '3510000', B.DEPTNM, '3520000', B.DEPTNM, '3530000', B.DEPTNM
+		                    , '3540000', B.DEPTNM, '3550000', B.DEPTNM, '3560000', B.DEPTNM
+		                    , '3570000', B.DEPTNM, '3580000', B.DEPTNM, '0000000', B.DEPTNM
+		                    , '타시도'
+		       ) AS DEPTNM
+		     , SUM(CASE WHEN A.PACCEPT < 60 THEN 1 ELSE 0 END) AS TOT_60LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 60 AND A.PACCEPT < 70 THEN 1 ELSE 0 END) AS TOT_70LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 70 AND A.PACCEPT < 80 THEN 1 ELSE 0 END) AS TOT_80LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 80 AND A.PACCEPT < 90 THEN 1 ELSE 0 END) AS TOT_90LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 90 THEN 1 ELSE 0 END) AS TOT_90HIGH
+		     , ROUND(AVG(A.PACCEPT),2) AS TOT_AVG
+		     , COUNT(*) AS TOT_STUCNT 
+		  FROM TB_GRRESULT A
+		     , TB_DEPT B
+		     , TB_GRSEQ D
+		 WHERE 1=1
+		   AND A.RDEPT = B.DEPT 
+		   AND A.GRCODE = D.GRCODE
+		   AND A.GRSEQ = D.GRSEQ
+	]]>
+	<if test="(started != null and started != '') or (enddate != null and enddate != '')">
+	<![CDATA[
+           AND TO_CHAR(D.ENDDATE,'YYYYMMDD') BETWEEN #{started} AND #{enddate}
+	]]>
+	</if>
+	<![CDATA[
+		 GROUP BY DECODE(B.DEPT, '6280000', B.DEPTNM, '3490000', B.DEPTNM, '3500000', B.DEPTNM
+		                       , '3510000', B.DEPTNM, '3520000', B.DEPTNM, '3530000', B.DEPTNM
+		                       , '3540000', B.DEPTNM, '3550000', B.DEPTNM, '3560000', B.DEPTNM
+		                       , '3570000', B.DEPTNM, '3580000', B.DEPTNM, '0000000', B.DEPTNM
+		                       , '타시도')
+	]]>
+	</select>
+	
+	<select id="selectAgeList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기관별 연령리스트 
+		SELECT DECODE(SIGN((TO_CHAR(SYSDATE,'YYYY')-(DECODE(SUBSTR(A.RRESNO,7,1),'1','19','2','19','3','20','4','20')||SUBSTR(A.RRESNO,1,2)))-'26')
+		              ,'-1','25세이하'
+		              , DECODE((TO_CHAR(SYSDATE,'YYYY')-(DECODE(SUBSTR(A.RRESNO,7,1),'1','19','2','19','3','20','4','20')||SUBSTR(A.RRESNO,1,2)))
+		              , '26', '26-30세', '27', '26-30세', '28', '26-30세', '29', '26-30세', '30', '26-30세'
+		              , '31', '31-35세', '32', '31-35세', '33', '31-35세', '34', '31-35세', '35', '31-35세'
+		              , '36', '36-40세', '37', '36-40세', '38', '36-40세', '39', '36-40세', '40', '36-40세'
+		              , '41', '41-45세', '42', '41-45세', '43', '41-45세', '44', '41-45세', '45', '41-45세'
+		              , '46', '46-50세', '47', '46-50세', '48', '46-50세', '49', '46-50세', '50', '46-50세'
+		              , '51세이상')
+		       ) AS AGE
+		     , SUM(CASE WHEN A.PACCEPT < 60 THEN 1 ELSE 0 END) AS TOT_60LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 60 AND A.PACCEPT < 70 THEN 1 ELSE 0 END) AS TOT_70LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 70 AND A.PACCEPT < 80 THEN 1 ELSE 0 END) AS TOT_80LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 80 AND A.PACCEPT < 90 THEN 1 ELSE 0 END) AS TOT_90LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 90 THEN 1 ELSE 0 END) AS TOT_90HIGH
+		     , ROUND(AVG(A.PACCEPT),2) AS TOT_AVG
+		     , COUNT(*) AS TOT_STUCNT 
+		  FROM TB_GRRESULT A
+		     , TB_GRSEQ D
+		 WHERE 1=1
+		   AND A.GRCODE = D.GRCODE
+		   AND A.GRSEQ = D.GRSEQ
+	]]>
+	<if test="(started != null and started != '') or (enddate != null and enddate != '')">
+	<![CDATA[
+           AND TO_CHAR(D.ENDDATE,'YYYYMMDD') BETWEEN #{started} AND #{enddate}
+	]]>
+	</if>
+	<![CDATA[
+		 GROUP BY DECODE(SIGN((TO_CHAR(SYSDATE,'YYYY')-(DECODE(SUBSTR(A.RRESNO,7,1),'1','19','2','19','3','20','4','20')||SUBSTR(A.RRESNO,1,2)))-'26')
+		                 ,'-1','25세이하'
+		                 , DECODE((TO_CHAR(SYSDATE,'YYYY')-(DECODE(SUBSTR(A.RRESNO,7,1),'1','19','2','19','3','20','4','20')||SUBSTR(A.RRESNO,1,2)))
+		                 , '26', '26-30세', '27', '26-30세', '28', '26-30세', '29', '26-30세', '30', '26-30세'
+		                 , '31', '31-35세', '32', '31-35세', '33', '31-35세', '34', '31-35세', '35', '31-35세'
+		                 , '36', '36-40세', '37', '36-40세', '38', '36-40세', '39', '36-40세', '40', '36-40세'
+		                 , '41', '41-45세', '42', '41-45세', '43', '41-45세', '44', '41-45세', '45', '41-45세'
+		                 , '46', '46-50세', '47', '46-50세', '48', '46-50세', '49', '46-50세', '50', '46-50세'
+		                 , '51세이상')
+		       ) 
+		 ORDER BY DECODE(SIGN((TO_CHAR(SYSDATE,'YYYY')-(DECODE(SUBSTR(A.RRESNO,7,1),'1','19','2','19','3','20','4','20')||SUBSTR(A.RRESNO,1,2)))-'26')
+		                 ,'-1','25세이하'
+		                 , DECODE((TO_CHAR(SYSDATE,'YYYY')-(DECODE(SUBSTR(A.RRESNO,7,1),'1','19','2','19','3','20','4','20')||SUBSTR(A.RRESNO,1,2)))
+		                 , '26', '26-30세', '27', '26-30세', '28', '26-30세', '29', '26-30세', '30', '26-30세'
+		                 , '31', '31-35세', '32', '31-35세', '33', '31-35세', '34', '31-35세', '35', '31-35세'
+		                 , '36', '36-40세', '37', '36-40세', '38', '36-40세', '39', '36-40세', '40', '36-40세'
+		                 , '41', '41-45세', '42', '41-45세', '43', '41-45세', '44', '41-45세', '45', '41-45세'
+		                 , '46', '46-50세', '47', '46-50세', '48', '46-50세', '49', '46-50세', '50', '46-50세'
+		                 , '51세이상')
+		       ) 
+	]]>
+	</select>
+	
+	<select id="selectSexList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기관별 성별리스트 
+		SELECT DECODE(SUBSTR(A.RRESNO,7,1),'1','남','2', '여','3', '남','여') AS SEXNM
+		     , SUM(CASE WHEN A.PACCEPT < 60 THEN 1 ELSE 0 END) AS TOT_60LOW
+		     , SUM(CASE WHEN A.PACCEPT >=60 AND A.PACCEPT < 70 THEN 1 ELSE 0 END) AS TOT_70LOW
+		     , SUM(CASE WHEN A.PACCEPT >=70 AND A.PACCEPT < 80 THEN 1 ELSE 0 END) AS TOT_80LOW
+		     , SUM(CASE WHEN A.PACCEPT >=80 AND A.PACCEPT < 90 THEN 1 ELSE 0 END) AS TOT_90LOW
+		     , SUM(CASE WHEN A.PACCEPT >= 90 THEN 1 ELSE 0 END) AS TOT_90HIGH
+		     , ROUND(AVG(A.PACCEPT),2) AS TOT_AVG
+		     , COUNT(*) AS TOT_STUCNT 
+		  FROM TB_GRRESULT A
+		     , TB_GRSEQ D
+		 WHERE 1=1
+		   AND A.GRCODE = D.GRCODE
+		   AND A.GRSEQ = D.GRSEQ 
+	]]>
+	<if test="(started != null and started != '') or (enddate != null and enddate != '')">
+	<![CDATA[
+           AND TO_CHAR(D.ENDDATE,'YYYYMMDD') BETWEEN #{started} AND #{enddate}
+	]]>
+	</if>
+	<![CDATA[
+		 GROUP BY DECODE(SUBSTR(A.RRESNO,7,1),'1','남','2', '여','3', '남','여')
+		 ORDER BY DECODE(SUBSTR(A.RRESNO,7,1),'1','남','2', '여','3', '남','여')
+	]]>
+	</select>
+	
+	<select id="selectSubjOption" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가통계관리 점수별 optionList
+		SELECT SUBJ
+		     , LECNM
+		     , REF_SUBJ 
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND LEC_TYPE = 'C'
+		   AND REF_SUBJ IS NOT NULL
+		 ORDER BY SUBJ
+	]]>
+	</select>
+	
+	<select id="selectScoreParam1" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가통계별관리 점수별 param1-exampoint,coreportpoint,steppoint,quizpoint
+		SELECT NVL(SUM(NVL(MGAKPOINT, 0) * NVL(MGAKWEIGHT, 0) + NVL(MJUPOINT, 0) * NVL(MJUWEIGHT, 0) + NVL(LGAKPOINT, 0) * NVL(LGAKWEIGHT, 0) + NVL(LJUPOINT, 0)
+		                                 * NVL(LJUWEIGHT, 0) + NVL(NGAKPOINT1, 0) * NVL(NGAKWEIGHT1, 0) + NVL(NJUPOINT1, 0) * NVL(NJUWEIGHT1, 0) + NVL(NGAKPOINT2, 0)
+		                                 * NVL(NGAKWEIGHT2, 0) + NVL(NJUPOINT2, 0) * NVL(NJUWEIGHT2, 0) + NVL(NGAKPOINT3, 0) * NVL(NGAKWEIGHT3, 0) + NVL(NJUPOINT3, 0)
+		                                 * NVL(NJUWEIGHT3, 0) + NVL(NGAKPOINT4, 0) * NVL(NGAKWEIGHT4, 0) + NVL(NJUPOINT4, 0) * NVL(NJUWEIGHT4, 0) + NVL(NGAKPOINT5, 0)
+		                                 * NVL(NGAKWEIGHT5, 0) + NVL(NJUPOINT5, 0) * NVL(NJUWEIGHT5, 0)), 0
+		       ) AS EXAMPOINT
+		     , NVL(SUM(NVL(REPORTPOINT, 0)), 0) AS COREPORTPOINT
+		     , NVL(SUM(NVL(STEPPOINT, 0)), 0) AS STEPPOINT
+		     , NVL(SUM(NVL(QUIZPOINT, 0)), 0) AS QUIZPOINT
+	      FROM TB_SUBJSEQ SJ
+	         , TB_SUBJ SB
+		 WHERE 1=1
+		   AND SJ.SUBJ = SB.SUBJ
+		   AND SJ.GRCODE = #{commGrcode}
+		   AND SJ.GRSEQ = #{commGrseq}
+		   AND (SJ.LEC_TYPE = 'S' OR (SJ.LEC_TYPE = 'C' AND (SJ.SUBJ = #{commSubj})))
+		   AND SB.SUBJTYPE <> 'S'
+	]]>
+	</select>
+</mapper>

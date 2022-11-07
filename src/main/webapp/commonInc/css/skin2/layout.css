@@ -1,0 +1,128 @@
+@charset	"utf-8";
+/* Layout Definition */
+@import url('base.css');
+@import url('board.css');
+@import url('data.css');
+@import url('topMenu.css');
+@import url('quick.css');
+@import url('footer.css');
+
+/*#dvwh*************************************/
+#wrapper{width:100%;height:100%;margin:0;padding:0 0 0 0;}
+
+/*#dvwh*************************************/
+#dvwhset{width:955px;margin:auto;padding:0 0 0 0;}
+
+/*#dvwh*************************************/
+#dvwh	{float:left;width:865px;height:100%;padding:0 0 0 0;}
+
+/*dvheader*************************************/
+#header{width:865px;height:108px;}
+
+/*dvmiddle*************************************/
+#middle{width:865px;height:100%;padding:0 0 0 0;}
+
+#middle div#subLeft{float:left;margin-right:15px;width:199px;}
+/*login*/
+#middle div#subLeft div.loginSet{width:184px;height:153px;padding:0 0 0 16px;background:url(/images/skin2/main/bg_login.gif) no-repeat left top;}
+#middle div#subLeft div.loginSet div.tit{padding:21px 0 0 3px;}
+#middle div#subLeft div.loginSet div.loginBtnSet	{width:179px;padding:0;margin:8px 0 0 0;}
+#middle div#subLeft div.loginSet div.loginBtnSet ul.loginBtn						{padding:0 0 0 0;margin:0;}
+#middle div#subLeft div.loginSet div.loginBtnSet ul.loginBtn li					{display:inline;height:43px;}
+#middle div#subLeft div.loginSet div.loginBtnSet ul.loginBtn li.left				{float:left;width:109px;height:43px;}
+#middle div#subLeft div.loginSet div.loginBtnSet ul.loginBtn li.left input		{float:left;height:15px;padding:1px;border:1px solid #8BC9DA;}
+#middle div#subLeft div.loginSet div.loginBtnSet ul.loginBtn li.left input.mb	{margin-bottom:5px;}
+#middle div#subLeft div.loginSet div.loginBtnSet ul.loginBtn li.right			{float:left;width:58px;height:43px;padding:0 0 0 0;}
+#middle div#subLeft div.loginSet div.check		{clear:both;margin:0;padding:4px 0 0 0;color:#2D7387;letter-spacing:-1px;}
+#middle div#subLeft div.loginSet div.btn	{padding:0;margin:5px 0 0 0;}
+
+/*logout*/
+#middle div#subLeft div.logoutSet{width:184px;height:138px;padding:15px 0 0 19px;background:url(/images/skin2/main/bg_logout.gif) no-repeat left top;}
+#middle div#subLeft div.logoutSet p.gstNameSet			{clear:both;width:165px;padding:0;margin:0;color:#11708E;line-height:14px;}
+#middle div#subLeft div.logoutSet p.gstNameSet span.gstName			{float:left;padding:0;margin:0;font-size:11px;}
+#middle div#subLeft div.logoutSet p.gstNameSet span.lgoutBtn			{float:right;padding:0;margin:0;}
+#middle div#subLeft div.logoutSet p.memoSet			{clear:both;line-height:15px;padding:10px 0 0 0;margin:0;color:#11708E;}
+#middle div#subLeft div.logoutSet p.memoSet a.mTxt		{vertical-align:0;}
+
+#middle div#subLeft div.logoutSet p.memoSet a, a:link,		
+#middle div#subLeft div.logoutSet p.memoSet a:visited	{color:#11708E; text-decoration:none; cursor:pointer;}
+#middle div#subLeft div.logoutSet p.memoSet a:hover,	
+#middle div#subLeft div.logoutSet p.memoSet a:active	{color:#0183AC; text-decoration:none; cursor:pointer;}
+
+#middle div#subLeft div.logoutSet p.btnSet				{padding:8px 0 2px 0;margin:0;}
+#middle div#subLeft div.logoutSet select.select01		{width:164px;margin-top:23px;}
+
+/*leftMenuSet01_좌측 메뉴*/
+#leftMenuSet01{float:left;width:200px;margn:0;padding:0;}
+#leftMenuSet01 h1.tit			{margin:0;padding:0;}
+
+#leftMenuSet01 ul.dth1			{margin:0;padding:0;font-size:0;line-height:0;}
+#leftMenuSet01 ul.dth1 li		{width:190;_width:174px;margin:0;padding:9px 0 2px 10px;border-bottom:1px solid #bde3f2;}
+#leftMenuSet01 ul.dth1 li ul.dth2	{margin:0;padding:6px 0 0 0;border-bottom:0;}
+#leftMenuSet01 ul.dth1 li ul.dth2 li{margin:0;padding:2px 0 1px 17px;border-bottom:0;}
+
+
+
+#leftMenuSet01 ul.dth1 li.endM	{border-bottom:0;}
+/*
+div.leftMenuSet01 ul.depth1 li a:link,
+div.leftMenuSet01 ul.depth1 li a:visited{width:156px;height:13px;margin:0;padding:7px 0 6px 12px;background:url(/images/skin2/icon/bul_left.gif) no-repeat left 9px;line-height:13px;font-weight:normal;font-size:12px;}
+div.leftMenuSet01 ul.depth1 li a:hover,
+div.leftMenuSet01 ul.depth1 li a:active	{width:156px;height:13px;margin:0;padding:7px 0 6px 12px;background:url(/images/skin2/icon/bul_left_on.gif) no-repeat left 9px;line-height:13px;color:#1A84C3;font-weight:bold;font-size:12px;}
+
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.depth2 		{float:;margin:0;padding:6px 0 5px 0;}
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.depth2 ul		{margin:0;padding:0;}
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.depth2 ul li	{width:150px;margin:0;padding:2px 0 2px 11px;line-height:13px;background:none;line-height:14px;letter-spacing:-1px;}
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.depth2 ul li a:link	{width:150px;height:13px;margin:0;padding:2px 0 1px 7px;line-height:13px;background:url(/images/skin2/icon/icon_arrow03.gif) no-repeat left 5px;font-weight:normal;color:#686868;}
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.depth2 ul li a:visited	{width:150px;height:13px;margin:0;padding:2px 0 1px 7px;line-height:13px;background:url(/images/skin2/icon/icon_arrow03.gif) no-repeat left 5px;font-weight:normal;color:#686868;}
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.depth2 ul li a:hover	{width:150px;height:13px;margin:0;padding:2px 0 1px 7px;line-height:13px;background:url(/images/skin2/icon/icon_arrow03.gif) no-repeat left 5px;font-weight:normal;color:#1A84C3;}
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.depth2 ul li a:active	{width:150px;height:13px;margin:0;padding:2px 0 1px 7px;line-height:13px;background:url(/images/skin2/icon/icon_arrow03.gif) no-repeat left 5px;font-weight:normal;color:#1A84C3;}
+
+<<<<<<< layout.css
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.end			{width:168px;height:13px;margin:0;padding:7px 0 6px 0px;line-height:13px;background:none;}
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.end a:link,		
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.end a:visited	{width:168px;height:13px;margin:0;padding:7px 0 6px 12px;background:url(/images/skin2/icon/bul_left.gif) no-repeat left 9px;line-height:13px;font-weight:normal;font-size:12px;}
+=======
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.end			{width:156px;height:13px;margin:0;padding:7px 0 6px 0px;line-height:13px;background:none;}
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.end a:link,		
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.end a:visited	{width:156px;height:13px;margin:0;padding:7px 0 6px 12px;background:url(/images/skin2/icon/bul_left.gif) no-repeat left 9px;line-height:13px;font-weight:normal;font-size:12px;}
+>>>>>>> 1.3
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.end a:hover,
+div.leftMenuSet0 div.leftMenu0	ul.depth1 li.end a:active	{width:156px;height:13px;margin:0;padding:7px 0 6px 12px;background:url(/images/skin2/icon/bul_left_on.gif) no-repeat left 9px;line-height:13px;color:#1A84C3;font-weight:bold;font-size:12px;}
+*/
+#leftMenuSet0 div.leftMenuBtt{height:13px;margin:0;padding:0;background:url(/images/skin2/sub/leftMenuBtt.gif) no-repeat left bottom;}
+
+/* left_하단tab */
+#middle div#subLeft div.leftTabSet{width:200px;height:75px;background:url(/images/skin2/main/bg_leftSlx.gif) no-repeat left bottom;}
+#middle div#subLeft div.leftTabSet ul.tab			{padding:0;margin:0 0 0 0;}
+#middle div#subLeft div.leftTabSet ul.tab li		{float:left;display:inline;padding:0;margin:0;line-height:0;font-size:0;}
+#middle div#subLeft div.leftTabSet select.select01	{width:173px;margin:15px; 0 0 0;}
+
+/* center_contents */
+#middle div#subContentArear{float:left;width:640px;margin:0px 10px 0 0px;_margin:0px 0px 0 0px;padding:0;}/*background:#efefef;*/
+
+#middle div#subContentArear div#contImg{padding:0;margin:0 0 12px 0;}
+
+#middle div#subContentArear div#top_title{clear:both;width:640px;height:34px;margin:0 0 0 0;padding:0 0 0 0;background:url(/images/skin2/title/bg_titUnderline.gif) no-repeat left bottom;}
+#middle div#subContentArear div#top_title h1#title{float:left;height:34px;smargin:0 0 0 0;padding:0 0 0 5px;background:none;}
+#middle div#subContentArear div#top_title h1#title_{float:left;height:34px;smargin:0 0 0 0;padding:0 0 0 5px;background:none;}
+
+#middle div#subContentArear div#top_title div#location				{float:right;margin:0;padding:0 0 0 0;}
+#middle div#subContentArear div#top_title div#location ul			{margin:0;padding:0 0 0 0;}
+#middle div#subContentArear div#top_title div#location ul li		{float:left;display:inline;padding:0 8px 0 5px;color:#2083A2;background:url(/images/skin2/common/bullLocation.gif) no-repeat right 1px;}
+#middle div#subContentArear div#top_title div#location ul li.home	{font-weight:normal;}
+#middle div#subContentArear div#top_title div#location ul li.on		{background:none;padding-right:0;font-weight:bold;}
+
+#middle div#subContentArear div#top_title div#location ul li a			{color:#2083A2; text-decoration:none; cursor:pointer;}
+#middle div#subContentArear div#top_title div#location ul li a:link		{color:#2083A2; text-decoration:none; cursor:pointer;}
+#middle div#subContentArear div#top_title div#location ul li a:visited	{color:#2083A2; text-decoration:none; cursor:pointer;}
+#middle div#subContentArear div#top_title div#location ul li a:hover	{color:#2992B2; text-decoration:none; cursor:pointer;}
+#middle div#subContentArear div#top_title div#location ul li a:active	{color:#2992B2; text-decoration:none; cursor:pointer;}
+
+#middle div#subContentArear div#content{width:612px;margin:0 0 0 14px;}
+/*quick*************************************/
+#dvwhset div.quick1{float:right;width:90px;padding-top:108px;background:none;}
+
+/*foot*************************************/
+#footerarea{clear:both;width:100%;margin:0 0 27px 0;padding:0 0 0 0;}
+

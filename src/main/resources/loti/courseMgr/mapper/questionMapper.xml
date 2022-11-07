@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.QuestionMapper">
+
+	<select id="selectGrSuggestionByHighListCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 과정 질문 리스트 (DEPTH=0)
+		SELECT
+			COUNT(0) AS CNT
+		FROM TB_GRSUGGESTION A,
+			 TB_GRCODE B
+		WHERE 1=1
+			AND A.GRCODE = B.GRCODE
+			AND DEPTH = 0
+			-- AND GRSEQ = ?
+			${sqlWhere}
+		ORDER BY REF_NO DESC, DEPTH ASC
+	]]>
+	</select>
+	
+	<select id="selectGrSuggestionByHighList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 과정 질문 리스트 (DEPTH=0)
+						SELECT
+							B.GRCODENM, A.GRCODE, GRSEQ, NO, 
+							TO_CHAR(REGDATE, 'YYYY-MM-DD') REGDATE, USERNO, NAME, 
+							DEPTH, REF_NO, TITLE, 
+							GROUPFILE_NO, CATEGORY, 
+							FINISH_YN
+						FROM TB_GRSUGGESTION A,
+							 TB_GRCODE B
+						WHERE 1=1
+							AND A.GRCODE = B.GRCODE
+							AND DEPTH = 0
+							-- AND GRSEQ = ?
+							${sqlWhere}
+						ORDER BY REF_NO DESC, DEPTH ASC
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<resultMap type="DataMap" id="clobContent">
+		<result property="CONTENT"  column="CONTENT" javaType="String" jdbcType="CLOB" typeHandler="org.apache.ibatis.type.ClobTypeHandler"></result>
+	</resultMap>
+	
+	<select id="selectGrSuggestionByLowRow" parameterType="Map" resultMap="clobContent">
+	<![CDATA[
+		-- 과정 질문 리스트 (DEPTH=1)
+		SELECT
+			GRCODE, GRSEQ, NO, 
+			TO_CHAR(REGDATE, 'YYYY-MM-DD') REGDATE, USERNO, NAME, 
+			DEPTH, REF_NO, TITLE, 
+			CONTENT, GROUPFILE_NO, CATEGORY, 
+			FINISH_YN
+		FROM TB_GRSUGGESTION A
+		WHERE 1=1
+			AND DEPTH = 1
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND REF_NO = #{no}
+	]]>
+	</select>
+	
+	<select id="selectQuestionPopup" resultType="DataMap">
+	<![CDATA[
+		-- 과정 질문 리스트 (시스템관리자홈 > 팝업)
+		SELECT
+			searchgrcodenm (a.grcode, a.grseq) AS grcodenm, 
+			( SUBSTR(a.grseq, 1, 4) || '-' || SUBSTR(a.grseq, 5) || '기' ) AS grseq,
+			a.title, a.userno, c.name, searchgrcodenm (a.grcode, a.grseq) AS subjnm,
+		    '/courseMgr/question.do?mode=view&no='
+		        || a.NO
+		        || '&grcode='
+		        || a.grcode
+		        || '&grseq='
+		        || a.grseq ||'&menuId=2-3-8'AS go_url
+		FROM
+			( SELECT * FROM TB_GRSUGGESTION WHERE DEPTH = 0 ) A,
+			( SELECT * FROM TB_GRSUGGESTION WHERE DEPTH > 0 ) B,
+			TB_MEMBER C
+		WHERE 1=1
+			AND A.GRCODE = B.GRCODE(+)
+			AND A.GRSEQ  = B.GRSEQ(+)
+			AND A.NO     = B.REF_NO(+)
+			AND C.USERNO = A.USERNO
+			AND b.ref_no IS NULL
+			-- AND sysdate-7 < a.regdate
+		ORDER BY a.regdate desc
+	]]>
+	</select>
+	
+	<select id="selectGrSuggestionRow" parameterType="Map" resultMap="clobContent">
+	<![CDATA[
+		-- 과정 질문 내용 상세 보기.
+		SELECT 
+			T.GRCODE, T.GRSEQ, T.NO, 
+			TO_CHAR(T.REGDATE, 'YYYY-MM-DD') REGDATE,
+			T.DEPTH, T.REF_NO, T.TITLE, 
+			T.GROUPFILE_NO, T.FINISH_YN, T.CATEGORY, 
+			T.CONTENT, T.USERNO, T.NAME, 
+			( SELECT USER_ID FROM TB_MEMBER WHERE USERNO = T.USERNO ) AS USER_ID
+		FROM TB_GRSUGGESTION T
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND NO = #{no}
+			AND DEPTH = #{depth}
+	]]>
+	</select>
+	
+	<update id="updateGrSuggestion" parameterType="Map">
+	<![CDATA[
+		-- 과정 질문  - 질문 내용 수정
+		UPDATE TB_GRSUGGESTION SET
+			TITLE = #{title},
+			NAME = #{name},
+			CONTENT = #{content},
+			REGDATE = #{regdate}
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND NO = #{no}
+	]]>
+	</update>
+	
+	<select id="selectGrSuggestionMaxNo" resultType="int">
+	<![CDATA[
+		-- 과정 질문  - 질문 내용 수정
+		SELECT 
+			NVL(MAX(NO), 0) + 1 AS NO 
+		FROM TB_GRSUGGESTION 
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<insert id="insertGrSuggestionByReply" parameterType="Map">
+	<![CDATA[
+		-- 과정 질문 등록 ( 답변 )
+		INSERT INTO TB_GRSUGGESTION 
+			(GRCODE, GRSEQ, NO, 
+			 REGDATE, USERNO, NAME, 
+			 DEPTH, REF_NO, TITLE, 
+			 GROUPFILE_NO, FINISH_YN, CATEGORY, 
+			 CONTENT) 
+		VALUES 
+			( #{grcode}, #{grseq}, #{no},
+			  SYSDATE, #{userno}, #{name},
+			  1, #{pno}, #{title},
+			  #{groupFileNo}, #{finishYn}, #{category}, 
+			  #{content})
+	]]>
+	</insert>
+	
+	<update id="updateGrSuggestionByReplySpec" parameterType="Map">
+	<![CDATA[
+		-- 과정 질문 - 답변 여부 및 카테고리 수정.
+		UPDATE TB_GRSUGGESTION SET
+			CATEGORY = #{category}, 
+			FINISH_YN = #{finishYn}
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND NO = #{pno}
+	]]>
+	</update>
+	
+	<update id="updateGrSuggestionByReply" parameterType="Map">
+	<![CDATA[
+		-- 과정 질문  - 질문 내용 수정
+		UPDATE TB_GRSUGGESTION SET
+			TITLE = #{title},
+			CONTENT = #{content},
+			FINISH_YN = #{finishYn},
+			CATEGORY = #{category},
+			GROUPFILE_NO = #{groupFileNo}
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND NO = #{no}
+	]]>
+	</update>
+	
+	<select id="selectMemberSimpleByQuestion" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 질문자 회원정보 추출( SMS 발송)
+		SELECT
+			B.USERNO, B.NAME, SCP.DEC_B64('KEY1',B.HP) AS HP, B.DEPTNM,
+			EMAIL, A.NO, C.GRCODENM,
+			(SELECT JIKNM FROM TB_JIK WHERE JIK = B.JIK) JIKNM
+		FROM TB_GRSUGGESTION A, tb_member B, TB_GRCODE C
+		WHERE 1=1
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.NO = #{no}
+			AND A.USERNO = B.USERNO
+			AND A.GRCODE = C.GRCODE
+	]]>
+	</select>
+	
+	<delete id="deleteGrSuggestion" parameterType="Map">
+	<![CDATA[
+		-- 과정질문방  질문/답변 삭제
+		DELETE FROM TB_GRSUGGESTION 
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+			AND GRSEQ  = #{grseq}
+			AND NO     = #{no}
+			AND DEPTH  = #{depth}
+	]]>
+	</delete>
+	
+</mapper>

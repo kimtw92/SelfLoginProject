@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.homepageMgr.mapper.FoodMapper">
+
+	<select id="selectFoodListCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 홈페이지관리 -> 식단관리 리스트
+        SELECT 
+           COUNT(0) AS CNT
+        FROM 
+            TB_FOOD_DATA A
+        ${where}
+       ORDER BY SEQ, FYEAR, FMONTH, FDATE, GUBUN
+	]]>
+	</select>
+	
+	<select id="selectFoodList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 홈페이지관리 -> 식단관리 리스트
+				        SELECT 
+				           TOTAL_DATE, FYEAR, FMONTH, FDATE, CONTENT, GUBUN
+				           ,(SELECT TO_CHAR(TO_DATE(A.TOTAL_DATE), 'W') FROM DUAL) as CNT
+				        FROM 
+				            TB_FOOD_DATA A
+				        ${where}
+				       ORDER BY SEQ, FYEAR, FMONTH, FDATE, GUBUN
+				       ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectFoodRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 홈페이지관리 -> 식단관리 폼데이터
+             SELECT 
+               TOTAL_DATE, FYEAR, FMONTH, FDATE, CONTENT, GUBUN
+            FROM 
+                TB_FOOD_DATA 
+            ${where}
+            ORDER BY TOTAL_DATE
+	]]>
+	</select>
+	
+	<insert id="insertFood" parameterType="Map">
+	<![CDATA[
+		-- 홈페이지관리 -> 식단관리 등록
+		INSERT INTO
+				TB_FOOD_DATA(FYEAR, FMONTH, FDATE, TOTAL_DATE, CONTENT, GUBUN, SEQ)
+				VALUES(#{year}, #{month}, #{date}, #{totalDate}, #{content}, #{gubun}, (SELECT NVL(MAX(SEQ),0)+1 FROM TB_FOOD_DATA))
+	]]>
+	</insert>
+	
+	<update id="updateFood" parameterType="Map">
+	<![CDATA[
+		-- 홈페이지관리 -> 식단관리 수정
+		UPDATE TB_FOOD_DATA SET
+					CONTENT = #{content},
+					FYEAR = #{year},
+					FMONTH = #{month},
+					FDATE = #{date},
+					TOTAL_DATE = #{totalDate},
+					GUBUN = #{gubun}
+				WHERE 			
+					SEQ = #{seq}
+	]]>
+	</update>
+	
+	<select id="ajaxCountChechk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 홈페이지관리 -> 식단관리 중복체크
+		SELECT COUNT(*) FROM TB_FOOD_DATA  WHERE TOTAL_DATE = #{sDate} AND GUBUN = #{gubun}
+	]]>
+	</select>
+	
+	<delete id="deleteFood" parameterType="Map">
+	<![CDATA[
+		-- 홈페이지관리 -> 식단관리 삭제
+		DELETE 
+		FROM 
+			TB_FOOD_DATA 
+		WHERE 
+			TO_CHAR(TOTAL_DATE) BETWEEN #{sDate} AND #{eDate}
+			AND GUBUN = #{gubun}
+	]]>
+	</delete>
+	
+</mapper>

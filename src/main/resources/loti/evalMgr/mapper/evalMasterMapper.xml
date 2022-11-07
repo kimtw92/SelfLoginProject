@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.evalMgr.mapper.EvalMasterMapper">
+
+	<select id="selectEvalMasterParam1" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가마스터 리스트 param1
+		SELECT MEVAL_YN
+		     , LEVAL_YN
+		     , NEVAL_CNT
+		  FROM TB_EVLINFO_GRSEQ
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+	]]>
+	</select>
+	
+	<select id="selectEvalMasterParam2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가마스터 리스트 param2
+		SELECT REF_SUBJ
+		     , COUNT(*) AS C_CNT
+		     , MIN(LECNM) AS LECNM 
+		  FROM TB_SUBJSEQ
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND LEC_TYPE = 'C' 
+		 GROUP BY REF_SUBJ
+	]]>
+	</select>
+	
+	<select id="selectEvalMasterList1" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가마스터 리스트 
+		SELECT SB.SUBJ
+		     , SB.LECNM
+		     , SB.LEC_TYPE
+		     , SB.REF_SUBJ 
+			 , NVL(EV.CNT, 0) AS EVL_YN 
+			 , NVL(ET.T,0) AS PTYPE_T 
+			 , NVL(EM.T,0) AS PTYPE_M 
+			 , NVL(E1.T,0) AS PTYPE_1 
+			 , NVL(E2.T,0) AS PTYPE_2 
+			 , NVL(E3.T,0) AS PTYPE_3 
+			 , NVL(E4.T,0) AS PTYPE_4 
+			 , NVL(E5.T,0) AS PTYPE_5 
+		  FROM TB_SUBJSEQ SB
+		     , TB_SUBJ B
+		     , (SELECT COUNT(*) AS CNT, GRCODE, GRSEQ, SUBJ FROM TB_EVLINFO_SUBJ WHERE 1=1 GROUP BY GRCODE, GRSEQ, SUBJ) EV
+		     , (SELECT '1' AS T, GRCODE, GRSEQ, SUBJ FROM TB_EVLINFO_SUBJ WHERE PTYPE = 'T') ET
+		     , (SELECT '1' AS T, GRCODE, GRSEQ, SUBJ FROM TB_EVLINFO_SUBJ WHERE PTYPE = 'M') EM
+		     , (SELECT '1' AS T, GRCODE, GRSEQ, SUBJ FROM TB_EVLINFO_SUBJ WHERE PTYPE = '1') E1
+		     , (SELECT '1' AS T, GRCODE, GRSEQ, SUBJ FROM TB_EVLINFO_SUBJ WHERE PTYPE = '2') E2
+		     , (SELECT '1' AS T, GRCODE, GRSEQ, SUBJ FROM TB_EVLINFO_SUBJ WHERE PTYPE = '3') E3
+		     , (SELECT '1' AS T, GRCODE, GRSEQ, SUBJ FROM TB_EVLINFO_SUBJ WHERE PTYPE = '4') E4
+		     , (SELECT '1' AS T, GRCODE, GRSEQ, SUBJ FROM TB_EVLINFO_SUBJ WHERE PTYPE = '5') E5
+		 WHERE 1=1
+		   AND SB.SUBJ = B.SUBJ
+		   AND B.SUBJTYPE IN ('Y','N')
+		   AND SB.GRCODE = #{commGrcode}
+		   AND SB.GRSEQ = #{commGrseq}
+		   AND SB.LEC_TYPE <> 'P'
+		   AND EV.GRCODE(+) = SB.GRCODE
+		   AND EV.GRSEQ(+) = SB.GRSEQ
+		   AND EV.SUBJ(+) = SB.SUBJ
+		   AND ET.GRCODE(+) = SB.GRCODE
+		   AND ET.GRSEQ(+) = SB.GRSEQ
+		   AND ET.SUBJ(+) = SB.SUBJ
+		   AND EM.GRCODE(+) = SB.GRCODE
+		   AND EM.GRSEQ(+) = SB.GRSEQ
+		   AND EM.SUBJ(+) = SB.SUBJ
+		   AND E1.GRCODE(+) = SB.GRCODE
+		   AND E1.GRSEQ(+) = SB.GRSEQ
+		   AND E1.SUBJ(+) = SB.SUBJ
+		   AND E2.GRCODE(+) = SB.GRCODE
+		   AND E2.GRSEQ(+) = SB.GRSEQ
+		   AND E2.SUBJ(+) = SB.SUBJ
+		   AND E3.GRCODE(+) = SB.GRCODE
+		   AND E3.GRSEQ(+) = SB.GRSEQ
+		   AND E3.SUBJ(+) = SB.SUBJ
+		   AND E4.GRCODE(+) = SB.GRCODE
+		   AND E4.GRSEQ(+) = SB.GRSEQ
+		   AND E4.SUBJ(+) = SB.SUBJ
+		   AND E5.GRCODE(+) = SB.GRCODE
+		   AND E5.GRSEQ(+) = SB.GRSEQ
+		   AND E5.SUBJ(+) = SB.SUBJ
+		 ORDER BY DECODE(SB.LEC_TYPE, 'S', 1, 2), DECODE(SB.LEC_TYPE, 'S', SB.LECNM, SB.REF_SUBJ), DECODE(SB.LEC_TYPE, 'C', SB.LECNM)  
+	]]>
+	</select>
+	
+	<!--과정명조회  -->
+	<select id="selectEvalMasterGrcodeNm" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT GRCODENM
+		  FROM TB_GRCODE
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+	]]>
+	</select>
+	
+	<!--과정기수 평가마스터 조회  -->
+	<select id="selectEvalMasterInfoGrseq" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM TB_EVLINFO_GRSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+	]]>
+	</select>
+	
+	<!-- 기말중간평가 -->
+	<select id="selectEvalMasterInfoPtype" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT DECODE(PTYPE,'M','M','T','T') AS GPTYPE
+		     , COUNT(*) GCNT 
+		  FROM TB_EVLINFO_SUBJ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND PTYPE IS NOT NULL 
+ 		 GROUP BY DECODE(PTYPE,'M','M','T','T') 
+	]]>
+	</select>
+	
+	<!-- 상시평가회수 -->
+	<select id="selectEvalMasterInfoMptype" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT NVL(MAX(PTYPE),0) AS MPTYPE 
+		  FROM TB_EVLINFO_SUBJ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND PTYPE NOT IN ('M','T')
+		   AND PTYPE >= '1' 
+	]]>
+	</select>
+	
+	
+	<!-- 과정 종료 여부 -->
+	<select id="selectEvalMasterClosing" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT CLOSING
+		     , TO_CHAR(ENDDATE,'YYYYMMDD') AS ENDDAY 
+		  FROM TB_GRSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+	]]>
+	</select>
+	
+	<!-- 과정 평가수설정 수정 -->
+	<update id="updateEvInfoGrseq" parameterType="Map">
+	<![CDATA[
+		UPDATE TB_EVLINFO_GRSEQ 
+		   SET MEVAL_YN = #{mevalYn}
+		     , LEVAL_YN = #{levalYn}
+		     , NEVAL_CNT = #{nevalCnt}
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+	]]>
+	</update>
+	
+	<!-- 과정 평가수설정 입력 -->
+	<insert id="insertEvInfoGrseq" parameterType="Map">
+	<![CDATA[
+		INSERT INTO TB_EVLINFO_GRSEQ (
+		       GRCODE       , GRSEQ       , MEVAL_YN  , LEVAL_YN  , NEVAL_CNT
+		) VALUES (
+		       #{commGrcode}, #{commGrseq}, #{mevalYn}, #{levalYn}, #{nevalCnt}
+		) 
+	]]>
+	</insert>
+	
+	<!-- 평가마스터 기능 등록 -->
+	<select id="selectGrcodeLecNm" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT GRCODENM
+		     , LECNM
+		  FROM TB_GRCODE A
+		     , TB_SUBJSEQ B 
+		 WHERE 1=1
+		   AND A.GRCODE = B.GRCODE
+		   AND B.GRCODE = #{commGrcode}
+		   AND B.GRSEQ = #{commGrseq}
+		   AND B.SUBJ = #{commSubj}
+	]]>
+	</select>
+	
+	<!-- 평가마스터 기능 등록 ptype값 -->
+	<select id="selectEvalMasterSubjPtype" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT * 
+		  FROM TB_EVLINFO_SUBJ
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+	]]>
+	</select>
+	
+	<!-- 평가마스터 기능 subjType -->
+	<select id="selectEvalSubjType" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT SUBJTYPE 
+		  FROM TB_SUBJ 
+		 WHERE 1=1
+		   AND SUBJ = #{commSubj}
+	]]>
+	</select>
+	
+	<!-- 평가마스터 기능 차시정보 -->
+	<select id="selectEvalMasterDates" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT DATES 
+		  FROM TB_SUBJWEEK 
+		 WHERE 1=1
+		   AND SUBJ = #{commSubj}
+		 ORDER BY DATES ASC
+	]]>
+	</select>
+	
+	<!-- 평가마스터 기능 문제지 세트 확인 -->
+	<select id="selectEvalMasterExchange" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT * 
+		  FROM TB_EXPAGE 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+		   AND PTYPE IN (${deletePtype})
+	]]>
+	</select>
+	
+	<!-- 평가마스터 기능 정보 삭제 -->
+	<delete id="deleteEvalInfoSubj" parameterType="Map">
+	<![CDATA[
+		DELETE
+		  FROM TB_EVLINFO_SUBJ 
+		 WHERE 1=1
+           AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+		   AND PTYPE IN (${deletePtype})
+	]]>
+	</delete>
+	
+	<!-- 평가마스터 기능 정보 업데이트 -->
+	<update id="updateEvalInfoSubj" parameterType="Map">
+	<![CDATA[
+		UPDATE TB_EVLINFO_SUBJ
+		   SET DATES = #{iu_dates}
+		     , PARTF = #{iu_partf}
+		     , PARTT = #{iu_partt}
+		     , EVAL_TYPE = #{iu_eval_type}
+		     , LUSERNO = #{sessNo}
+		     , LDATE = SYSDATE
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+		   AND PTYPE = #{ck_ptype}
+	]]>
+	</update>
+	
+	<!-- 평가마스터 기능 차시 중복 확인 -->
+	<select id="selectTotalSubj" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT COUNT(*) AS TOTAL 
+		  FROM TB_EVLINFO_SUBJ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+		   AND DATES = #{iu_dates}
+	]]>
+	</select>
+	
+	<!-- 평가마스터 기능 차시 정보 입력 -->
+	<insert id="insertEvalInfoSubj" parameterType="Map">
+	<![CDATA[
+		INSERT INTO TB_EVLINFO_SUBJ (
+		       GRCODE       , GRSEQ       , SUBJ           , PTYPE      , DATES
+		     , PARTF        , PARTT       , EVAL_TYPE      , LUSERNO    , LDATE
+		) VALUES (
+		       #{commGrcode}, #{commGrseq}, #{commSubj}    , #{ck_ptype}, #{iu_dates}
+		     , #{iu_partf}  , #{iu_partt} , #{iu_eval_type}, #{sessNo}  , SYSDATE
+		)
+	]]>
+	</insert>
+</mapper>

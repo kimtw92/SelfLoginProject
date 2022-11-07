@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="page">
+
+	<sql id="pageTotalCount">
+		SELECT COUNT(*)
+	</sql>
+	<sql id="pageTotalCount2">
+		SELECT COUNT(*) FROM (
+	</sql>
+	<sql id="pageTotalCount2Foot">
+		)
+	</sql>
+	<sql id="pageHead">
+		SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+	</sql>
+	<sql id="pageFoot">
+		<![CDATA[
+		) nQuery WHERE ROWNUM <= #{page.end}) WHERE nPaging_rnum >= #{page.start}
+		]]>
+	</sql>
+	
+</mapper>

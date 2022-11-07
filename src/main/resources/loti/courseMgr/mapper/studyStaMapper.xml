@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.StudyStaMapper">
+
+	<select id="selectStuLecBySubjStudyStaList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과목별 수강생 학습 현황 리스트
+		SELECT A.USERNO, A.DEPT, C.DEPTNM || '<br>(' || MB.DEPTSUB || ')' AS DEPTNM, SCP.DEC_B64('KEY1',MB.RESNO) AS RESNO,
+			   MB.USER_ID, SCP.DEC_B64('KEY1',MB.HP) AS HP, A.NAME, B.JIKNM, NVL (A.AVLCOUNT, '0') AVLCOUNT,
+			   CASE
+				  WHEN SB.SUBJTYPE <> 'Y'
+					 THEN NVL (TO_CHAR (A.TSTEP), '0')
+				  WHEN SB.LCMS_PROGRESS = 'N'
+					 THEN NVL (PROGRESSSUBJSTATUS (A.GRCODE, A.GRSEQ, A.SUBJ, A.USERNO), '0')
+				  WHEN DECODE(GS.CLOSING, 'Y', 'E', '') = 'E'
+					 THEN NVL (TO_CHAR (A.TSTEP), '0')
+				  ELSE NVL (PROGRESSSUBJ (A.GRCODE, A.GRSEQ, A.SUBJ, A.USERNO), '0')
+			   END TSTEP,
+			   NVL (A.QUIZSTEP, '0') QUIZSTEP, NVL (A.AVREPORT, 0) AVREPORT,
+			   NVL (A.AVCOURSE, 0) AVCOURSE, NVL (A.AVQUIZ, 0) AVQUIZ, DECODE (f.RGRAYN,'Y', '수료', 'N', '미수료','X', '해당없음') grayn
+		FROM TB_STU_LEC A, TB_JIK B, TB_DEPT C, tb_member MB, TB_SUBJ SB, TB_GRSEQ GS, TB_GRRESULT f
+		WHERE 1=1
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.SUBJ = #{subj}
+			AND A.SUBJ = SB.SUBJ
+			AND A.GRCODE = GS.GRCODE
+			AND A.GRSEQ = GS.GRSEQ
+			AND A.USERNO = MB.USERNO
+			AND A.JIK = B.JIK(+)
+			AND A.DEPT = C.DEPT(+)
+             and a.grcode = f.grcode
+             and a.grseq = f.grseq
+             and a.userno = f.userno
+			${whereStr}
+		ORDER BY A.DEPT, A.NAME
+	]]>
+	</select>
+	
+	<select id="selectSubjSeqByTotalSubjList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정 기수의 전체 과목 리스트
+		SELECT
+      ss.SUBJ, ss.LECNM
+FROM TB_SUBJSEQ ss,
+     (SELECT grcode,grseq,subj,count(*) evl_cnt
+      FROM   TB_EVLINFO_SUBJ
+      group by grcode, grseq, subj) ev, tb_subj sj
+WHERE ss.grcode=ev.grcode(+)
+AND ss.grseq=ev.grseq(+)
+AND ss.subj=ev.subj(+)
+AND ss.subj=sj.subj(+)
+AND ss.GRCODE = #{grcode}
+AND ss.GRSEQ = #{grseq}
+AND ((ss.ref_subj is not null or ev.evl_cnt > 0) OR sj.subjtype='S')
+ORDER BY ss.subj
+	]]>
+	</select>
+	
+	<select id="selectSubjSeqBySubjPointList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기수 전체 수강생의 과목별 점수
+		SELECT
+			B.USERNO, B.NAME, B.SUBJ, B.PACCEPT SUBJ_PACCEPT,
+			( NVL(B.AVCOURSE, 0) + NVL(B.AVREPORT, 0) + NVL(B.AVLCOUNT, 0) + NVL(B.AVQUIZ, 0) ) SUBJ_TOTPOINT
+		FROM TB_SUBJSEQ A, TB_STU_LEC B
+		WHERE A.SUBJ = B.SUBJ
+			AND A.GRCODE = B.GRCODE
+			AND A.GRSEQ = B.GRSEQ
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+		ORDER BY B.USERNO, B.SUBJ
+	]]>
+	</select>
+	
+	<select id="selectAppInfoByStuTotPointList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기수의 수강생 리스트 (총점 포함)
+		SELECT   
+			C.USERNO, MB.USER_ID, B.JIKNM, C.NAME, 
+			C.DEPT, A.DEPTNM || '(' || MB.DEPTSUB || ')' AS DEPTNM,
+			SUBSTR (SCP.DEC_B64('KEY1',MB.RESNO), 1, 2) || '-' || SUBSTR (SCP.DEC_B64('KEY1',MB.RESNO), 3, 2) || '-' || SUBSTR (SCP.DEC_B64('KEY1',MB.RESNO), 5, 2) AS RESNO,
+			(SELECT ADDPOINT FROM TB_GRSTUMAS WHERE GRCODE = C.GRCODE AND GRSEQ = C.GRSEQ AND USERNO = C.USERNO) ADDPOINT,
+			LEC.STU_PACCEPT, LEC.STU_TOTPOINT, LEC.AVREPORT
+		FROM TB_DEPT A, TB_JIK B, TB_APP_INFO C, tb_member MB,
+			(SELECT
+				B.USERNO, SUM(B.PACCEPT) STU_PACCEPT,
+				( SUM(NVL(B.AVCOURSE, 0)) + SUM(NVL(B.AVREPORT, 0)) + SUM(NVL(B.AVLCOUNT, 0)) + SUM(NVL(B.AVQUIZ, 0)) ) STU_TOTPOINT
+				,MIN(B.AVREPORT) AVREPORT
+			FROM TB_SUBJSEQ A, TB_STU_LEC B
+			WHERE A.SUBJ = B.SUBJ
+				AND A.GRCODE = B.GRCODE
+				AND A.GRSEQ = B.GRSEQ
+				AND A.GRCODE = #{grcode}
+				AND A.GRSEQ = #{grseq}
+			GROUP BY USERNO
+			ORDER BY B.USERNO) LEC
+		WHERE C.GRCODE = #{grcode}
+			AND C.GRSEQ = #{grseq}
+			AND C.GRCHK = 'Y'
+			AND B.JIK(+) = C.JIK
+			AND A.DEPT(+) = C.DEPT
+			AND C.USERNO = MB.USERNO
+			AND C.USERNO = LEC.USERNO
+			${whereStr}
+		ORDER BY C.DEPT, C.NAME
+	]]>
+	</select>
+	
+	<select id="selectSubjSeqByCyberSubjList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 사이버 과목의 선택 과목 제외한 과목 리스트
+		SELECT   
+			SJ.SUBJ, SJ.LECNM, SJ.LEC_TYPE, SJ.REF_SUBJ,
+			'사이버' || TO_CHAR (SJ.STARTED, 'MM.DD') || '~' || TO_CHAR (SJ.ENDDATE, 'MM.DD') AS SUBJDATE
+		FROM TB_SUBJSEQ SJ, TB_SUBJ SB
+		WHERE SJ.SUBJ = SB.SUBJ
+			AND SJ.GRCODE = #{grcode}
+			AND SJ.GRSEQ = #{grseq}
+			AND SB.SUBJTYPE = 'Y'
+			AND SJ.LEC_TYPE <> 'P'
+		ORDER BY DECODE (SJ.LEC_TYPE, 'S', 1, 2), SJ.SUBJ
+	]]>
+	</select>
+	
+	<select id="selectSubjSeqByCyberStuPointList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 사이버 과목별 수강자 점수
+		SELECT   
+			B.USERNO, SJ.SUBJ,
+			CASE 
+				WHEN SB.LCMS_PROGRESS = 'N' THEN 
+					NVL(PROGRESSSUBJSTATUS (B.GRCODE,B.GRSEQ, B.SUBJ, B.USERNO), '0')
+				WHEN GQ.CLOSING = 'Y' THEN 
+					NVL(TO_CHAR (B.TSTEP), '0')
+				ELSE 
+					NVL(TO_CHAR( PROGRESSSUBJ(B.GRCODE, B.GRSEQ, B.SUBJ, B.USERNO) ), '0')
+				END DIS_STEP
+		FROM TB_SUBJSEQ SJ, TB_SUBJ SB, TB_STU_LEC B, TB_GRSEQ GQ
+		WHERE SJ.SUBJ = SB.SUBJ
+			AND SB.SUBJTYPE(+) = 'Y'
+			AND SJ.GRCODE = B.GRCODE
+			AND SJ.GRSEQ = B.GRSEQ
+			AND SJ.SUBJ = B.SUBJ
+			AND SJ.GRCODE = #{grcode}
+			AND SJ.GRSEQ = #{grseq}
+			AND SJ.GRCODE = GQ.GRCODE
+			AND SJ.GRSEQ = GQ.GRSEQ
+		ORDER BY B.USERNO, SJ.SUBJ
+	]]>
+	</select>
+	
+	<select id="selectAppInfoByNoCyberUserList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 사이버 과목을 하나도 선택하지 않은 사람은 진도율 0로 계산함
+		SELECT 
+			USERNO
+		FROM TB_APP_INFO
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND GRCHK = 'Y'
+			AND NOT EXISTS (
+				SELECT 'X'
+				FROM TB_SUBJSEQ SJ, TB_SUBJ SB, TB_STU_LEC B
+				WHERE SJ.LEC_TYPE <> 'P'
+					AND SJ.SUBJ = SB.SUBJ
+					AND SB.SUBJTYPE = 'Y'
+					AND SJ.GRCODE = B.GRCODE
+					AND SJ.GRSEQ = B.GRSEQ
+					AND SJ.SUBJ = B.SUBJ
+					AND SJ.GRCODE = #{grcode}
+					AND SJ.GRSEQ = #{grseq})
+	]]>
+	</select>
+	
+	<select id="selectAppInfoByWhereStrList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수강신청 승인자 정보 where 절에 따른 리스트
+		SELECT   
+			C.USERNO, SCP.DEC_B64('KEY1',MB.RESNO) AS RESNO, SCP.DEC_B64('KEY1',MB.HP) AS HP, MB.USER_ID, C.NAME, C.DEPT,
+			A.DEPTNM || '(' || MB.DEPTSUB || ')' AS DEPTNM, B.JIKNM,
+			GQ.GRCODENIKNM AS GRCODENM, '집합' || TO_CHAR (GQ.STARTED, 'MM.DD') || '~' || TO_CHAR (GQ.ENDDATE, 'MM.DD') AS GRDATE
+		FROM TB_DEPT A, TB_JIK B, TB_APP_INFO C, tb_member MB, TB_GRSEQ GQ
+		WHERE C.GRCODE = #{grcode}
+			AND C.GRSEQ = #{grseq}
+			AND C.GRCHK = 'Y'
+			AND B.JIK(+) = C.JIK
+			AND A.DEPT(+) = C.DEPT
+			AND C.USERNO = MB.USERNO
+			AND C.GRCODE = GQ.GRCODE
+			AND C.GRSEQ = GQ.GRSEQ
+			${userWhereStr}
+		ORDER BY C.DEPT, C.NAME
+	]]>
+	</select>
+	
+	<select id="selectCyberStuStudyPointList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 사이버 과정 학습 현황 리스트
+		SELECT
+			XXA.*, XXB.HP, XXB.USER_ID, XXB.DEPT, XXB.JIKNM, XXB.DEPTNM
+		FROM 
+			(
+			SELECT   
+				C.GRCODE, C.GRSEQ, B.USERNO,  B.NAME, 
+				C.SUBJ, GQ.GRCODENIKNM AS GRCODENM, C.LECNM, 
+				CASE 
+					WHEN SB.LCMS_PROGRESS = 'N' THEN 
+						NVL(PROGRESSSUBJSTATUS (B.GRCODE,B.GRSEQ, B.SUBJ, B.USERNO), '0')
+					WHEN GQ.CLOSING = 'Y' THEN 
+						NVL(TO_CHAR (B.TSTEP), '0')
+					ELSE 
+						NVL(TO_CHAR( PROGRESSSUBJ(B.GRCODE, B.GRSEQ, B.SUBJ, B.USERNO) ), '0')
+					END DIS_STEP
+			FROM 
+				TB_SUBJSEQ C, TB_SUBJ SB, TB_STU_LEC B, TB_GRSEQ GQ
+			WHERE C.SUBJ = SB.SUBJ
+				AND SB.SUBJTYPE = 'Y'
+				AND C.GRCODE = B.GRCODE
+				AND C.GRSEQ = B.GRSEQ
+				AND C.SUBJ = B.SUBJ
+				--AND GQ.F_CYBER = 'Y'                 ---------------
+        		AND GQ.grcodeniknm LIKE 'e-' || '%'    ---------------				
+				${grWhereStr}
+				AND C.GRCODE = GQ.GRCODE
+				AND C.GRSEQ = GQ.GRSEQ
+			ORDER BY C.GRCODE, B.USERNO, C.SUBJ 
+			) XXA LEFT OUTER JOIN 
+			(
+			SELECT
+				C.GRCODE, C.GRSEQ,   
+				C.USERNO, SCP.DEC_B64('KEY1',MB.RESNO) AS RESNO, SCP.DEC_B64('KEY1',MB.HP) AS HP, MB.USER_ID, C.NAME, C.DEPT,
+				A.DEPTNM || '(' || MB.DEPTSUB || ')' AS DEPTNM, B.JIKNM
+			FROM TB_DEPT A, TB_JIK B, TB_APP_INFO C, tb_member MB, TB_GRSEQ GS
+			WHERE 1=1
+				${grWhereStr}
+				AND C.GRCHK = 'Y'
+				--AND GS.F_CYBER = 'Y'                ----------------
+        		AND GS.grcodeniknm LIKE 'e-' || '%'   ---------------
+				AND B.JIK(+) = C.JIK
+				AND A.DEPT(+) = C.DEPT
+				AND C.USERNO = MB.USERNO
+				AND C.GRCODE = GS.GRCODE
+				AND C.GRSEQ = GS.GRSEQ
+			ORDER BY C.DEPT, C.NAME 
+			) XXB ON XXA.GRCODE = XXB.GRCODE AND XXA.GRSEQ = XXB.GRSEQ AND XXA.USERNO = XXB.USERNO
+		WHERE 1=1
+			${whereStr}
+		ORDER BY XXA.GRCODE, XXA.USERNO, XXA.SUBJ
+	]]>
+	</select>
+	
+	<select id="selectCyberSMSStuStudyPointList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 사이버 과정 학습 현황 리스트 (SMS 선택발송자만)
+		SELECT 
+ 			DISTINCT GRCODE_USERNO, GRCODE, GRSEQ, USERNO, NAME, GRCODENM,
+            HP, DEPT, JIKNM, DEPTNM
+		FROM 
+			(SELECT
+				XXA.*, XXB.HP, XXB.USER_ID, XXB.DEPT, XXB.JIKNM, XXB.DEPTNM,
+				XXA.GRCODE ||'|'||XXA.USERNO AS GRCODE_USERNO
+			FROM 
+				(
+				SELECT   
+					C.GRCODE, C.GRSEQ, B.USERNO,  B.NAME, 
+					C.SUBJ, GQ.GRCODENIKNM AS GRCODENM, C.LECNM, 
+					CASE 
+						WHEN SB.LCMS_PROGRESS = 'N' THEN 
+							NVL(PROGRESSSUBJSTATUS (B.GRCODE,B.GRSEQ, B.SUBJ, B.USERNO), '0')
+						WHEN GQ.CLOSING = 'Y' THEN 
+							NVL(TO_CHAR (B.TSTEP), '0')
+						ELSE 
+							NVL(TO_CHAR( PROGRESSSUBJ(B.GRCODE, B.GRSEQ, B.SUBJ, B.USERNO) ), '0')
+						END DIS_STEP
+				FROM 
+					TB_SUBJSEQ C, TB_SUBJ SB, TB_STU_LEC B, TB_GRSEQ GQ, tb_member MB
+				WHERE C.SUBJ = SB.SUBJ
+					AND SB.SUBJTYPE = 'Y'
+					AND C.GRCODE = B.GRCODE
+					AND C.GRSEQ = B.GRSEQ
+					AND C.SUBJ = B.SUBJ
+					AND B.USERNO = MB.USERNO
+					--AND GQ.F_CYBER = 'Y'              ---------------
+            		AND GQ.grcodeniknm LIKE 'e-' || '%' ---------------
+					${grWhereStr}
+					AND C.GRCODE = GQ.GRCODE
+					AND C.GRSEQ = GQ.GRSEQ
+				ORDER BY C.GRCODE, B.USERNO, C.SUBJ 
+				) XXA LEFT OUTER JOIN 
+				(
+				SELECT
+					C.GRCODE, C.GRSEQ,   
+					C.USERNO, SCP.DEC_B64('KEY1',MB.RESNO) AS RESNO, SCP.DEC_B64('KEY1',MB.HP) AS HP, MB.USER_ID, C.NAME, C.DEPT,
+					A.DEPTNM || '(' || MB.DEPTSUB || ')' AS DEPTNM, B.JIKNM
+				FROM TB_DEPT A, TB_JIK B, TB_APP_INFO C, tb_member MB, TB_GRSEQ GS
+				WHERE 1=1
+					${grWhereStr}
+					AND C.GRCHK = 'Y'
+					--AND GS.F_CYBER = 'Y'              ----------------
+            		AND GS.grcodeniknm LIKE 'e-' || '%' ---------------
+					AND B.JIK(+) = C.JIK
+					AND A.DEPT(+) = C.DEPT
+					AND C.USERNO = MB.USERNO
+					AND C.GRCODE = GS.GRCODE
+					AND C.GRSEQ = GS.GRSEQ
+				ORDER BY C.DEPT, C.NAME 
+				) XXB ON XXA.GRCODE = XXB.GRCODE AND XXA.GRSEQ = XXB.GRSEQ AND XXA.USERNO = XXB.USERNO
+			WHERE 1=1
+				 ${whereStr}
+			ORDER BY XXA.GRCODE, XXA.USERNO, XXA.SUBJ ) Z
+		WHERE 1=1
+			${userWhereStr}
+	]]>
+	</select>
+	
+	<select id="selectEtestExamRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- ETEST의 평가 정보 조회
+		SELECT 
+			ID_EXAM_KIND, TITLE
+		FROM ETEST.EXAM_M
+		WHERE 1=1
+			AND ID_EXAM = #{examId}
+	]]>
+	</select>
+	
+	<select id="selectOnlineExamStuList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- ETEST 평가 현황의 수강생 리스트
+		SELECT   
+			C.USERNO, SCP.DEC_B64('KEY1',MB.RESNO) AS RESNO, SCP.DEC_B64('KEY1',MB.HP) AS HP, MB.USER_ID, C.NAME, C.DEPT,
+			A.DEPTNM || '(' || MB.DEPTSUB || ')' AS DEPTNM, B.JIKNM, 
+			DECODE(ANS.SCORE, NULL, '', ANS.SCORE||'') SCORE, ANS.YN_END, 
+			(SELECT ALLOTTING FROM ETEST.EXAM_SUBJECT WHERE ID_EXAM = ANS.ID_EXAM) ALLOTTING,
+			(SELECT COUNT (*) || '_' || NVL(MAX(SCORE), '0') FROM EXAM_ANS_SAVE WHERE ID_EXAM = ANS.ID_EXAM AND USERID = C.USERNO AND ID_COMPANY = '10034') TRY_INFO
+		FROM	TB_DEPT A, 
+				TB_JIK B, 
+				TB_APP_INFO C, 
+				TB_MEMBER MB, 
+				ETEST.EXAM_ANS ANS, 
+				TB_SUBJSEQ SS
+		WHERE 1=1
+			AND C.GRCODE = #{grcode}
+			AND C.GRSEQ = #{grseq}
+			AND C.GRCHK = 'Y'
+			AND C.grcode = SS.grcode
+			AND C.grseq = SS.grseq
+			AND B.JIK(+) = C.JIK
+			AND A.DEPT(+) = C.DEPT
+			AND C.USERNO = MB.USERNO
+			AND ANS.ID_EXAM(+) = #{examId}
+			AND C.USERNO = ANS.USERID(+)
+			AND PROGRESSSUBJ(C.GRCODE, C.GRSEQ, SS.SUBJ, C.USERNO) >= 95	-- 진도율
+			AND ANS.YN_END IS NULL     -- 미응시
+			${whereStr}
+		ORDER BY C.DEPT, C.NAME
+	]]>
+	</select>
+	
+</mapper>

@@ -1,0 +1,101 @@
+/***********************************************************************************
+	NAME : sso_style.css
+	AUTH : 최영희
+	CREATE DATE : 2004.07.16
+	COMMENT : 디자인팀에서 SSO 솔루션에 적용된 CSS 모음입니다.
+***********************************************************************************/
+
+
+td {font-size: 9pt; color: #585858; text-decoration: none; font-family:돋움; line-height:150%;}
+body {margin-top:0; margin-left:0; margin-right:0; margin-bottom:0}
+
+BODY {
+       scrollbar-3dlight-color:#CFCFCF;
+	   scrollbar-arrow-color:#7F7F7F;
+	   scrollbar-base-color:#FFFFFF;
+	   scrollbar-darkshadow-color:#FFFFFF;
+	   scrollbar-face-color:#FFFFFF;
+	   scrollbar-highlight-color:#FFFFF;
+	   scrollbar-shadow-color:#CFCFCF	
+}
+
+/* Hyperlink Style */
+A:link { font-size:9pt; font-family:돋움;color:#000000; text-decoration:none; }
+A:visited { font-size:9pt; font-family:돋움;color:#000000; text-decoration:none;  }
+A:active { font-size:9pt; font-family:돋움;color:#FF6000; text-decoration:none; }
+A:hover { font-size:9pt; font-family:돋움;color:#FF6000;text-decoration:none; }
+
+/* contents 상단의 메뉴 타이틀 텍스트 */
+.top_m_title {font-size: 9pt; color: #585858; text-decoration: none; font-family:돋움; font-weight:bold;
+ padding-top:4px; padding-left:32px;
+ }
+
+/* small contents 텍스트 S */
+.s_content_text {font-size: 9pt; color: #5E85A8; text-decoration: none; font-family:돋움; font-weight:bold;}
+/************************************* 테이블 텍스트 S ***********************************************/
+/* 테이블 제목_중앙정렬*/
+.tb_title_center { 
+ FONT-SIZE: 9pt; COLOR: #000000;FONT-FAMILY: 돋움; HEIGHT: 26px; 
+ BACKGROUND-COLOR:#F4F4F4; Text-align: center ; vertical-align: middle 
+ padding-top:3px; padding-left:3px; 
+ }
+
+/*테이블 내용_왼쪽정렬*/
+.tb_text_left {
+ FONT-SIZE: 9pt; COLOR: #58595B;FONT-FAMILY: 돋움; HEIGHT: 26px; 
+ BACKGROUND-COLOR:#ffffff; Text-align: left ; vertical-align: middle ; 
+ padding-left:3px;
+}
+
+/*테이블 내용_가운데정렬*/
+.tb_text_center {
+ FONT-SIZE: 9pt; COLOR: #58595B;FONT-FAMILY: 돋움; HEIGHT: 26px; 
+ BACKGROUND-COLOR:#ffffff; Text-align: center ; vertical-align: middle ; 
+}
+/************************************* 테이블 텍스트 E ***********************************************/
+
+
+/************************************* 리스트 테이블 S *****************************************/
+/* 리스트 테이블 제목 중앙정렬*/
+.lt_title_center { 
+ FONT-SIZE: 9pt; COLOR: #585858;FONT-FAMILY: 돋움; font-weight: bold ; 
+ HEIGHT: 26px;  Text-align: center ; vertical-align: middle; padding-top:6px;
+ background-image:url(../../images/list_title_bg.gif);
+ }
+
+ /* 리스트 테이블 내용 왼쪽정렬*/
+.lt_contents_left { 
+ FONT-SIZE: 9pt; COLOR: #585858;FONT-FAMILY: 돋움; HEIGHT: 26px; 
+ Text-align: left ; vertical-align: middle;  
+ padding-top:3px; padding-left:3px;
+ }
+
+ /* 리스트 테이블 내용 가운데정렬*/
+.lt_contents_center { 
+ FONT-SIZE: 9pt; COLOR: #585858;FONT-FAMILY: 돋움; HEIGHT: 26px; 
+ Text-align: center ; vertical-align: middle;  padding-top:3px; 
+ }
+
+ /* 리스트 테이블 가로선 */
+ .lt_line_bg { background-color:#C5C4C3; }
+
+ 
+/* 리스트 테이블에서 토글 적용 */
+.list_over { background-color:#F5F5F5; }
+.list_out { background-color:#FFFFFF; }
+/************************************* 리스트 테이블 E *****************************************/
+
+
+/************************************* input type S *************************************************/
+/* input type */
+.td_input { font-family:"돋움"; font-size:9pt; color:#585858 ; border:1px solid #C7C7C7; 
+ background:#FAFAFA; Text-align:left ; vertical-align: middle;
+ padding-top:3px; padding-left:3px;
+ }
+
+ /* select_box */
+.td_select { font-family:"돋움"; font-size:9pt; color:#585858 ; border:1px solid #C7C7C7; 
+ background:#FAFAFA; Text-align:left ; 
+ padding-top:3px; padding-left:3px;
+ }
+/************************************* input type E *************************************************/

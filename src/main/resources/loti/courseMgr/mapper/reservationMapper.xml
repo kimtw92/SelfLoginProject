@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.ReservationMapper">
+
+	<select id="reservationlist" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 시설예약관리 신청내역/승인내역
+		SELECT  
+			TA_PK, TA_REQ_NAME, TA_REQ_ADDRESS, 
+			TA_REQ_PHONE, SCP.DEC_B64('KEY1',TA_REQ_SERIAL_NO) AS TA_REQ_SERIAL_NO, TA_RENT_DATE, 
+			TA_RENT_INTENTION, TA_AGREEMENT, TA_PERSON, 
+			TA_REQ_GROUP, TA_REQ_SECTION, TA_RENT_TIME, 
+			TA_AGR_DATE, TA_RENT_SUM, TA_AGR_NO,
+			TO_CHAR(TA_DATE, 'YYYY.MM.DD hh24:mi:ss') AS TA_DATE,
+			TO_CHAR(TA_AGR_DATE, 'YYYY.MM.DD hh24:mi:ss') AS TA_AGR_DATE2,
+			ROOM50, ROOM100, STARTTIME, ENDTIME, SEXM, SEXF, STARTDATE, ENDDATE
+		    --, TA_RENT_START, TA_RENT_END, TA_RENT_NUMBER
+		FROM 
+			TB_APPLICATION
+		WHERE 1=1
+			AND TRIM(TA_AGREEMENT) = #{type}
+		ORDER BY TA_RENT_DATE DESC
+	]]>
+	</select>
+	
+	<update id="reservationaction" parameterType="Map">
+	<![CDATA[
+		--시설예약관리 수정
+		UPDATE TB_APPLICATION SET 
+			TA_AGREEMENT = #{value}, 
+			TA_AGR_NO    = #{taAgrNo}
+		WHERE TA_PK = #{taPk}
+	]]>
+	</update>
+	
+	<update id="updateReservationaction" parameterType="Map">
+	<![CDATA[
+		--시설예약관리 수정
+		UPDATE TB_APPLICATION SET 
+			TA_AGREEMENT = #{taAgreement}
+			, TA_AGR_DATE = SYSDATE
+		WHERE TA_PK = #{taPk}
+	]]>
+	</update>	
+	
+	<delete id="delreservation" parameterType="String">
+	<![CDATA[
+		--시설예약관리 삭제
+		DELETE FROM
+			TB_APPLICATION 
+		WHERE 
+			TA_PK = #{pk}
+	]]>
+	</delete>
+	
+	<select id="holyday" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT
+		  HOLYDAY_KEY
+		  , HOLYDAY
+		  , HOLYDAY_NAME
+		  , UPDATE_DATE
+		  , UPDATE_NAME
+		  , ENTER_DATE
+		  , ENTER_NAME
+		FROM TB_HOLYDAY
+		WHERE 1=1
+		  AND YYYY = decode(#{yyyy},'',to_char(sysdate, 'yyyy'),#{yyyy})
+		ORDER BY HOLYDAY ASC
+	]]>
+	</select>
+	
+	<select id="selectYearGroup" resultType="DataMap">
+	<![CDATA[
+		-- 공휴일 년도 그릅
+		SELECT YYYY
+		FROM TB_HOLYDAY
+		GROUP BY YYYY
+		ORDER BY YYYY ASC
+	]]>
+	</select>
+	
+	<insert id="insertHolyDay" parameterType="Map">
+	<![CDATA[
+		-- 공휴일 저장
+		INSERT INTO TB_HOLYDAY
+		   (HOLYDAY_KEY, HOLYDAY, HOLYDAY_NAME, YYYY, MM, DD, ENTER_DATE, ENTER_NAME, ENTER_ID)
+		 VALUES
+		   (tb_holyday_seqno.nextval, #{holyday}, #{holyday_name}, #{yyyy}, #{mm}, #{dd}, SYSDATE, #{enterName}, #{enterId})
+	]]>
+	</insert>
+	
+	<update id="updateHolyDay" parameterType="Map">
+	<![CDATA[
+		-- 공휴일 수정
+		UPDATE TB_HOLYDAY
+			SET HOLYDAY = #{holyday}
+			, HOLYDAY_NAME = #{holyday_name}
+			, YYYY = #{yyyy}
+			, MM = #{mm}
+			, DD = #{dd}
+			, UPDATE_DATE = sysdate
+			, UPDATE_NAME = #{updateName}
+			, UPDATE_ID	= #{updateId}
+		WHERE HOLYDAY_KEY = #{holyday_key}
+	]]>
+	</update>
+	
+	<delete id="deleteHolyDay" parameterType="Map">
+	<![CDATA[
+		-- 공휴일 삭제
+		DELETE TB_HOLYDAY WHERE HOLYDAY_KEY = #{holyday_key}
+	]]>
+	</delete>
+	
+	<select id="countHolyday" parameterType="String" resultType="int">
+	<![CDATA[
+		-- 공휴일 중복체크
+		SELECT COUNT(*) CNT
+		FROM TB_HOLYDAY
+		WHERE HOLYDAY = #{holyday}
+	]]>
+	</select>
+	
+	<select id="selectHolyDay" parameterType="String" resultType="String">	
+	<![CDATA[
+		-- 공휴일 중복체크
+		SELECT HOLYDAY
+		FROM TB_HOLYDAY
+		WHERE HOLYDAY_KEY = #{holydayKey}
+	]]>
+	</select>
+	
+	<select id="saveChackHolyday" resultType="int">
+	<![CDATA[
+		-- 저장시 공휴일 체크
+		SELECT COUNT(HOLYDAY) CNT
+		FROM
+		(
+		  SELECT DECODE(TO_CHAR(TO_DATE(TO_CHAR(SYSDATE, 'yyyymmdd')), 'd'),1,TO_CHAR(SYSDATE, 'yyyymmdd') ,DECODE(TO_CHAR(TO_DATE(TO_CHAR(SYSDATE, 'yyyymmdd')), 'd'),7,TO_CHAR(SYSDATE, 'yyyymmdd') ,NULL)) HOLYDAY
+		  FROM DUAL
+		  UNION
+		  SELECT HOLYDAY
+		  FROM TB_HOLYDAY
+		  WHERE YYYY = TO_CHAR(SYSDATE,'yyyy')
+		    AND MM = TO_CHAR(SYSDATE,'mm')
+		)
+		WHERE HOLYDAY IS NOT NULL
+		  AND HOLYDAY = TO_CHAR(SYSDATE, 'yyyymmdd')
+	]]>
+	</select>
+	
+	<select id="saveChackEndDate" resultType="String">
+	<![CDATA[
+		-- 그달 마지막 day 뽑기
+        SELECT TO_CHAR(LAST_DAY(SYSDATE), 'yyyymmdd') ENDDATE
+        FROM DUAL
+	]]>
+	</select>
+	
+	<select id="saveChackStartDate" resultType="int">
+	<![CDATA[
+		-- 저장 가능한 날자
+		SELECT COUNT(HOLYDAY) CNT
+		FROM
+		(
+		  SELECT DECODE(TO_CHAR(TO_DATE(TO_CHAR(SYSDATE-1, 'yyyymmdd')), 'd'),1,TO_CHAR(SYSDATE-1, 'yyyymmdd') ,DECODE(TO_CHAR(TO_DATE(TO_CHAR(SYSDATE-1, 'yyyymmdd')), 'd'),7,TO_CHAR(SYSDATE-1, 'yyyymmdd') ,NULL)) HOLYDAY
+		  FROM DUAL
+		  UNION
+		  SELECT DECODE(TO_CHAR(TO_DATE(TO_CHAR(SYSDATE, 'yyyymmdd')), 'd'),1,TO_CHAR(SYSDATE, 'yyyymmdd') ,DECODE(TO_CHAR(TO_DATE(TO_CHAR(SYSDATE, 'yyyymmdd')), 'd'),7,TO_CHAR(SYSDATE, 'yyyymmdd') ,NULL)) HOLYDAY
+		  FROM DUAL
+		  UNION
+		  SELECT HOLYDAY
+		  FROM TB_HOLYDAY
+		  WHERE YYYY = TO_CHAR(SYSDATE,'yyyy')
+		    AND MM = TO_CHAR(SYSDATE,'mm')
+		)
+		WHERE HOLYDAY IS NOT NULL
+		  AND HOLYDAY = TO_CHAR(SYSDATE-1, 'yyyymmdd') 
+	]]>
+	</select>
+	
+	<select id="getCurrentdate" parameterType="String" resultType="String">
+	<![CDATA[
+		SELECT TO_CHAR(SYSDATE, #{format}) CURRENTDATE
+		FROM DUAL
+	]]>
+	</select>
+	
+	<select id="getUseMenu" resultType="DataMap">
+	<![CDATA[
+		-- 메뉴 사용여부 조회
+		SELECT 	MENUCD,
+				MENUNM,
+				USE_YN
+		FROM  TB_MENU_USEYN
+		WHERE MENUCD IS NOT NULL
+	]]>
+	</select>
+	
+	<select id="getUseMenu2" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 메뉴 사용여부 조회
+		SELECT 	MENUCD,
+				USE_YN
+		FROM  TB_MENU_USEYN
+		WHERE MENUCD = #{menucd}
+	]]>
+	</select>
+	
+	<select id="holydayUiList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 공휴일 년도조회
+		SELECT YYYY, MM, DD
+		FROM TB_HOLYDAY
+		WHERE YYYY = #{year}
+		  AND MM = #{month}
+	]]>
+	</select>
+	
+	<update id="updateUseMenu" parameterType="Map">
+	<![CDATA[
+		-- 메뉴 사용여부 수정
+		UPDATE TB_MENU_USEYN
+		SET USE_YN  = #{useyn},
+		    LUSERNO = #{luserno},
+		    LDATE   = SYSDATE
+		WHERE MENUCD = #{menucd}
+	]]>
+	</update>
+	
+	<select id="selectResvAdmin" resultType="DataMap">
+	<![CDATA[
+		--시설예약관리 관리자 SMS 리스트
+		SELECT
+			RA_NO,
+			RA_NAME,
+			RA_HP
+		FROM TB_RESV_ADMIN
+		WHERE 1=1
+			AND USE_YN = 'Y'
+	]]>
+	</select>
+	
+	<select id="selectRaNo" resultType="int">
+	<![CDATA[
+		-- 시설예약관리 관리자SMS PK 최대값
+		SELECT NVL(MAX(RA_NO),0)+1 FROM TB_RESV_ADMIN
+	]]>
+	</select>
+	
+	<insert id="insertResvAdmin" parameterType="Map">
+	<![CDATA[
+		--시설예약관리 관리자 SMS 등록
+		INSERT INTO TB_RESV_ADMIN(
+			RA_NO, RA_NAME, RA_HP, 
+			LUSERNO, USE_YN, LDATE
+		) VALUES (
+			#{raNo}, #{raName}, #{raHp},
+			#{luserno}, 'Y', SYSDATE
+		)
+	]]>
+	</insert>
+	
+	<delete id="deleteResvAdmin" parameterType="Map">
+	<![CDATA[
+		--시설예약관리 관리자 SMS 삭제
+		DELETE FROM 
+			TB_RESV_ADMIN
+		WHERE 
+			RA_NO = #{raNo}
+	]]>
+	</delete>
+	
+	<insert id="saveReservationSurvey" parameterType="Map">
+	<![CDATA[
+	-- 시설설문
+		INSERT INTO TB_RESERVATIONSURVEY
+	   (SEQNO, ENTERIP, DATEUSE, ENTERDATE, CHECK1, CHECK2, CHECK4, CHECK5, CHECK6, CHECK7, ETC, PRICE)
+	 	   VALUES
+	   (TB_RESERVATIONSURVEY_SEQNO.NEXTVAL, #{enterip}, to_date(#{sDate}), SYSDATE, #{check1}, #{check2}, #{check4}, #{check5}, #{check6}, #{check7}, #{etc}, #{price, jdbcType=NUMERIC})
+	]]>
+	</insert>
+	
+	<select id="setResvAdmin" resultType="DataMap">
+	<![CDATA[
+		--시설예약관리 관리자 SMS 목록 가져오기
+		SELECT RA_NAME, RA_HP from TB_RESV_ADMIN
+ 		WHERE USE_YN = 'Y'
+	]]>
+	</select>
+	
+	<select id="getDayCheck" resultType="Integer">	
+	<![CDATA[
+		-- 저장 가능한 날자
+		SELECT COUNT(HOLYDAY) CNT
+		FROM
+		(
+		  SELECT DECODE(TO_CHAR(TO_DATE(TO_CHAR(SYSDATE-1, 'yyyymmdd')), 'd'),1,TO_CHAR(SYSDATE-1, 'yyyymmdd') ,DECODE(TO_CHAR(TO_DATE(TO_CHAR(SYSDATE-1, 'yyyymmdd')), 'd'),7,TO_CHAR(SYSDATE-1, 'yyyymmdd') ,NULL)) HOLYDAY
+		  FROM DUAL
+		  UNION
+		  SELECT DECODE(TO_CHAR(TO_DATE(TO_CHAR(SYSDATE, 'yyyymmdd')), 'd'),1,TO_CHAR(SYSDATE, 'yyyymmdd') ,DECODE(TO_CHAR(TO_DATE(TO_CHAR(SYSDATE, 'yyyymmdd')), 'd'),7,TO_CHAR(SYSDATE, 'yyyymmdd') ,NULL)) HOLYDAY
+		  FROM DUAL
+		  UNION
+		  SELECT HOLYDAY
+		  FROM TB_HOLYDAY
+		  WHERE YYYY = TO_CHAR(SYSDATE,'yyyy')
+		    AND MM = TO_CHAR(SYSDATE,'mm')
+		)
+		WHERE HOLYDAY IS NOT NULL
+		  AND HOLYDAY = TO_CHAR(SYSDATE-1, 'yyyymmdd') 
+	]]>
+	</select>
+	
+	<update id="ajaxSaveMgrYn" parameterType="Map">
+	<![CDATA[
+	-- 시설 관리자 예약 불가 기능
+		INSERT INTO TB_APPLICATION_ADMINYN
+	   (SEQNO, YYYY, MM, DD, PLACE, ENTERUSERNO, ENTERDATE)
+	 	   VALUES
+	   ((SELECT NVL(MAX(SEQNO),0)+1 FROM TB_APPLICATION_ADMINYN),#{yyyy},#{mm},#{dd},#{price},#{userno},SYSDATE)
+	]]>
+	</update>
+	
+	<update id="ajaxDeleteMgrYn" parameterType="Map">
+	<![CDATA[
+		DELETE TB_APPLICATION_ADMINYN
+		WHERE yyyy = #{yyyy} AND MM = #{mm} AND DD = #{dd} AND PLACE = #{price}
+	]]>
+	</update>
+	
+	<select id="CheckSaveMgrYn" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT COUNT(seqno) cnt
+		FROM TB_APPLICATION_ADMINYN
+		WHERE yyyy = #{yyyy} AND MM = #{mm} AND DD = #{dd} AND PLACE = #{price}
+	]]>
+	</select>
+	
+	<select id="SaveMgrYnList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT SEQNO, YYYY, MM, DD, PLACE, ENTERUSERNO, ENTERDATE
+		FROM TB_APPLICATION_ADMINYN
+		WHERE yyyy = #{yyyy} AND MM = #{mm} AND PLACE = #{price}
+	]]>
+	</select>
+
+</mapper>

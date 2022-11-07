@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.CourseGuideMapper">
+
+	<select id="selectGrGuideListCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 과정 안내문 리스트
+		SELECT 
+			COUNT(0) AS CNT
+		FROM TB_GRGUIDE A
+		WHERE 1=1
+			AND GRSEQ LIKE #{year}
+			AND GRCODE = #{grcode}
+		ORDER BY GRCODE, GRSEQ, GUIDE_TITLE
+	]]>
+	</select>
+	
+	<select id="selectGrGuideList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 과정 안내문 리스트
+						SELECT 
+							GRCODE, GRSEQ, GUSTR_DATE, 
+							GUEND_DATE, GUIDE_TITLE, GUIDE1, 
+							GUIDE2, GUIDE3, GUIDE4, 
+							GUIDE5, GUIDE6, GUIDE7, 
+							GUIDE8, GUIDE9,
+							(SELECT GRCODENM FROM TB_GRCODE WHERE GRCODE = A.GRCODE) AS GRCODENM
+						FROM TB_GRGUIDE A
+						WHERE 1=1
+							AND GRSEQ LIKE #{year}
+							AND GRCODE = #{grcode}
+						ORDER BY GRCODE, GRSEQ, GUIDE_TITLE
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectSubjClassByMaxClassNoList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 반의 과목코드 가져오기.
+		SELECT 
+			SUBJ 
+		FROM TB_SUBJCLASS 
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND CLASSNO = (SELECT MAX(CLASSNO) AS MAX_CLASSNO FROM TB_SUBJCLASS WHERE GRCODE = #{grcode} AND GRSEQ = #{grseq} )
+	]]>
+	</select>
+	
+	<select id="selectGrGuideRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정 안내문 미리보기 정보
+		SELECT 
+			GRCODE, GRSEQ, GUIDE_TITLE, 
+			TO_CHAR(GUSTR_DATE,'yyyymmdd') AS GUSTR_DATE, 
+			TO_CHAR(GUEND_DATE,'yyyymmdd') AS GUEND_DATE, 
+			GUIDE1, GUIDE2, GUIDE3, 
+			GUIDE4, GUIDE5, GUIDE6, 
+			GUIDE7, GUIDE8, GUIDE9 
+		FROM TB_GRGUIDE 
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND GUIDE_TITLE = #{guideTitle}
+	]]>
+	</select>
+	
+	<select id="selectGrGuideChk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 과정 안내문 기수 있는지 확인.
+    	SELECT 
+			COUNT(1) AS CNT
+		FROM TB_GRGUIDE 
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND GUIDE_TITLE = #{guideTitle}
+	]]>
+	</select>
+	
+	<select id="selectGrGuideMaxGrseq" parameterType="Map" resultType="String">
+	<![CDATA[
+		-- 과정 안내문의 Max grseq 값 구하기
+		SELECT 
+			NVL(MAX(GRSEQ), #{year}||'00') + 1 AS GRSEQ 
+		FROM TB_GRGUIDE 
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ LIKE #{year}||'__'
+	]]>
+	</select>
+	
+	<update id="updateGrGuide" parameterType="Map">
+	<![CDATA[
+		-- 과정 안내문 수정
+		UPDATE TB_GRGUIDE SET
+			GUSTR_DATE  = #{gustrDate},
+			GUEND_DATE  = #{guendDate},
+			GUIDE1      = #{guide1},
+			GUIDE2      = #{guide2},
+			GUIDE3      = #{guide3},
+			GUIDE4      = #{guide4},
+			GUIDE5      = #{guide5},
+			GUIDE6      = #{guide6},
+			GUIDE7      = #{guide7},
+			GUIDE8      = #{guide8},
+			GUIDE9      = #{guide9}
+		WHERE  GRCODE      = #{commGrcode}
+			AND    GRSEQ       = #{commGrseq}
+			AND    GUIDE_TITLE = #{guideTitle}
+	]]>
+	</update>
+	
+	<insert id="insertGrGuide" parameterType="Map">
+	<![CDATA[
+		-- 과정 안내문 등록
+		INSERT INTO TB_GRGUIDE 
+			(GRCODE, GRSEQ, GUSTR_DATE, 
+			 GUEND_DATE, GUIDE_TITLE, GUIDE1, 
+			 GUIDE2, GUIDE3, GUIDE4, 
+			 GUIDE5, GUIDE6, GUIDE7, 
+			 GUIDE8, GUIDE9) 
+		VALUES 
+			( #{commGrcode}, #{commGrseq}, #{gustrDate},
+			  #{guendDate}, #{guideTitle}, #{guide1},
+			  #{guide2}, #{guide3}, #{guide4},
+			  #{guide5}, #{guide6}, #{guide7},
+			  #{guide8}, #{guide9})
+	]]>
+	</insert>
+	
+	<delete id="deleteGrGuide" parameterType="Map">
+	<![CDATA[
+		-- 과정 안내문 삭제
+		DELETE FROM TB_GRGUIDE 
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND GUIDE_TITLE = #{guideTitle}
+	]]>
+	</delete>
+	
+	<select id="selectCourseGuideBySubjTutorList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정안내문 관리 - 교과목 편성시간 및 강사
+		SELECT 
+			C.GUBUN, C.GUBUNNM, B.SUBJNM,
+			NVL(E.LESSONTIME, 0)+NVL(E.SILGITIME, 0)+NVL(E.TORONTIME, 0)+ NVL(E.HYUNTIME, 0)+NVL(E.MULTITIME, 0)+NVL(E.ETCTIME, 0) AS TTIME,
+			D.TPOSITION,
+			D.NAME
+		FROM TB_CLASSTUTOR A,
+			TB_SUBJ B,
+			TB_GUBUN C,
+			TB_TUTOR D,
+			TB_SUBJSEQ E
+		WHERE A.SUBJ = B.SUBJ
+			AND B.SUBJGUBUN = C.GUBUN
+			AND C.GRSUBJ = 'SG'
+			AND A.TUSERNO = D.USERNO
+			AND A.GRCODE = E.GRCODE
+			AND A.GRSEQ = E.GRSEQ
+			AND A.SUBJ = E.SUBJ
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+		ORDER BY B.SUBJGUBUN
+	]]>
+	</select>
+</mapper>

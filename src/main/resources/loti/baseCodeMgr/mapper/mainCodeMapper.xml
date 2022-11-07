@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.baseCodeMgr.mapper.MainCodeMapper">
+
+	<select id="selectMainCodeList" resultType="DataMap">
+	<![CDATA[
+		--  과정 분류 코드 관리 메인 리스트
+		SELECT M.CD_GUBUN
+		     , M.MAJOR_CODE
+		     , M.MCODE_NAME
+		     , M.USE_YN
+		     , NVL(S.SUB_COUNT, 0) AS SUB_COUNT
+		  FROM TB_MAINCODE M
+		     , (SELECT COUNT(0) SUB_COUNT, MAJOR_CODE FROM TB_SUBCODE GROUP BY MAJOR_CODE) S
+		 WHERE 1=1
+		   AND S.MAJOR_CODE(+) = M.MAJOR_CODE
+		ORDER BY M.MAJOR_CODE
+
+	]]>
+	</select>
+	
+	<select id="selectSubCodeList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  과정 분류 코드 관리 서브 리스트
+		SELECT CD_GUBUN
+		     , MAJOR_CODE
+		     , MINOR_CODE
+		     , SCODE_NAME
+		     , REMARK1
+		     , USE_YN
+		  FROM INCHLMS.TB_SUBCODE
+		 WHERE 1=1
+		   AND CD_GUBUN = #{cdGubun}
+		   AND MAJOR_CODE = #{majorCode}
+		 ORDER BY MAJOR_CODE , MINOR_CODE ASC
+
+	]]>
+	</select>
+	
+	<select id="selectMinorPopFormList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  과정 분류 코드 관리 서브 팝업 리스트
+        SELECT A.CD_GUBUN
+             , A.MAJOR_CODE
+             , A.MINOR_CODE
+             , B.MCODE_NAME
+             , A.SCODE_NAME
+             , A.USE_YN
+		  FROM TB_SUBCODE A
+		     , TB_MAINCODE B
+		 WHERE 1=1
+		   AND A.CD_GUBUN = #{cdGubun}
+		   AND A.MAJOR_CODE = #{majorCode}
+		   AND A.MINOR_CODE = #{minorCode}
+		   AND B.CD_GUBUN = #{cdGubun}
+		   AND B.MAJOR_CODE =#{majorCode}
+	]]>
+	</select>
+	
+	<update id="updateSubCode" parameterType="Map">
+	<![CDATA[
+		--  과정 분류 코드 관리 상세페이지 수정
+		UPDATE TB_SUBCODE 
+		   SET USE_YN = #{useYn}
+		 WHERE 1=1
+		   AND CD_GUBUN = #{cdGubun}
+		   AND MAJOR_CODE = #{majorCode}
+		   AND MINOR_CODE = #{minorCode}
+	]]>
+	</update>
+	
+	<select id="selectMajorPopFormList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  과정 분류 코드 관리 서브 팝업 리스트
+		SELECT CD_GUBUN
+		     , MAJOR_CODE
+		     , MCODE_NAME
+		     , USE_YN
+		  FROM TB_MAINCODE 
+		 WHERE 1=1
+		   AND CD_GUBUN = #{cdGubun}
+		   AND MAJOR_CODE = #{majorCode}
+	]]>
+	</select>
+	
+	<update id="updateMainCode" parameterType="Map">
+	<![CDATA[
+		--  과정 분류 코드 관리 피이지 수정
+		UPDATE TB_MAINCODE 
+		   SET USE_YN = #{useYn}
+		 WHERE 1=1
+		   AND CD_GUBUN = #{cdGubun}
+		   AND MAJOR_CODE = #{majorCode}
+	]]>
+	</update>
+	
+	<select id="selectSubMaxCode" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  과정분류 상세코드관리 맥스 코드값 리스트
+		SELECT NVL(MAX(MINOR_CODE),0)+1 AS MAX_FIELD 
+		  FROM TB_SUBCODE
+		 WHERE 1=1
+		   AND CD_GUBUN = #{cdGubun}
+		   AND MAJOR_CODE = #{majorCode}
+	]]>
+	</select>
+	
+	<insert id="insertSubCode" parameterType="Map">
+	<![CDATA[
+		--  과정코드정보 상세 코드 등록
+		INSERT INTO TB_SUBCODE(
+		       CD_GUBUN  , MAJOR_CODE  , MINOR_CODE , SCODE_NAME  , USE_YN
+		) VALUES(
+		       #{cdGubun}, #{majorCode}, #{maxField}, #{scodeName}, #{useYn}
+		)
+	]]>
+	</insert>
+	
+	<select id="selectMainMaxCode" resultType="DataMap">
+	<![CDATA[
+		--  과정분류 코드관리 맥스 코드값 리스트
+		SELECT MAX(MAJOR_CODE) AS MAX_FIELD 
+		  FROM TB_MAINCODE
+	]]>
+	</select>
+	
+	<insert id="insertMainCode" parameterType="Map">
+	<![CDATA[
+		--  과정코드정보 메인코드 등록
+		INSERT INTO TB_MAINCODE (
+		       CD_GUBUN, MAJOR_CODE     , MCODE_NAME  , USE_YN
+		) VALUES (
+		       'G'     , #{maxMajorCode}, #{mcodeName}, #{useYn})
+		
+	]]>
+	</insert>
+	
+	<select id="selectMainCodeGubunUseYnList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  과정분류코드 CD_GUBUN, USE_YN 리스트
+		SELECT MAJOR_CODE
+		     , MCODE_NAME 
+		  FROM TB_MAINCODE 
+		 WHERE 1=1
+		   AND CD_GUBUN = #{cdGubun} 
+		   AND USE_YN = #{useYn}
+		 ORDER BY MAJOR_CODE
+	]]>
+	</select>
+	
+	<select id="selectMainSubCodeList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  과정분류코드 CD_GUBUN, USE_YN 리스트
+		SELECT MINOR_CODE
+		     , SCODE_NAME 
+		  FROM TB_SUBCODE 
+		 WHERE 1=1
+		   AND USE_YN = 'Y' 
+		   AND CD_GUBUN = #{gubun} 
+		   AND MAJOR_CODE = #{grtype}
+	]]>
+	</select>
+</mapper>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.poll.mapper.CapacityDiagnosisPollMapper">
+
+	<select id="selectCapacityDiagnosisByCheck" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 역량강화과정 역량진단 설문지 목록
+		 SELECT M.NAME, M.DEPTNM, M.MJIKNM, M.DEPT,
+		        A.GRCODE, A.GRSEQ, A.USERNO, A.BANDA, A.REQDATE,
+		 		A.Q_01, A.Q_02, A.Q_03, A.Q_04, A.Q_05,
+		 		A.Q_06, A.Q_07, A.Q_08, A.Q_09, A.Q_10,
+		 		A.Q_11, A.Q_12, A.Q_13, A.Q_14, A.Q_15,
+		 		A.Q_16, A.Q_17, A.Q_18, A.Q_19, A.Q_20,
+		 		A.Q_21, A.Q_22, A.Q_23, A.Q_24, A.Q_25,
+		 		A.Q_26, A.Q_27, A.Q_28, A.Q_29, A.Q_30,
+		 		A.Q_31, A.Q_32, A.Q_33, A.Q_34, A.Q_35,
+		 		A.Q_36, A.Q_37, A.Q_38, A.Q_39, A.Q_40
+		   FROM TB_CAPACITY_DIAGNOSIS_RESULT A
+		   LEFT JOIN TB_MEMBER M ON A.USERNO = M.USERNO
+		  WHERE A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.USERNO = #{userno}
+			AND A.BANDA = #{banda}
+		  ORDER BY A.REQDATE
+		]]>
+	</select>
+	<select id="selectCapacityDiagnosisBySearchList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 역량강화과정 역량진단 설문지 목록
+		 SELECT M.NAME, M.DEPTNM, M.MJIKNM, M.DEPT,
+		        A.GRCODE, A.GRSEQ, A.USERNO, A.BANDA, A.REQDATE,
+		 		A.Q_01, A.Q_02, A.Q_03, A.Q_04, A.Q_05,
+		 		A.Q_06, A.Q_07, A.Q_08, A.Q_09, A.Q_10,
+		 		A.Q_11, A.Q_12, A.Q_13, A.Q_14, A.Q_15,
+		 		A.Q_16, A.Q_17, A.Q_18, A.Q_19, A.Q_20,
+		 		A.Q_21, A.Q_22, A.Q_23, A.Q_24, A.Q_25,
+		 		A.Q_26, A.Q_27, A.Q_28, A.Q_29, A.Q_30,
+		 		A.Q_31, A.Q_32, A.Q_33, A.Q_34, A.Q_35,
+		 		A.Q_36, A.Q_37, A.Q_38, A.Q_39, A.Q_40
+		   FROM TB_CAPACITY_DIAGNOSIS_RESULT A
+		   LEFT JOIN TB_MEMBER M ON A.USERNO = M.USERNO
+		  WHERE A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.USERNO = #{userno}
+		  ORDER BY A.REQDATE
+		]]>
+	</select>
+	<update id="insertCapacityDiagnosis" parameterType="Map">
+	<![CDATA[
+		-- CoursePollDAO.java
+		-- 역량강화과정 역량진단 등록
+		 INSERT	INTO TB_CAPACITY_DIAGNOSIS_RESULT 
+				(GRCODE, GRSEQ, USERNO, BANDA, REQDATE,
+		 		Q_01, Q_02, Q_03, Q_04, Q_05,
+		 		Q_06, Q_07, Q_08, Q_09, Q_10,
+		 		Q_11, Q_12, Q_13, Q_14, Q_15,
+		 		Q_16, Q_17, Q_18, Q_19, Q_20,
+		 		Q_21, Q_22, Q_23, Q_24, Q_25,
+		 		Q_26, Q_27, Q_28, Q_29, Q_30,
+		 		Q_31, Q_32, Q_33, Q_34, Q_35,
+		 		Q_36, Q_37, Q_38, Q_39, Q_40) 
+		VALUES 
+				(#{grcode}, #{grseq}, #{userno}, #{banda}, SYSDATE,
+				#{q_01}, #{q_02}, #{q_03}, #{q_04}, #{q_05},
+				#{q_06}, #{q_07}, #{q_08}, #{q_09}, #{q_10},
+				#{q_11}, #{q_12}, #{q_13}, #{q_14}, #{q_15},
+				#{q_16}, #{q_17}, #{q_18}, #{q_19}, #{q_20},
+				#{q_21}, #{q_22}, #{q_23}, #{q_24}, #{q_25},
+				#{q_26}, #{q_27}, #{q_28}, #{q_29}, #{q_30},
+				#{q_31}, #{q_32}, #{q_33}, #{q_34}, #{q_35},
+				#{q_36}, #{q_37}, #{q_38}, #{q_39}, #{q_40})
+	]]>
+	</update>
+	
+</mapper>

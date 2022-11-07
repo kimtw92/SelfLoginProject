@@ -1,0 +1,7 @@
+div.MainWrap { float:left; position:relative; width:900px; height:400px; padding-top:25px; z-index:0; background:url(../../images/main/image.gif) no-repeat 20px 0px;  clear:both; }
+div.MainWrap div.Wrap300 { float:left; width:300px; padding-left:0px; margin:0px; }
+div.MainWrap div.Wrap360 { float:left; width:360px; padding-left:17px; margin:0px;  }
+div.MainWrap div.Wrap200 { float:left; width:200px; padding-left:17px;  }
+
+div.MainWrap ul.banner { float:left; width:399px; padding:205px 0 0 45px; }
+div.MainWrap ul.banner li{ float:left;}

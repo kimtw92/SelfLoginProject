@@ -1,0 +1,18 @@
+﻿/* General Define */
+td {color : #666666 ; Font-Family:"Tahoma", "굴림"; font-size: 9pt; Line-height:16px; text-decoration: none; word-break:break-all;}
+a:link {text-decoration: none ; color: #666666;}
+a:visited {text-decoration: none ; color: #666666;}
+a:active {text-decoration: none ; color: #666666;}
+a:hover {text-decoration: none ; color: #999999;}
+
+/*   */
+.font1 {
+	font-family: "돋움";
+	font-size: 8pt;
+}
+.font2 {
+	font-family: "돋움";
+	font-size: 8pt;
+	margin-right:15px;
+}
+a {text-decoration: none;}

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.evalMgr.mapper.ReportMapper">
+
+	<select id="selectReportClassNoList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 반 리스트
+		SELECT CLASSNO
+		     , CLASSNM
+		  FROM TB_SUBJCLASS
+		 WHERE 1=1
+           AND GRCODE = #{commGrcode}
+           AND GRSEQ = #{commGrseq}
+           AND SUBJ IN ('SUB1000025')
+	]]>
+	</select>
+	
+	<select id="selectReportNoList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 리스트
+		SELECT R.SUBJ
+		     , R.GRCODE
+		     , R.GRSEQ
+		     , R.CLASSNO
+		     , R.DATES
+		     , R.TITLE
+		     , R.RPARTF
+		     , R.RPARTT
+		     , R.GROUPFILE_NO
+		     , PT.PNT AS POINT
+		  FROM TB_REPORT R
+		     , (SELECT MAX(GRADE_POINT) AS PNT
+		             , GRCODE
+		             , GRSEQ
+		             , SUBJ
+		             , CLASSNO
+		             , DATES
+				  FROM TB_REPORT_GRADE
+				 WHERE 1=1
+				 GROUP BY GRCODE, GRSEQ, SUBJ, CLASSNO, DATES
+			   ) PT
+		 WHERE 1=1
+		   AND PT.GRCODE(+) = R.GRCODE
+		   AND PT.GRSEQ(+) = R.GRSEQ
+		   AND PT.SUBJ(+) = R.SUBJ
+		   AND PT.CLASSNO(+) = R.CLASSNO
+		   AND PT.DATES(+) = R.DATES
+		   AND R.SUBJ = 'SUB1000025'
+		   AND R.GRCODE = #{commGrcode}
+           AND R.GRSEQ = #{commGrseq}
+		   AND R.CLASSNO = #{classno}
+		 ORDER BY TO_NUMBER(R.DATES)
+	]]>
+	</select>
+	
+	<select id="selectReportYearList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 미제출자 관리 year리스트
+		SELECT DISTINCT SUBSTR(A.GRSEQ, 0, 4) AS YEAR
+		     , CASE SUBSTR(A.GRSEQ, 0, 4) WHEN #{commYear} THEN 'selected'
+			                              ELSE ''
+			   END AS SELECTED
+		  FROM TB_GRSEQ A
+		     , TB_SUBJSEQ B
+		 WHERE 1=1
+		   AND A.GRCODE = B.GRCODE
+		   AND A.GRSEQ = B.GRSEQ
+		   AND A.USE_YN = 'Y'
+		   AND TO_CHAR(SYSDATE, 'YYYYMMDD') BETWEEN TO_CHAR(A.STARTED, 'YYYYMMDD') AND TO_CHAR(A.ENDDATE, 'YYYYMMDD')
+		 ORDER BY YEAR DESC 
+	]]>
+	</select>
+	
+	<select id="selectReportGrCodeList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 미제출자 관리 GrCode리스트
+		SELECT GRCODE
+		     , GRCODENM
+		     , CASE GRCODE WHEN #{commGrcode} THEN 'selected'
+         			       ELSE ''
+			   END AS SELECTED
+		  FROM TB_GRCODE
+		 WHERE 1=1
+		   AND USE_YN = 'Y'
+		   AND GRCODE IN (SELECT DISTINCT A.GRCODE
+		                    FROM TB_GRSEQ A
+		                       , TB_SUBJSEQ B
+				           WHERE 1=1
+				             AND A.GRCODE = B.GRCODE
+				             AND A.GRSEQ = B.GRSEQ
+				             AND A.USE_YN = 'Y'
+	                         AND A.GRSEQ LIKE #{commYear}||'__%'
+	                         AND TO_CHAR(SYSDATE, 'YYYYMMDD') BETWEEN TO_CHAR(A.STARTED, 'YYYYMMDD') AND TO_CHAR(A.ENDDATE, 'YYYYMMDD')
+	                     ) 
+	]]>
+	</select>
+	
+	<select id="selectReportGrSeqList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 미제출자 관리 GrSeq리스트
+		SELECT DISTINCT GRSEQ
+		     , SUBSTR(GRSEQ, 5, 2) AS GRSEQNM
+		     , CASE GRSEQ WHEN #{commGrseq} THEN 'selected'
+		         	      ELSE ''
+			   END AS SELECTED
+		  FROM TB_SUBJSEQ
+		 WHERE 1=1
+		   AND GRSEQ LIKE #{commYear}||'__%'
+		   AND GRCODE = #{commGrcode}
+	]]>
+	</select>
+	
+	<select id="selectReportEndDate" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물 EndDate
+		SELECT SUBMED_DATE 
+		  FROM TB_REPORT 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+           AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{commSubj}
+		   AND CLASSNO = #{classno}
+		   AND DATES = #{dates}
+	]]>
+	</select>
+	
+	<select id="selectReportStudentList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물 미제출자 리스트
+		SELECT B.USERNO
+		     , B.NAME
+		     , B.HP 
+		  FROM TB_STU_LEC A
+		     , TB_MEMBER B 
+		 WHERE 1=1
+		   AND A.USERNO NOT IN (SELECT USERNO
+		                          FROM TB_REPORT_SUBMIT
+		                         WHERE 1=1
+		                           AND GRCODE = A.GRCODE
+		                           AND GRSEQ = A.GRSEQ
+		                           AND SUBJ = A.SUBJ 
+		                           AND CLASSNO = A.CLASSNO
+		                           AND DATES = #{dates}
+		                       )
+		   AND A.GRCODE = #{commGrcode}
+		   AND A.GRSEQ = #{commGrseq}
+		   AND A.SUBJ = #{commSubj}
+		   AND A.CLASSNO = #{classno}
+		   AND A.USERNO = B.USERNO
+	]]>
+	</select>
+	
+	<select id="selectReportNoSMSList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물 미제출자 SMS발송 리스트
+		SELECT
+			b.userno,b.name,b.hp
+		FROM
+			tb_stu_lec a, tb_member b
+		WHERE
+			a.userno NOT IN(
+				SELECT
+					userno
+        		FROM
+        			TB_REPORT_SUBMIT
+				WHERE  
+					subj = #{commSubj}
+					and grcode = #{commGrcode}
+					and grseq = #{commGrseq}
+					and classno = #{classno}
+					and dates = #{dates})
+			and    a.subj = #{commSubj}
+			and    a.grcode = #{commGrcode}
+			and    a.grseq = #{commGrseq}
+			and    a.classno = #{classno}
+			and    a.userno = b.userno
+			${inStr}
+	]]>
+	</select>
+	
+	<insert id="insertSMSList" parameterType="Map">
+	<![CDATA[
+		-- 과제물 미제출자 SMS 정보 입력
+		INSERT INTO MMSMNG.SMS_MSG(
+		       MSGKEY             , PHONE  , CALLBACK    , STATUS, REQDATE
+		     , MSG                , COMPKEY, ID
+		) VALUES (
+		       SMS_MSG_SEQ.nextVal, #{hp}  , '0324406218', '0'   , SYSDATE
+		     , #{msg}             , '052'  , 'edu00'
+		)
+	]]>
+	</insert>
+	
+	<select id="selectReportGrcodeNm" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 과제물 미제출자 과목명 리스트
+		SELECT GRCODENM 
+		  FROM TB_GRCODE
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+	]]>
+	</select>
+</mapper>

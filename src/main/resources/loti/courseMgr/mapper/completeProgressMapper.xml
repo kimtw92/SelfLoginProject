@@ -1,0 +1,556 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.CompleteProgressMapper">
+
+	<select id="selectSubjSeqCloseChk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 강의개설 정보 종료 여부 확인.
+		SELECT 
+			COUNT(*) AS TOTROW 
+		FROM TB_SUBJSEQ 
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+			AND LEC_TYPE IN ('S', 'C') 
+			AND (CLOSING <> 'Y' OR CLOSING IS NULL)
+	]]>
+	</select>
+	
+	<select id="selectSubjSeqCloseChkByAllSubj" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 강의개설 정보 종료 여부 확인. 종료된 과목수 반환.
+		SELECT COUNT (*) AS TCOUNT
+		  FROM TB_SUBJSEQ
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND CLOSING = 'Y'
+	]]>
+	</select>
+	
+	<select id="selectGrseqCloseChk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 과정기수 종료 여부 확인.
+		SELECT COUNT(*) AS TOTROW 
+		  FROM TB_GRSEQ
+		 WHERE 1=1 
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND (CLOSING <> 'Y' OR CLOSING IS NULL)
+	]]>
+	</select>
+	
+	<select id="selectSubjSeqByAllSubjList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강의개설 정보 리스트
+		SELECT SJ.GRCODE
+		     , SJ.GRSEQ
+		     , SJ.SUBJ
+		     , NVL(SJ.PGRAD, 0) AS PGRAD
+		     , NVL(SJ.GRASTEP, 0) AS GRASTEP
+		     , NVL(SJ.REPORTPOINT, 0) AS REPORTPOINT
+		     , NVL(SJ.STEPPOINT, 0) AS STEPPOINT
+		     , SJ.LEC_TYPE
+		     , SB.SUBJTYPE
+		  FROM TB_SUBJSEQ SJ
+		     , TB_SUBJ SB
+		 WHERE 1=1
+		   AND SJ.SUBJ = SB.SUBJ
+		   AND SJ.GRCODE = #{grcode}
+		   AND SJ.GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectStuLecUserListBySubj" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과목의 수강생 정보.
+		SELECT SL.USERNO
+		     , NVL (SL.AVREPORT, 0) AS AVREPORT
+		     , NVL (SL.AVLCOUNT, 0) AS AVLCOUNT
+		     , NVL (SL.PACCEPT, 0) AS PACCEPT
+		     , NVL (SL.AVCOURSE, 0) AS AVCOURSE
+		     , CASE WHEN SB.SUBJTYPE = 'Y' AND (SB.LCMS_PROGRESS IS NULL OR SB.LCMS_PROGRESS <> 'N')
+				    THEN NVL (TO_NUMBER (PROGRESSSUBJ (SL.GRCODE, SL.GRSEQ, SL.SUBJ, SL.USERNO ) ), 0 )
+			        ELSE NVL (TSTEP, 0)
+			   END AS TSTEP
+		  FROM TB_STU_LEC SL
+		     , TB_SUBJ SB
+		 WHERE 1=1
+		   AND SL.SUBJ = SB.SUBJ
+		   AND SL.GRCODE = #{grcode}
+		   AND SL.GRSEQ = #{grseq}
+		   AND SL.SUBJ = #{subj}
+		   AND (SL.GRAYN <> 'Y' OR SL.GRAYN IS NULL)
+	]]>
+	</select>
+	
+	<select id="selectExResultRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과목별 시험채점결과정보
+		SELECT NVL (GAKPOINT, 0) AS GAKPOINT
+		     , NVL (JUPOINT, 0) AS JUPOINT
+		  FROM TB_EXRESULT
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND SUBJ = #{subj}
+		   AND USERNO = #{userno}
+	]]>
+	</select>
+	
+	<update id="updateStuLecByResultData" parameterType="Map">
+	<![CDATA[
+		-- 수강생 정보 업데이트
+		UPDATE TB_STU_LEC
+		   SET TSTEP = #{tstep}
+		     , AVLCOUNT = #{avlcount}
+		     , AVCOURSE = #{avcourse}
+		     , PACCEPT = #{paccept}
+		     , GRAYN = #{grayn}
+		     , LDATE = SYSDATE
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND SUBJ = #{subj}
+		   AND USERNO = #{userno}
+	]]>
+	</update>
+	
+	<select id="selectSubjSeqListByNotClosing" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수료처리 되지 않은 강의 개설 정보 
+		SELECT GRCODE
+		     , GRSEQ
+		     , SUBJ
+		     , TO_CHAR(STARTED, 'yyyymmddhh24miss') AS STARTED
+		     , TO_CHAR(ENDDATE, 'yyyymmddhh24miss') AS ENDDATE
+		     , PREED 
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND (CLOSING <> 'Y' OR CLOSING IS NULL)
+	]]>
+	</select>
+	
+	<select id="selectStuLecListByResultInfo" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수강생 과목수강정보
+		SELECT USERNO
+		     , NVL (AVCOURSE, 0) AS AVCOURSE
+		     , NVL (AVREPORT, 0) AS AVREPORT
+		     , NVL (AVLCOUNT, 0) AS AVLCOUNT
+		     , NVL (PACCEPT, 0) AS PACCEPT
+		     , NVL (TSTEP, 0) AS TSTEP
+		  FROM TB_STU_LEC
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND SUBJ = #{subj}
+	]]>
+	</select>
+	
+	<select id="selectSubjResultStuChk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 과목 결과 정보의 유저 확인.
+		SELECT COUNT(1) AS CNT 
+		  FROM TB_SUBJRESULT 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND SUBJ = #{subj}
+		   AND USERNO = #{userno}
+	]]>
+	</select>
+	
+	<update id="updateSubjResult" parameterType="Map">
+	<![CDATA[
+		-- 수강생 과목의 결과 정보 수정.
+		UPDATE TB_SUBJRESULT
+		   SET AVCOURSE = #{avcourse}
+		     , AVREPORT = #{avreport}
+		     , AVLCOUNT = #{avlcount}
+		     , TSTEP = #{tstep}
+		     , PACCEPT = #{paccept}
+		     , STARTED = #{started}
+		     , ENDDATE = #{enddate}
+		     , LUSERNO = #{luserno}
+		     , LDATE = SYSDATE 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND SUBJ = #{subj}
+		   AND USERNO = #{userno}
+	]]>
+	</update>
+	
+	<insert id="insertSubjResult" parameterType="Map">
+	<![CDATA[
+		-- 수강생 과목의 결과 정보 등록
+		INSERT INTO TB_SUBJRESULT (
+		       GRCODE     , GRSEQ      , SUBJ      , USERNO    , AVCOURSE
+		     , AVREPORT   , AVLCOUNT   , TSTEP     , PACCEPT   , GRAYN
+		     , STARTED
+		     , ENDDATE
+		     , LUSERNO   , LDATE     , RRESNO
+		) VALUES (
+		       #{grcode}  , #{grseq}   , #{subj}   , #{userno} , #{avcourse}
+		     , #{avreport}, #{avlcount}, #{tstep}  , #{paccept}, #{grayn}
+		     , TO_DATE(#{started}, 'yyyymmddhh24miss')
+		     , TO_DATE(#{enddate}, 'yyyymmddhh24miss')
+		     , #{luserno}, SYSDATE   , null
+		)
+	]]>
+	</insert>
+	
+	<update id="updateSubjSeqByClosing" parameterType="Map">
+	<![CDATA[
+		-- 강의 개설 정보 과목 이수 처리 여부 수정.
+		UPDATE TB_SUBJSEQ
+		   SET CLOSING = #{closing}
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND SUBJ = #{subj}
+	]]>
+	</update>
+	
+	<delete id="deleteSubjResultByGrseq" parameterType="Map">
+	<![CDATA[
+		-- 과정기수의 과목 결과 정보 삭제.
+		DELETE 
+		  FROM TB_SUBJRESULT 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</delete>
+	
+	<update id="updateStuLecByGrayn" parameterType="Map">
+	<![CDATA[
+		-- 수강생의 이수여부 수정
+		UPDATE TB_STU_LEC
+		   SET GRAYN = #{grayn}
+		     , LDATE = SYSDATE
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<update id="updateSubjSeqByGrseqClosing" parameterType="Map">
+	<![CDATA[
+		-- 강의개설정보의 기수 종료 여부 수정
+		UPDATE TB_SUBJSEQ
+		   SET CLOSING = #{closing}
+		     , PREED = #{preed}
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<select id="selectSubjSeqBySubjTypeCloseChk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 사이버 과목의 완료 여부 확인.
+		SELECT COUNT(A.SUBJ) AS TCOUNT 
+		  FROM TB_SUBJSEQ A
+		     , TB_SUBJ B  
+		 WHERE 1=1
+		   AND A.SUBJ=B.SUBJ
+		   AND A.GRCODE = #{grcode}
+		   AND A.GRSEQ = #{grseq}
+		   AND A.LEC_TYPE IN ('S', 'C')
+		   AND (A.CLOSING <> 'Y' OR A.CLOSING IS NULL)
+		   AND B.SUBJTYPE = 'Y'
+	]]>
+	</select>
+	
+	<select id="selectGrseqCloseYesChk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 과정기수 종료 여부 확인.
+		SELECT COUNT(*) AS TOTROW 
+		  FROM TB_GRSEQ
+		 WHERE 1=1 
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND CLOSING = 'Y'
+	]]>
+	</select>
+	
+	<select id="selectGrseqByResultSimpleRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정 기수 수료 정보.
+		SELECT NVL(RPGRAD,0) AS RPGRAD
+		     , TO_CHAR(STARTED, 'yyyymmddhh24miss') AS STARTED
+		     , TO_CHAR(ENDDATE, 'yyyymmddhh24miss') AS ENDDATE
+		     , ENDDATE - STARTED AS V_DATEGIGAN 
+		     , F_CYBER FCYBER
+		  FROM TB_GRSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectAppInfoByGrchkCnt" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 과정기수의 수강신청자 수
+		SELECT COUNT(*) AS TCOUNT 
+		  FROM TB_APP_INFO 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND GRCHK = #{grchk}
+	]]>
+	</select>
+	
+	<delete id="deleteGrResult" parameterType="Map">
+	<![CDATA[
+		-- 과정기수의 결과정보 삭제
+		DELETE
+		  FROM TB_GRRESULT
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</delete>
+	
+	<select id="selectSubjResultByDistinctUserList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과목의 결과 정보가 있는 수강자 정보.
+		SELECT DISTINCT USERNO 
+		  FROM TB_SUBJRESULT 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectStuLecGrseqTotalPaccept" parameterType="Map" resultType="String">
+	<![CDATA[
+		-- 수강생의 취득점수합
+		SELECT NVL(SUM(DECODE(SUBSTR(SUBJ,1,3),'GUN', AVCOURSE, PACCEPT)), 0) AS V_TOTAL 
+		  FROM TB_STU_LEC 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND USERNO = #{userno}
+	]]>
+	</select>
+	
+	<select id="selectGrStuMasAddpoint" parameterType="Map" resultType="String">
+	<![CDATA[
+		-- 수강생의 학생장,부학생장 가점
+		SELECT NVL(ADDPOINT, 0) AS ADDPOINT  
+		  FROM TB_GRSTUMAS 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND USERNO = #{userno}
+	]]>
+	</select>
+	
+	<select id="selectSubjSeqSubjCntBySubjType" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기수의 온/오프라인 과목수
+		SELECT NVL(SUM(DECODE(B.SUBJTYPE, 'Y', 1, 0)), 0) AS V_ONCOUNT
+		     , NVL(SUM(DECODE(B.SUBJTYPE, 'N', 1, 0)), 0) AS V_OFFCOUNT 
+		  FROM TB_SUBJSEQ A
+		     , TB_SUBJ B 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND A.SUBJ = B.SUBJ
+	]]>
+	</select>
+	
+	<select id="selectStuLecGraynCnt" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 수강생의 이수여부 갯수
+		SELECT COUNT(*) AS TCOUNT 
+		  FROM TB_STU_LEC 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND USERNO = #{userno}
+		   AND GRAYN = #{grayn, jdbcType=VARCHAR}
+	]]>
+	</select>
+	
+	<insert id="insertGrResult" parameterType="Map">
+	<![CDATA[
+		-- 과정 기수 결과 등록
+		INSERT INTO TB_GRRESULT (
+		       GRCODE    , GRSEQ   , USERNO    , RDEPT     , RDEPTSUB
+		     , RJIK      , RNAME   , RSCHOOL   , PACCEPT   , RGRAYN
+		     , TOTNO
+		     , STARTED
+		     , ENDDATE
+		     , LUSERNO   , LDATE   , RRESNO    , EDUNO
+		) VALUES (
+		       #{grcode} , #{grseq}, #{userno} , #{rdept}  , #{rdeptsub}
+		     , #{rjik}   , #{rname}, #{rschool}, #{paccept}, #{rgrayn}
+		     , #{totno}
+		     , TO_DATE(#{started}, 'yyyymmddhh24miss')
+		     , TO_DATE(#{enddate}, 'yyyymmddhh24miss')
+		     , #{luserno}, SYSDATE
+		     , null , #{eduno}
+		)
+	]]>
+	</insert>
+	
+	<select id="selectGrResultUserListByCalc" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정 기수 수강생 학습 결과 계산한 유저 리스트
+		SELECT GR.USERNO
+		     , GR.RNO
+		     , GR.RRESNO
+		     , GR.PACCEPT
+		     , GR.RGRAYN
+		     , GP.AVCOURSE AS GUN_POINT
+		     , TP.AVCOURSE AS TUTOR_POINT
+		     , RP.AVREPORT AS REPORT_POINT
+		     , GM.GRMAS AS GASMAS
+		  FROM TB_GRRESULT GR
+		     , (SELECT ER.GRCODE
+		             , ER.GRSEQ
+		             , ER.USERNO
+		             , SUM(DECODE(ER.PTYPE, 'M', NVL(ER.GAKPOINT, 0) + NVL(ER.JUPOINT, 0), 0)) AS MPOINT
+		             , SUM(DECODE(ER.PTYPE, 'T', NVL(ER.GAKPOINT, 0) + NVL(ER.JUPOINT, 0), 0)) AS TPOINT
+			      FROM TB_EXRESULT ER
+			         , TB_SUBJSEQ SJ
+			     WHERE 1=1
+			       AND ER.GRCODE = SJ.GRCODE
+				   AND ER.GRSEQ = SJ.GRSEQ
+				   AND ER.SUBJ = SJ.SUBJ
+			     GROUP BY ER.GRCODE, ER.GRSEQ, ER.USERNO
+			   ) GER
+			 , (SELECT AVCOURSE, GRCODE, GRSEQ, USERNO FROM TB_STU_LEC WHERE SUBJ = 'GUN0000001') GP
+			 , (SELECT AVCOURSE, GRCODE, GRSEQ, USERNO FROM TB_STU_LEC WHERE SUBJ = 'NUS0000001') TP
+			 , (SELECT AVREPORT, GRCODE, GRSEQ, USERNO FROM TB_STU_LEC WHERE SUBJ = 'SUB1000025') RP
+			 , (SELECT DECODE(MAS_GUBUN, 'M', 1, 'S', 2, 3) AS GRMAS, GRCODE, GRSEQ, USERNO FROM TB_GRSTUMAS) GM
+		 WHERE 1=1
+		   AND GER.GRCODE(+) = GR.GRCODE
+		   AND GER.GRSEQ(+) = GR.GRSEQ
+		   AND GER.USERNO(+) = GR.USERNO
+		   AND GP.GRCODE(+) = GR.GRCODE
+		   AND GP.GRSEQ(+) = GR.GRSEQ
+		   AND GP.USERNO(+) = GR.USERNO
+		   AND TP.GRCODE(+) = GR.GRCODE
+		   AND TP.GRSEQ(+) = GR.GRSEQ
+		   AND TP.USERNO(+) = GR.USERNO
+		   AND RP.GRCODE(+) = GR.GRCODE
+		   AND RP.GRSEQ(+) = GR.GRSEQ
+		   AND RP.USERNO(+) = GR.USERNO
+		   AND GM.GRCODE(+) = GR.GRCODE
+		   AND GM.GRSEQ(+) = GR.GRSEQ
+		   AND GM.USERNO(+) = GR.USERNO
+		   AND GR.GRCODE = #{grcode}
+		   AND GR.GRSEQ = #{grseq}
+		 ORDER BY GR.PACCEPT DESC, GUN_POINT DESC, TUTOR_POINT DESC, GASMAS, REPORT_POINT DESC, GR.RRESNO
+	]]>
+	</select>
+	
+	<select id="selectGrResultMaxSeqno" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 석차 계산
+		SELECT NVL(MAX(SEQNO), 0) + 1 AS V_SEQ 
+		  FROM TB_GRRESULT 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectAppInfoEduno" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 교번 가져오기.
+		SELECT A.EDUNO AS V_EDUNO 
+		  FROM TB_APP_INFO A
+		     , TB_GRSUBJ B 
+		 WHERE 1=1
+		   AND B.GRCODE = #{grcode}
+		   AND B.GRSEQ = #{grseq}
+		   AND A.GRCODE = B.GRCODE
+		   AND A.GRSEQ = B.GRSEQ
+		   AND A.USERNO = #{userno}
+		   AND ROWNUM = 1
+	]]>
+	</select>
+	
+	<update id="updateGrResultByTempCompletion" parameterType="Map">
+	<![CDATA[
+		-- 과정 결과정보 수정 수료증번호,석차,교번
+		UPDATE TB_GRRESULT
+		   SET RNO = #{rno}
+		     , EDUNO = CASE #{eduno} WHEN -1 THEN NULL ELSE #{eduno} END
+		     , SEQNO = #{seqno}
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND USERNO = #{userno}
+	]]>
+	</update>
+	
+	<select id="selectGrResultListByEduno" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정 결과정보 수강생 리스트
+		SELECT USERNO
+		     , EDUNO
+		     , RGRAYN 
+		  FROM TB_GRRESULT 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		 ORDER BY EDUNO
+	]]>
+	</select>
+	
+	<select id="selectGrResultMaxRno" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 과정 결과정보의 최고 수료번호
+		SELECT NVL(MAX(TO_NUMBER(RNO)), 0)+1 AS V_RNO 
+		  FROM TB_GRRESULT 
+		 WHERE 1=1
+		   AND GRSEQ LIKE substr(#{grseq}, 1, 4)||'%'
+	]]>
+	</select>
+	
+	<update id="updateGrResultRno" parameterType="Map">
+	<![CDATA[
+		-- 기수 수료자의 수료번호 수정.
+		UPDATE TB_GRRESULT
+		   SET RNO = #{rno}
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND USERNO = #{userno}
+	]]>
+	</update>
+	
+	<update id="updateGrseqClosing" parameterType="Map">
+	<![CDATA[
+		-- 과정 기수 종료 여부 수정.
+		UPDATE TB_GRSEQ
+		   SET CLOSING = #{closing}
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<update id="updateGrResultTempCompletion" parameterType="Map">
+	<![CDATA[
+		-- 수료자 임시 수료 처리.
+		UPDATE TB_GRRESULT
+		   SET RGRAYN = NULL
+		     , RNO = NULL
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</update>
+</mapper>

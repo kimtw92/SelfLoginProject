@@ -1,0 +1,19 @@
+@charset "EUC-KR";
+
+
+#footer {position:relative; width:860px; overflow:hidden; margin:0 auto; padding:12px 0; border-top:1px solid #E6E6E6; background:#F6F6F6;}
+#footer p.logo {float:left; width:224px; height:86px; background:url(../../images/main/footer_logo.gif) no-repeat 30px 22px; text-indent:-9999px;}
+#footer ul {float:left; margin-top:10px;}
+#footer ul li {float:left; padding:0 11px 0 9px; letter-spacing:-1px; background:url(../../images/main/footer_menu_bar.gif) no-repeat right top;}
+#footer ul li a {font-weight:bold; color:#3F4040;}
+#footer ul li.fir {padding-left:0;}
+#footer ul li.end {padding-right:0; background:none;}
+#footer ul li.add {clear:left; float:none; padding:6px 0 0; letter-spacing:-1px; font-size:11px; line-height:20px; background:none;}
+#footer div.logozone {float:right; width:87px; text-align:left;}
+#footer div.logozone p {background:url(../../images/main/footer_etc_logo.gif) no-repeat left top; text-indent:-9999px;}
+#footer div.logozone p.fly {width:67px; height:42px; margin-bottom:7px;}
+#footer div.logozone p.gei {width:44px; height:48px; margin-left:13px; background-position:-14px -49px;}
+
+
+
+

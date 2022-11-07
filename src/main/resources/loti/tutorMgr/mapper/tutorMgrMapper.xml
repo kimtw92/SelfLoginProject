@@ -1,0 +1,1818 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="loti.tutorMgr.mapper.TutorMgrMapper">
+
+	<select id="selectTutorField" resultType="DataMap">
+	<![CDATA[
+		-- 담당 분야 리스트
+		SELECT	C.GUBUN, C.GUBUNNM, MOD((ROWNUM-1),3) COL_INDEX
+		FROM
+		(
+		    SELECT 	A.GUBUN, A.GUBUNNM||'('||COUNT(B.USERNO)||')' AS GUBUNNM
+		    FROM	TB_GUBUN A, TB_TUTOR B 
+		    WHERE 	A.GRSUBJ	=	'SU'
+		    AND 	A.GUBUN		=	B.GUBUN 
+		    GROUP BY 
+		            A.GUBUN, A.GUBUNNM
+		    ORDER BY
+		            A.GUBUN
+		) C
+	]]>
+	</select>
+	
+	<select id="selectTutorLevelTotal" resultType="DataMap">
+	<![CDATA[
+		-- 등급별 강사 인원 리스트
+		SELECT  C.TLEVEL, C.LEVEL_NAME, COUNT(C.LEVEL_NAME) AS CNT
+		FROM 
+		(
+			SELECT 	A.TLEVEL, 	B.LEVEL_NAME     
+		    FROM	TB_TUTOR A	INNER JOIN TB_TUTOR_LEVEL B    
+		    ON 		A.TLEVEL = B.TLEVEL
+		) C
+		GROUP BY 
+				C.TLEVEL, C.LEVEL_NAME
+		ORDER BY 
+				C.TLEVEL
+	]]>
+	</select>
+	
+	<select id="selectTutorJobList" resultType="DataMap">
+	<![CDATA[
+		-- 직업별 강사분류 리스트
+		SELECT	CASE	WHEN Z.YEAR IS NULL THEN P.YEAR ELSE Z.YEAR END YEAR,
+				CASE	WHEN Z.JOB IS NULL THEN P.JOBNM ELSE Z.JOB END JOB,
+		        NVL(Z.A1,0) A1, 
+		        NVL(Z.A,0) A, 
+		        NVL(Z.B,0) B, 
+		        NVL(Z.C1,0) C1, 
+		        NVL(Z.C2,0) C2, 
+		        NVL(Z.D,0) D, 
+		        NVL(Z.Z,0) Z
+		FROM
+		(
+		    SELECT	D.YEAR,	D.JOB,
+		            SUM(D.A1) A1,
+		            SUM(D.A) A,
+		            SUM(D.B) B,
+		            SUM(D.C1) C1,
+		            SUM(D.C2) C2,
+		            SUM(D.D) D,
+		            SUM(D.Z) Z 
+		    FROM
+		    (		
+		        SELECT	C.USERNO,	C.YEAR,	C.JOB,
+		                C.A1,		C.A,	C.B,
+		                C.C1,		C.C2,	C.D,
+		                C.Z           
+		        FROM
+		        (
+		            SELECT	B.USERNO,	B.TLEVEL,
+		                    SUBSTR(A.GRSEQ, 1, 4) YEAR,
+		                            
+		                    CASE	WHEN	B.JOB	= '교수'	   THEN  B.JOB
+		                            WHEN	B.JOB	= '유관기관' THEN  B.JOB
+		                            WHEN	B.JOB	= '공무원'	  THEN  B.JOB
+		                    ELSE	'기타'
+		                    END	JOB,
+		                            
+		                    DECODE(B.TLEVEL,'A1',1, 0)	A1,
+		                    DECODE(B.TLEVEL,'A',1, 0) 	A,
+		                    DECODE(B.TLEVEL,'B',1, 0) 	B,
+		                    DECODE(B.TLEVEL,'C1',1, 0) 	C1,
+		                    DECODE(B.TLEVEL,'C2',1, 0) 	C2,
+		                    DECODE(B.TLEVEL,'D',1, 0) 	D,
+		                    DECODE(B.TLEVEL,'Z',1, 'Z2',1,0) Z
+		                            
+		                    		 
+		            FROM 	TB_CLASSTUTOR A	INNER JOIN TB_TUTOR B
+		            ON		A.TUSERNO	=	B.USERNO
+		        ) C       
+		        GROUP BY
+		                C.YEAR,	C.USERNO, C.TLEVEL, C.JOB
+		    ) D
+		    GROUP BY
+		            D.YEAR,	D.JOB                
+		) Z
+		
+		RIGHT OUTER JOIN
+		
+		(
+		    SELECT	B.YEAR, C.JOBNM, C.ORDERBY
+		    FROM
+		    (
+		        SELECT	A.YEAR
+		        FROM
+		        (
+		            SELECT	SUBSTR(GRSEQ, 1, 4) YEAR
+		            FROM	TB_CLASSTUTOR
+		        ) A
+		        GROUP BY A.YEAR
+		    ) B,
+		    (
+		        SELECT	'교수' JOBNM, 1 ORDERBY FROM DUAL
+		        UNION ALL
+		        SELECT	'유관기관' JOBNM, 2 ORDERBY FROM DUAL
+		        UNION ALL
+		        SELECT	'공무원' JOBNM, 3 ORDERBY FROM DUAL
+		        UNION ALL
+		        SELECT	'기타' JOBNM, 4 ORDERBY FROM DUAL
+		    ) C
+		
+		) P
+		ON		Z.YEAR	= 	P.YEAR
+		AND 	Z.JOB 	= 	P.JOBNM	
+		ORDER BY 
+				P.YEAR, P.ORDERBY
+	]]>
+	</select>
+	
+	<select id="selectCategotyTutorListCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 강사관리 카테고리별 리스트
+		SELECT
+			count(*) 	
+        FROM
+            TB_TUTOR    A
+            , TB_MEMBER B
+    ]]>
+            <if test="searchSubjNm != ''">
+            	, TB_SUBJ   X
+            </if>
+  	<![CDATA[
+        WHERE		A.USERNO = B.USERNO
+    ]]>
+        
+       	<if test="searchTutorGubun != ''">
+       		AND A.GUBUN = #{searchTutorGubun}
+       	</if>
+       	<if test="searchJob != ''">
+       		AND A.JOB = #{searchJob}
+       	</if>
+       	<if test="searchAddr != ''">
+       		AND B.HOME_ADDR LIKE '%' || #{searchAddr} || '%'
+       	</if>
+       	<if test="searchBirth != ''">
+       		AND SCP.DEC_B64('KEY1',A.RESNO) LIKE = #{searchBirth} || '%'
+       	</if>
+       	<if test="searchTutorLevel != ''">
+       		AND A.TLEVEL = #{searchTutorLevel}
+       	</if>
+       	<if test="searchSchool != ''">
+       		AND A.SCHOOL = #{searchSchool}
+       	</if>
+       	<if test="searchSubjNm != ''">
+       		AND X.SUBJ IN(A.SUBJ1, A.SUBJ2, A.SUBJ3, A.SUBJ4, A.SUBJ5, A.SUBJ6, A.SUBJ7) AND X.SUBJNM LIKE '%' || #{searchSubjNm} || '%'
+       	</if>
+       	<if test="searchTname != ''">
+       		AND A.NAME LIKE '%' || #{searchTname} || '%'
+       	</if>
+       	
+	</select>
+	
+	<select id="selectCategotyTutorList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+			-- 강사관리 카테고리별 리스트
+			SELECT 	
+				B.USERNO
+	            , B.NAME
+	            , SCP.DEC_B64('KEY1',B.HP) AS HP
+	            , A.TPOSITION
+	            , B.JIKWI
+	            , B.EMAIL
+	            , A.DISABLED
+	            , (SELECT SUBJNM FROM TB_SUBJ C WHERE A.SUBJ1 = C.SUBJ) AS SUBJ1
+	            , (SELECT SUBJNM FROM TB_SUBJ C WHERE A.SUBJ2 = C.SUBJ) AS SUBJ2
+	            , (SELECT SUBJNM FROM TB_SUBJ C WHERE A.SUBJ3 = C.SUBJ) AS SUBJ3
+	            , (SELECT SUBJNM FROM TB_SUBJ C WHERE A.SUBJ4 = C.SUBJ) AS SUBJ4
+	            , (SELECT SUBJNM FROM TB_SUBJ C WHERE A.SUBJ5 = C.SUBJ) AS SUBJ5
+	            , (SELECT SUBJNM FROM TB_SUBJ C WHERE A.SUBJ6 = C.SUBJ) AS SUBJ6
+	            , (SELECT SUBJNM FROM TB_SUBJ C WHERE A.SUBJ7 = C.SUBJ) AS SUBJ7
+	            , GETTUTORHISTORY(A.USERNO) AS HISTORY
+	        FROM
+	            TB_TUTOR    A
+	            , TB_MEMBER B
+    ]]>
+	            <if test="searchSubjNm != ''">
+	            	, TB_SUBJ   X
+	            </if>
+   	<![CDATA[
+	        WHERE		A.USERNO = B.USERNO
+    ]]>
+	        
+	       	<if test="searchTutorGubun != ''">
+	       		AND A.GUBUN = #{searchTutorGubun}
+	       	</if>
+	       	<if test="searchJob != ''">
+	       		AND A.JOB = #{searchJob}
+	       	</if>
+	       	<if test="searchAddr != ''">
+	       		AND B.HOME_ADDR LIKE '%' || #{searchAddr} || '%'
+	       	</if>
+	       	<if test="searchBirth != ''">
+	       		AND SCP.DEC_B64('KEY1',A.RESNO) LIKE = #{searchBirth} || '%'
+	       	</if>
+	       	<if test="searchTutorLevel != ''">
+	       		AND A.TLEVEL = #{searchTutorLevel}
+	       	</if>
+	       	<if test="searchSchool != ''">
+	       		AND A.SCHOOL = #{searchSchool}
+	       	</if>
+	       	<if test="searchSubjNm != ''">
+	       		AND X.SUBJ IN(A.SUBJ1, A.SUBJ2, A.SUBJ3, A.SUBJ4, A.SUBJ5, A.SUBJ6, A.SUBJ7) AND X.SUBJNM LIKE '%' || #{searchSubjNm} || '%'
+	       	</if>
+	       	<if test="searchTname != ''">
+	       		AND A.NAME LIKE '%' || #{searchTname} || '%'
+	       	</if>
+	<![CDATA[
+	        ORDER BY	B.NAME
+	    ) nQuery WHERE ROWNUM <= #{page.end}) WHERE nPaging_rnum >= #{page.start}
+    ]]>
+				
+	</select>
+	
+	<select id="selectTutorManagerCount" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 특수권한 잔여여부 체크
+		SELECT 	COUNT(*) AS DUPCNT 
+		FROM	TB_MANAGER 
+		WHERE 	USERNO 	=	#{userNo}
+		AND 	GADMIN 	!=  #{gadmin}
+	]]>
+	</select>
+	
+	<update id="changeTutorAuthStep1ByUpdate" parameterType="Map">
+	<![CDATA[
+		-- 특수권한 변경 Step1
+		UPDATE 	tb_member SET 
+				AUTHORITY 	= #{authority}
+		WHERE	USERNO 		= #{userNo}
+	]]>
+	</update>
+	
+	<update id="changeTutorAuthStep2ByUpdate" parameterType="Map">
+	<![CDATA[
+		-- 특수권한 변경 Step2
+		UPDATE 	TB_TUTOR SET 
+				DISABLED	= 	#{disabled},
+		        LUSERNO		=	#{sessNo},
+		        LDATE		=	SYSDATE
+		WHERE 	USERNO		=	#{userNo}
+	]]>
+	</update>
+	
+	<delete id="changeTutorAuthStep3ByDelete" parameterType="Map">
+	<![CDATA[
+		-- 특수권한 변경 Step3
+		DELETE 	FROM TB_MANAGER
+		WHERE 	USERNO = #{userNo}
+		AND		GADMIN = #{gadmin}
+	]]>
+	</delete>
+	
+	<insert id="changeTutorAuthStep4ByInsert" parameterType="Map">
+	<![CDATA[
+		-- 특수권한 변경 Step4
+		INSERT INTO TB_GADMIN_HISTORY 
+		( NO, USERNO, GADMIN, IDATE, CDATE, LUSERNO, LDATE ) 
+		VALUES 
+		( 	( SELECT NVL(MAX(NO),0) + 1 FROM TB_GADMIN_HISTORY ),
+			#{userNo},
+		    #{gadmin},
+		    ( SELECT LDATE FROM TB_MANAGER WHERE USERNO = #{userNo} AND GADMIN = #{gadmin} ),
+		    SYSDATE,
+		    #{sessNo},
+		    SYSDATE 
+		) 		
+	]]>
+	</insert>
+	
+	<insert id="changeTutorAuthStep5ByInsert" parameterType="Map">
+	<![CDATA[
+		-- 특수권한 변경 Step5
+		INSERT INTO TB_MANAGER (USERNO, GADMIN, LUSERNO, LDATE)
+		VALUES 
+		( #{userNo}, #{gadmin}, #{sessNo}, SYSDATE) 		
+	]]>
+	</insert>
+	
+	<select id="selectSessnoBy7" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 권한이 강시인경우 type 결정
+		SELECT 	(SELECT USERNO FROM TB_TUTOR	WHERE USERNO = #{value} ) T_USERNO,  
+				(SELECT USERNO FROM tb_member	WHERE USERNO = #{value} ) M_USERNO 
+		FROM DUAL		
+	]]>
+	</select>
+	
+	<select id="selectMemberDamo" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 회원데이터 가져오기
+		SELECT * FROM tb_member WHERE USERNO = #{value}
+	]]>
+	</select>
+	
+	<select id="selectTutorHistory" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 이력테이블 데이터 가져오기
+		SELECT	OCINFO
+		FROM 	TB_TUTOR_HISTORY
+		WHERE 	USERNO	= #{userno}
+		AND 	OCGUBUN = #{ocgubun}
+		ORDER BY
+				OCINFO
+	]]>
+	</select>        	
+	
+	<select id="selectTutorDamo" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 강사데이터 가져오기
+		SELECT * FROM TB_TUTOR WHERE USERNO = #{value}
+	]]>
+	</select>
+	
+	<select id="selectTutorGubun" resultType="DataMap">
+	<![CDATA[
+		-- 담당 분야 전체 리스트
+		SELECT	GUBUN, GUBUNNM
+		FROM	TB_GUBUN 
+		WHERE 	GRSUBJ = 'SU'
+		ORDER BY
+				GUBUN
+	]]>
+	</select>
+	
+	<select id="selectTutorLevel" resultType="DataMap">
+	<![CDATA[
+		-- 강사등급 전체 리스트
+		SELECT	TLEVEL, LEVEL_NAME
+		FROM	TB_TUTOR_LEVEL
+		ORDER BY
+				TLEVEL
+	]]>
+	</select>
+	
+	<select id="selectClassInfo" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 강사 주강사, 보조강사 내역 리스트
+	SELECT   A.GRCODE AS GRCODE, A.SUBJ AS SUBJ,
+         MIN (SEARCHGRCODENM (A.GRCODE, A.GRSEQ)) AS GRCODENM,
+         MIN (SUBSTR (A.GRSEQ, 0, 4)) AS GRYEAR, TGUBUN,
+         MIN (SEARCHLECNM (A.GRCODE, A.GRSEQ, A.SUBJ)) AS SUBJNM,
+         A.GRSEQ AS GRSEQ,
+         MIN (TUTOR_SCORE (A.GRCODE, A.GRSEQ, TUSERNO, A.SUBJ)) AS TRAT,
+         COUNT (STUDYTIME) AS STUDYTIME, MIN (GROUPFILE_NO) AS GROUPFILE_NO
+    FROM TB_CLASSTUTOR A, TB_TIMETABLE_TU B
+    WHERE TUSERNO = #{value}
+		AND A.TUSERNO = B.USERNO
+		AND A.GRSEQ = B.GRSEQ
+		AND A.GRCODE = B.GRCODE
+		AND A.SUBJ = B.SUBJ
+		AND IS_SUBJCOMPLETE (A.GRCODE, A.GRSEQ, A.SUBJ) = 'Y'
+	GROUP BY A.GRCODE, A.GRSEQ, A.SUBJ, TGUBUN
+	ORDER BY TGUBUN
+	]]>
+	</select>
+	
+	<select id="selectGoodTutorlList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT X.*,
+        ROUND(tutor_score_1(GRCODE,GRSEQ ,USERNO ,TSUBJ)) AS RAT
+        FROM (
+		SELECT COUNT(E.ANS_NO) AS TOTAL_CNT,
+            SUM(DECODE(E.ANS_NO, 1, 1, 0)) AS NUM1,
+            SUM(DECODE(E.ANS_NO, 2, 1, 0)) AS NUM2,
+            SUM(DECODE(E.ANS_NO, 3, 1, 0)) AS NUM3,
+            SUM(DECODE(E.ANS_NO, 4, 1, 0)) AS NUM4,
+            --ROUND(MIN(tutor_score_1(C.GRCODE,C.GRSEQ ,D.USERNO ,B.TSUBJ))) AS RAT,
+            B.TUSERNO USERNO,
+            SEARCHSUBJNM(TSUBJ) AS SUBJNM,
+            MIN(D.NAME) AS NAME,
+            MIN(TPOSITION) AS TPOSITION,
+            B.TSUBJ,
+            MIN(SEARCHGRCODENM(C.GRCODE, C.GRSEQ)||'('||C.GRCODE||')') AS GRNAME,
+            C.GRCODE,
+            C.GRSEQ
+		FROM TB_GRINQ_SAMP_SET A,
+			TB_GRINQ_QUESTION_SET B,
+			TB_GRINQ_TTL C,
+			TB_TUTOR D,
+			TB_GRINQ_ANSWER E
+		WHERE A.TITLE_NO=B.TITLE_NO
+			AND A.QUESTION_NO = B.QUESTION_NO
+			AND A.SET_NO=B.SET_NO
+			AND A.TITLE_NO=C.TITLE_NO
+			AND B.TUSERNO=D.USERNO
+			AND A.TITLE_NO||A.SET_NO||A.QUESTION_NO IN (
+														SELECT 
+															TITLE_NO||SET_NO||QUESTION_NO 
+														FROM 
+															TB_SUBJ A, TB_GRINQ_QUESTION_SET B 
+														WHERE 
+															A.SUBJ=B.TSUBJ 
+															
+	]]>
+															<if test="subjgubun != ''">
+																 AND SUBJGUBUN = #{subjgubun}
+															</if>
+	<![CDATA[
+															)
+			AND C.USE_YN IN('y','Y')
+			AND C.IEND_DATE BETWEEN TO_DATE( #{sDate} , 'YYYYMMDD') AND TO_DATE( #{eDate} , 'YYYYMMDD')
+			AND B.TITLE_NO = E.TITLE_NO
+			AND B.SET_NO = E.SET_NO
+			AND B.QUESTION_NO = E.QUESTION_NO
+			AND E.ANS_NO != 0
+			GROUP BY B.TUSERNO, B.TSUBJ, B.TSUBJ, D.TPOSITION, C.GRCODE, C.GRSEQ, D.NAME
+            ) X
+            -- GROUP BY USERNO, TSUBJ, TSUBJ, TPOSITION, GRCODE, GRSEQ, NAME
+            WHERE ROUND(tutor_score_1(GRCODE,GRSEQ ,USERNO ,TSUBJ)) >= #{sPer} 
+            AND ROUND(tutor_score_1(GRCODE,GRSEQ ,USERNO ,TSUBJ)) <= #{ePer}
+	]]>
+	</select>
+	
+<!-- 	historyList -->
+	<sql id="historyList">
+		FROM 
+			TB_SUBJSEQ B, tb_member C, TB_TUTOR D ,
+			(
+				SELECT 
+					GRCODE, GRSEQ, SUBJ, USERNO, STUDYDATE, COUNT(STUDYTIME) TIME_CNT, MIN(STUDYTIME) MIN_STUDYTIME, MAX(STUDYTIME) MAX_STUDYTIME 
+				FROM 
+					TB_TIMETABLE_TU GROUP BY GRCODE, GRSEQ, SUBJ, USERNO, STUDYDATE
+			 ) TT 
+		WHERE 
+			 TT.GRCODE = B.GRCODE AND TT.GRSEQ = B.GRSEQ AND TT.SUBJ = B.SUBJ AND TT.USERNO = C.USERNO AND TT.USERNO = D.USERNO
+		<if test="tlevel != ''">
+			AND TLEVEL = #{tlevel}
+		</if>
+		<if test="sDate != '' and eDate != ''">
+			AND B.STARTED BETWEEN TO_DATE(#{sDate}, 'YYYYMMDD') AND TO_DATE(#{eDate} || '235959', 'YYYYMMDDHH24MISS')
+		</if>
+	</sql>
+	<select id="selectHistoryListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount"></include>
+		<include refid="historyList" />
+	</select>
+	<select id="selectHistoryList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+	<![CDATA[
+			SELECT 
+				(SELECT GRCODENIKNM FROM TB_GRSEQ WHERE TT.GRSEQ = GRSEQ AND TT.GRCODE = GRCODE) AS GRCODENIKNM,
+				TT.USERNO AS TUSERNO,B.LECNM AS LECNM,TO_CHAR(TT.STUDYDATE,'YYYY.MM.DD') AS STARTED, C.NAME AS NAME,SCP.DEC_B64('KEY1',C.RESNO) AS RESNO,
+				C.JIKWI AS JIKWI, D.TPOSITION AS TPOSITION, SCP.DEC_B64('KEY1',D.BANKNO) AS BANKNO, 
+				D.BANKNAME AS BANKNAME, D.JOB AS JOB,
+				(SELECT LEVEL_NAME FROM TB_TUTOR_LEVEL WHERE D.TLEVEL = TLEVEL) AS LEVEL_NAME,
+				TT.TIME_CNT AS TOTTIME, TT.MIN_STUDYTIME AS MIN_STUDYTIME, TT.MAX_STUDYTIME AS MAX_STUDYTIME ,(SELECT SUBJTYPE FROM TB_SUBJ WHERE TT.SUBJ = SUBJ) AS SUBJTYPE
+	]]>
+		<include refid="historyList" />
+		<choose>
+			<when test="orderBy == ''">
+				ORDER BY B.STARTED
+			</when>
+			<otherwise>
+				${orderBy}
+			</otherwise>
+		</choose>
+		<include refid="page.pageFoot"/>
+	</select>
+	<select id="selectExcelHistoryList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+			SELECT 
+				(SELECT GRCODENIKNM FROM TB_GRSEQ WHERE TT.GRSEQ = GRSEQ AND TT.GRCODE = GRCODE) AS GRCODENIKNM,
+				TT.USERNO AS TUSERNO,B.LECNM AS LECNM,TO_CHAR(TT.STUDYDATE,'YYYY.MM.DD') AS STARTED, C.NAME AS NAME,SCP.DEC_B64('KEY1',C.RESNO) AS RESNO,
+				C.JIKWI AS JIKWI, D.TPOSITION AS TPOSITION, SCP.DEC_B64('KEY1',D.BANKNO) AS BANKNO, 
+				D.BANKNAME AS BANKNAME, D.JOB AS JOB,
+				(SELECT LEVEL_NAME FROM TB_TUTOR_LEVEL WHERE D.TLEVEL = TLEVEL) AS LEVEL_NAME,
+				TT.TIME_CNT AS TOTTIME, TT.MIN_STUDYTIME AS MIN_STUDYTIME, TT.MAX_STUDYTIME AS MAX_STUDYTIME ,(SELECT SUBJTYPE FROM TB_SUBJ WHERE TT.SUBJ = SUBJ) AS SUBJTYPE
+	]]>
+		<include refid="historyList" />
+		<choose>
+			<when test="orderBy == ''">
+				ORDER BY B.STARTED
+			</when>
+			<otherwise>
+				${orderBy}
+			</otherwise>
+		</choose>
+	</select>
+<!-- 	historyList end -->
+	
+	<select id="selectTutorLevelName" resultType="DataMap">
+	<![CDATA[
+		SELECT 
+			TLEVEL, LEVEL_NAME 
+		FROM 
+			TB_TUTOR_LEVEL
+	]]>
+	</select>
+	
+	<select id="selectTutorLevelCount" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사 등급별 카운터
+		SELECT 
+			'특A급 : '||SUM(DECODE(TLEVEL,'A',1,0)) AS A_TOTAL, 
+			'A급 : '||SUM(DECODE(TLEVEL,'A1',1,0)) AS A1_TOTAL, 
+			'B급 : '||SUM(DECODE(TLEVEL,'B',1,0)) AS B_TOTAL, 
+			'C1급 : '||SUM(DECODE(TLEVEL,'C1',1,0)) AS C1_TOTAL, 
+			'C2급 : '||SUM(DECODE(TLEVEL,'C2',1,0)) AS C2_TOTAL, 
+			'D급 : '||SUM(DECODE(TLEVEL,'D',1,0)) AS D_TOTAL, '자체교수 : '||SUM(DECODE(TLEVEL,'Z',1,0)) AS Z_TOTAL 
+		FROM
+			(SELECT 
+				C.NAME, D.TLEVEL 
+			 FROM 
+				TB_CLASSTUTOR A, TB_SUBJSEQ B, tb_member C, TB_TUTOR D 
+			 WHERE 
+				A.GRCODE = B.GRCODE AND A.GRSEQ = B.GRSEQ AND A.SUBJ = B.SUBJ AND A.TUSERNO = C.USERNO AND A.TUSERNO = D.USERNO
+	]]>
+				<if test="tlevel != ''">
+					AND TLEVEL = #{tlevel}
+				</if>
+			 GROUP BY C.NAME, D.TLEVEL )   
+	</select>
+	
+	<select id="selectNsalaryCountRow" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 현재 수강확정된 사항이 있는지 체크
+		SELECT 
+			COUNT(*) AS CYBER_CNT 
+		FROM 
+			TB_TUTOR_SALARY 
+		WHERE 
+			SSTARTED = TO_DATE(#{sDate}, 'YYYYMMDD') AND SENDDATE = TO_DATE(#{endDate}, 'YYYYMMDD') AND AMT_GUBUN = '1' 
+				
+	]]>
+	</select>
+	
+	<select id="selectYsalaryList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사수당관리 리스트 사이버 강사료 Y일때의 쿼리
+			SELECT A.USERNO AS USERNO,
+                D.GRCODENM,
+                C.LECNM,
+                A.NAME,
+                A.POSITION,
+                B.JIKWI,
+                SCP.DEC_B64('KEY1',B.RESNO) AS RESNO,
+                B.HOME_ADDR,
+                SCP.DEC_B64('KEY1',A.BANKNO) AS BANKNO,
+                A.BANKNAME,
+                A.AMT1 + A.AMT2 + A.AMT3 AS TOTALMONEY,
+                A.AMT1 AS MONEY,
+                A.AMT2 AS RPT_MONEY,
+                A.AMT3 AS QNA_MONEY
+            FROM TB_TUTOR_SALARY A, tb_member B, TB_SUBJSEQ C, TB_GRCODE D
+            WHERE A.USERNO = B.USERNO
+                AND A.GRCODE = C.GRCODE
+                AND A.GRSEQ = C.GRSEQ
+                AND A.SUBJ = C.SUBJ
+                AND A.GRCODE = D.GRCODE
+            AND A.SSTARTED = TO_DATE(#{sDate}, 'YYYYMMDD')
+            AND A.SENDDATE = TO_DATE(#{endDate}, 'YYYYMMDD')
+                AND A.AMT_GUBUN = '1'
+	]]>
+            <if test="grcode != null and grcode != ''">
+            	AND A.GRCODE = #{grcode}
+            </if>    
+			ORDER BY A.USERNO
+	</select>
+	
+	<select id="selectNsalaryList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사수당관리 리스트 사이버 강사료 N일때의 쿼리
+    SELECT 
+        A.TUSERNO AS USERNO, B.GRCODENM, A.LECNM, C.NAME, C.TPOSITION, D.JIKWI, SCP.DEC_B64('KEY1',D.RESNO) AS RESNO, D.HOME_ADDR, SCP.DEC_B64('KEY1',C.BANKNO) AS BANKNO, C.BANKNAME, 
+        CASE WHEN A.ENDDATE BETWEEN TO_DATE(#{sDate},'YYYYMMDD') AND TO_DATE(#{temp},'YYYYMMDDHH24MISS') 
+        THEN A.DATES_CNT*E.C_DEFAULT_AMT ELSE 0 
+        END + GETREPORTCNT(A.TUSERNO, A.GRCODE, A.GRSEQ, A.SUBJ, A.CLASSNO, #{sDate}, #{temp}) + 
+        GETQNACNT(A.TUSERNO, A.GRCODE, A.GRSEQ, A.SUBJ, A.CLASSNO, #{sDate}, #{temp}) AS TOTALMONEY, 
+        CASE WHEN A.ENDDATE BETWEEN TO_DATE(#{sDate},'YYYYMMDD') 
+        AND TO_DATE(#{temp},'YYYYMMDDHH24MISS') THEN A.DATES_CNT*E.C_DEFAULT_AMT ELSE 0 END AS MONEY, 
+        GETREPORTCNT(A.TUSERNO, A.GRCODE, A.GRSEQ, A.SUBJ, A.CLASSNO, #{sDate}, #{temp}) AS RPT_MONEY, 
+        GETQNACNT(A.TUSERNO, A.GRCODE, A.GRSEQ, A.SUBJ, A.CLASSNO, #{sDate}, #{temp}) AS QNA_MONEY, 
+        A.DATES_CNT, 
+        CASE WHEN A.ENDDATE BETWEEN TO_DATE(#{sDate},'YYYYMMDD') 
+        AND TO_DATE(#{temp},'YYYYMMDDHH24MISS') 
+        THEN A.DATES_CNT ||'*'|| E.C_DEFAULT_AMT ELSE NULL END AS BIGO1 
+    FROM 
+        ( SELECT A.GRCODE, A.GRSEQ, A.SUBJ, A.TUSERNO, A.CLASSNO, A.CLASSROOM_NO, B.LECNM, D.SUBJNM, B.STARTED, B.ENDDATE, COUNT(C.DATES) AS DATES_CNT 
+          FROM TB_CLASSTUTOR A, TB_SUBJSEQ B, TB_SUBJWEEK C, TB_SUBJ D 
+          WHERE A.GRCODE = B.GRCODE AND A.GRSEQ = B.GRSEQ AND A.SUBJ = B.SUBJ AND A.SUBJ = C.SUBJ AND A.SUBJ = D.SUBJ AND D.SUBJTYPE = 'Y' 
+          GROUP BY A.GRCODE, A.GRSEQ, A.SUBJ, A.TUSERNO, A.CLASSNO, A.CLASSROOM_NO, B.LECNM, D.SUBJNM, B.STARTED, B.ENDDATE
+         ) A, 
+         TB_GRCODE B, TB_TUTOR C, tb_member D, TB_TUTOR_ALLOWANCE E 
+    WHERE A.GRCODE = B.GRCODE AND A.TUSERNO = C.USERNO AND A.TUSERNO = D.USERNO AND C.TLEVEL = E.TLEVEL 
+          AND TO_DATE(#{sDate}, 'YYYYMMDD') BETWEEN A.STARTED AND A.ENDDATE AND 
+          CASE WHEN A.ENDDATE BETWEEN TO_DATE(#{sDate},'YYYYMMDD') AND TO_DATE(#{temp},'YYYYMMDDHH24MISS') THEN 
+          A.DATES_CNT*E.C_DEFAULT_AMT ELSE 0 END + GETREPORTCNT(A.TUSERNO, A.GRCODE, A.GRSEQ, A.SUBJ, A.CLASSNO, #{sDate}, #{temp}) + 
+          GETQNACNT(A.TUSERNO, A.GRCODE, A.GRSEQ, A.SUBJ, A.CLASSNO, #{sDate}, #{temp}) > 0 
+	]]>
+            <if test="grcode != null and grcode != ''">
+            	AND A.GRCODE = #{grcode}
+            </if>    
+	ORDER BY A.TUSERNO	
+				
+	</select>
+	
+	<select id="selectNcollecList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 집합강사 수당관리리스트 수당확정구분 N 리스트
+		SELECT 
+			A.TUSERNO AS USERNO, A.GRCODE AS GRCODE,B.GRCODENM, C.LECNM, E.NAME, D.TPOSITION, 
+			E.JIKWI, SCP.DEC_B64('KEY1',E.RESNO) AS RESNO, E.HOME_ADDR, SCP.DEC_B64('KEY1',D.BANKNO) AS BANKNO, D.BANKNAME, 
+			1*F.G_DEFAULT_AMT + (A.TOTALCNT - 1)*F.G_OVER_AMT AS MONEY, A.STUDYDATE, 1 ||'*'|| F.G_DEFAULT_AMT AS BIGO1, (A.TOTALCNT - 1) ||'*'|| F.G_OVER_AMT AS BIGO2, 
+			A.TOTALCNT 
+		FROM 
+			( SELECT 
+				GRCODE, GRSEQ, SUBJ, SUBJTYPE, CLASSNO, CLASSROOM_NO, TUSERNO, TO_CHAR(STUDYDATE, 'YYYY-MM-DD') STUDYDATE, 
+				COUNT(*) AS TOTALCNT 
+			  FROM 
+				TV_TUTOR_SALARY 
+			  WHERE 
+				ADDRESS IN ( 
+							 SELECT 
+							 	MIN(ADDRESS) 
+							 FROM 
+							 	TV_TUTOR_SALARY 
+	]]>
+							 <if test="grcode != null and grcode != ''">
+							 	WHERE GRCODE = #{grcode}
+							 </if>
+	<![CDATA[
+							 GROUP BY STUDYDATE, STUDYTIME, TUSERNO, CLASSROOM_NO
+						   )
+			  GROUP BY GRCODE, GRSEQ, SUBJ, SUBJTYPE, CLASSNO, CLASSROOM_NO, TUSERNO, STUDYDATE
+			 ) A, TB_GRCODE B, TB_SUBJSEQ C, TB_TUTOR D, tb_member E, TB_TUTOR_ALLOWANCE F 
+		WHERE 
+			A.GRCODE = B.GRCODE AND A.GRCODE = C.GRCODE AND A.GRSEQ = C.GRSEQ AND A.SUBJ = C.SUBJ AND A.TUSERNO = D.USERNO AND A.TUSERNO = E.USERNO AND D.TLEVEL = F.TLEVEL 
+			AND A.STUDYDATE BETWEEN TO_DATE(#{sDate}, 'YYYYMMDD') AND TO_DATE(#{endDate}, 'YYYYMMDD') 
+	]]>
+			 <if test="grcode != null and grcode != ''">
+			 	AND A.GRCODE = #{grcode}
+			 </if>
+	<![CDATA[
+		ORDER BY A.TUSERNO
+	]]>
+	</select>
+	
+	<select id="selectYcollecList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 집합강사 수당관리리스트 수당확정구분 Y 리스트
+			SELECT A.USERNO AS USERNO,
+				D.GRCODENM,
+				C.LECNM,
+				A.NAME,
+				A.POSITION,
+				B.JIKWI,
+				SCP.DEC_B64('KEY1',B.RESNO) AS RESNO,
+				B.HOME_ADDR,
+				SCP.DEC_B64('KEY1',A.BANKNO) AS BANKNO,
+				A.BANKNAME,
+				A.LECTUREDATE AS STUDYDATE,
+				A.LECTURETIME AS TOTALCNT,
+				A.AMT1 AS CAL_MONEY
+			FROM
+				TB_TUTOR_SALARY A, tb_member B, TB_SUBJSEQ C, TB_GRCODE D
+			WHERE A.USERNO = B.USERNO
+				AND A.GRCODE = C.GRCODE
+				AND A.GRSEQ = C.GRSEQ
+				AND A.SUBJ = C.SUBJ
+				AND A.GRCODE = D.GRCODE
+				AND A.SSTARTED = TO_DATE(#{sDate}, 'YYYYMMDD')
+				AND A.SENDDATE = TO_DATE(#{endDate}, 'YYYYMMDD')
+				AND A.AMT_GUBUN = '2'
+	]]>
+			 <if test="grcode != null and grcode != ''">
+			 	AND A.GRCODE = #{grcode}
+			 </if>
+			ORDER BY A.USERNO
+	</select>
+	
+	<select id="selectNcopyPayList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 원고료 수당관리리스트 수당확정구분 N쿼리
+			 SELECT 
+			 	B.USERNO AS USERNO,
+				D.GRCODE AS GRCODE,
+				D.GRSEQ AS GRSEQ,
+				SEARCHGRCODENM(D.GRCODE,D.GRSEQ) AS GRCODENM,
+				SEARCHLECNM(D.GRCODE,D.GRSEQ,D.SUBJ) AS LECNM,
+				A.P_DATE,
+				A.P_CNT,
+				B.TPOSITION,
+				SCP.DEC_B64('KEY1',B.BANKNO) AS BANKNO,
+				B.BANKNAME,
+				C.NAME,
+				C.JIKWI,
+				SCP.DEC_B64('KEY1',C.RESNO) AS RESNO,
+				C.HOME_ADDR,
+				D.GROUPFILE_NO  
+			FROM (
+					SELECT
+					GRCODE,
+					GRSEQ,
+					SUBJ,
+					TUSERNO,
+					P_DATE,
+					SUM(P_CNT) AS P_CNT
+					FROM TB_TUTOR_PAPER A
+					WHERE SALARY_YN = 'N'
+					GROUP BY GRCODE, GRSEQ, SUBJ, TUSERNO, P_DATE) A ,  
+					TB_TUTOR B,
+					tb_member C,
+					TB_CLASSTUTOR D
+					WHERE
+					A.GRCODE(+) = D.GRCODE
+					AND 
+					A.GRSEQ(+) = D.GRSEQ
+					AND 
+					A.SUBJ(+) = D.SUBJ
+					AND
+					A.TUSERNO(+) = D.TUSERNO
+					AND 
+					B.USERNO = D.TUSERNO
+					AND
+					B.USERNO = C.USERNO
+					AND
+					D.GROUPFILE_NO IS NOT NULL
+	]]>
+					<if test="grcode != null and grcode != ''">
+						WHERE A.GRCODE = #{grcode}
+					</if>
+					AND A.P_DATE BETWEEN TO_DATE(#{sDate}, 'YYYYMMDD') AND TO_DATE(#{endDate}, 'YYYYMMDD')
+			ORDER BY C.NAME,USERNO
+	</select>
+	
+	<select id="selectYcopyPayList">
+	<![CDATA[
+		-- 원고료 수당관리리스트 수당확정구분 Y쿼리
+			SELECT 
+				A.USERNO AS USERNO,
+				D.GRCODENM,
+				C.LECNM,
+				A.NAME,
+				A.POSITION,
+				B.JIKWI,
+				SCP.DEC_B64('KEY1',B.RESNO) AS RESNO,
+				B.HOME_ADDR,
+				SCP.DEC_B64('KEY1',A.BANKNO) AS BANKNO,
+				A.BANKNAME,
+				A.LECTUREDATE AS P_DATE,
+				A.P_CNT,
+				A.AMT1 AS MONEY
+			FROM 
+				TB_TUTOR_SALARY A, tb_member B, TB_SUBJSEQ C, TB_GRCODE D
+			WHERE 
+				A.USERNO = B.USERNO
+				AND A.GRCODE = C.GRCODE
+				AND A.GRSEQ = C.GRSEQ
+				AND A.SUBJ = C.SUBJ
+				AND A.GRCODE = D.GRCODE
+				AND A.SSTARTED = TO_DATE(#{sDate}, 'YYYYMMDD')
+				AND A.SENDDATE = TO_DATE(#{endDate}, 'YYYYMMDD')
+				AND A.AMT_GUBUN = '3'
+	]]>
+   					<if test="grcode != null and grcode != ''">
+						WHERE A.GRCODE = #{grcode}
+					</if>
+			ORDER BY A.USERNO
+	</select>
+	
+	<select id="selectNexamList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 출제수당관리 리스트 수당확정구분 N쿼리
+            SELECT 
+                A.TUSERNO AS USERNO, A.GRCODE, B.GRCODENM, C.LECNM, D.TPOSITION, 
+                E.NAME, E.JIKWI, SCP.DEC_B64('KEY1',E.RESNO) AS RESNO, E.HOME_ADDR, SCP.DEC_B64('KEY1',D.BANKNO) AS BANKNO, D.BANKNAME, A.ESAL_DATE, 
+                A.CNTSINGLE, A.CNTDESC, 
+                (SELECT A.CNTSINGLE*START_CNT + A.CNTDESC*END_CNT FROM TB_TUTOR_ETC_ALLOWANCE WHERE PART = 'E') AS MONEY 
+            FROM 
+                TB_EXPAGE A, TB_GRCODE B, TB_SUBJSEQ C, TB_TUTOR D, tb_member E 
+            WHERE 
+                A.GRCODE = B.GRCODE AND A.GRCODE = C.GRCODE AND A.GRSEQ = C.GRSEQ AND A.SUBJ = C.SUBJ AND A.TUSERNO = D.USERNO 
+                AND A.TUSERNO = E.USERNO AND ESAL_DATE IS NOT NULL AND SALARY_YN = 'N' 
+                AND A.ESAL_DATE BETWEEN TO_DATE(#{sDate}, 'YYYYMMDD') AND TO_DATE(#{fullEndDate}, 'YYYYMMDDHH24MISS') ORDER BY A.TUSERNO
+	]]>
+	</select>
+	
+	<select id="selectYexamList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 출제수당관리 리스트 수당확정구분 Y쿼리
+			SELECT 
+				A.USERNO AS USERNO, D.GRCODENM, C.LECNM, A.NAME, A.POSITION, 
+				B.JIKWI, SCP.DEC_B64('KEY1',B.RESNO) AS RESNO, B.HOME_ADDR, SCP.DEC_B64('KEY1',A.BANKNO) AS BANKNO, A.BANKNAME, A.LECTUREDATE AS P_DATE, 
+				A.CNTSINGLE, A.CNTDESC, A.AMT1 AS MONEY 
+			FROM 
+				TB_TUTOR_SALARY A, tb_member B, TB_SUBJSEQ C, TB_GRCODE D 
+			WHERE 
+				A.USERNO = B.USERNO AND A.GRCODE = C.GRCODE AND A.GRSEQ = C.GRSEQ AND A.SUBJ = C.SUBJ 
+				AND A.GRCODE = D.GRCODE AND A.SSTARTED = TO_DATE(#{sDate}, 'YYYYMMDD') AND A.SENDDATE = TO_DATE(#{endDate}, 'YYYYMMDD') AND A.AMT_GUBUN = '4' 
+			ORDER BY A.USERNO 
+	]]>
+	</select>
+	
+	<select id="selectCoursorList" resultType="DataMap">
+	<![CDATA[
+		-- 과정별 소계
+		SELECT 
+			GRCODE, GRCODENM 
+		FROM 
+			TB_GRCODE 
+		WHERE use_yn = 'Y'
+		ORDER BY 
+			GRCODENM
+	]]>
+	</select>
+	
+	<select id="selectTutorCyberAndCollecPop" resultType="DataMap">
+	<![CDATA[
+		-- 사이버강사, 집합강사 기본팝업 리스트
+		SELECT 
+    		A.G_DEFAULT_AMT, A.G_OVER_AMT, A.C_DEFAULT_AMT, 
+		    A.C_OVER_AMT, B.TLEVEL, B.LEVEL_NAME
+		FROM 
+			TB_TUTOR_ALLOWANCE A, TB_TUTOR_LEVEL B
+		WHERE 
+			A.TLEVEL = B.TLEVEL
+	]]>
+	</select>	
+	
+	<select id="selectTutorSalaryQustionRow" resultType="DataMap">
+	<![CDATA[
+		-- 과제물 출제수당, 질의응당 수당관리 팝업 데이터
+    	SELECT 
+		    ETC_WANNO, PART, START_CNT, END_CNT, AMT 
+		FROM 
+		    TB_TUTOR_ETC_ALLOWANCE 
+		WHERE 
+		    PART = 'H' OR PART = 'Q'
+        ORDER BY PART
+	]]>
+	</select>
+	
+	<update id="insertTutorSalaryNcyberPay" parameterType="Map">
+	<![CDATA[
+		-- 외래강사 수강료관리 사이버강사료 N일경우  등록
+			INSERT INTO TB_TUTOR_SALARY
+				(SSTARTED, SENDDATE, AMT_GUBUN, GRCODE, GRSEQ, SUBJ, USERNO, POSITION, THJIK, NAME, ADDR, AMT1, AMT2, AMT3, BANKNAME, BANKNO, LECTUREDATE, LECTURETIME, LUSERNO, LDATE)
+			SELECT 
+				TO_DATE(#{sDate}, 'YYYYMMDD'),
+				TO_DATE(#{endDate}, 'YYYYMMDD'),
+				'1',
+				A.GRCODE,
+				A.GRSEQ,
+				A.SUBJ,
+				A.TUSERNO AS USERNO,
+				C.TPOSITION,
+				D.JIK,
+				D.NAME,
+				D.HOME_ADDR,
+				CASE WHEN A.ENDDATE BETWEEN TO_DATE(#{sDate},'YYYYMMDD') AND TO_DATE(#{eeDate},'YYYYMMDDHH24MISS') THEN A.DATES_CNT*E.C_DEFAULT_AMT ELSE 0 END AS MONEY,
+				GETREPORTCNT(A.TUSERNO, A.GRCODE, A.GRSEQ, A.SUBJ, A.CLASSNO, #{sDate}, #{eeDate}) AS RPT_MONEY,
+				GETQNACNT(A.TUSERNO, A.GRCODE, A.GRSEQ, A.SUBJ, A.CLASSNO, #{sDate}, #{eeDate}) AS QNA_MONEY,
+				C.BANKNAME,
+				C.BANKNO,
+				A.STARTED,
+				'1',
+				#{userNo},
+				SYSDATE
+			FROM (
+					SELECT A.GRCODE,
+						A.GRSEQ,
+						A.SUBJ,
+						A.TUSERNO,
+						A.CLASSNO,
+						A.CLASSROOM_NO,
+						B.LECNM,
+						D.SUBJNM,
+						B.STARTED,
+						B.ENDDATE,
+						COUNT(C.DATES) AS DATES_CNT
+					FROM TB_CLASSTUTOR A,
+						TB_SUBJSEQ B,
+						TB_SUBJWEEK C,
+						TB_SUBJ D
+					WHERE A.GRCODE = B.GRCODE
+						AND A.GRSEQ = B.GRSEQ
+						AND A.SUBJ = B.SUBJ
+						AND A.SUBJ = C.SUBJ
+						AND A.SUBJ = D.SUBJ
+						AND D.SUBJTYPE = 'Y'
+					GROUP BY A.GRCODE, A.GRSEQ, A.SUBJ, A.TUSERNO, A.CLASSNO, A.CLASSROOM_NO, B.LECNM, D.SUBJNM, B.STARTED, B.ENDDATE) A,
+				
+				TB_GRCODE B,
+				TB_TUTOR C,
+				tb_member D,
+				TB_TUTOR_ALLOWANCE E
+			WHERE A.GRCODE = B.GRCODE
+				AND A.TUSERNO = C.USERNO
+				AND A.TUSERNO = D.USERNO
+				AND C.TLEVEL = E.TLEVEL
+				AND TO_DATE(#{sDate}, 'YYYYMMDD') BETWEEN A.STARTED AND A.ENDDATE
+				AND CASE WHEN A.ENDDATE BETWEEN TO_DATE(#{sDate}, 'YYYYMMDD') AND TO_DATE(#{eeDate}, 'YYYYMMDDHH24MISS') THEN A.DATES_CNT*E.C_DEFAULT_AMT ELSE 0 END + GETREPORTCNT(A.TUSERNO, A.GRCODE, A.GRSEQ, A.SUBJ, A.CLASSNO, #{sDate}, #{eeDate}) + GETQNACNT(A.TUSERNO, A.GRCODE, A.GRSEQ, A.SUBJ, A.CLASSNO, #{sDate}, #{eeDate}) > 0
+				AND A.TUSERNO IN (#{sel})
+	]]>
+			<if test="grcode != null and grcode != ''">
+				AND A.GRCODE = #{grcode}
+			</if>	
+			ORDER BY A.TUSERNO 
+	</update>
+	
+	<update id="updateSalaryCyberNReport" parameterType="Map">
+	<![CDATA[
+		-- 외래강사관리 사이버강사료 N등록시 과제물 샐러리를 N-> Y로 변경한다.
+		-- 외래강사관리 사이버강사료 N등록시 과제물 샐러리를 Y-> N로 변경한다.
+		UPDATE TB_REPORT
+					SET SALARY_YN = #{gubunYn}
+		WHERE 
+			USERNO IN (#{sel})	AND SUBMED_DATE BETWEEN TO_DATE(#{sDate}, 'YYYYMMDD') AND TO_DATE(#{eeDate}, 'YYYYMMDDHH24MISS')
+	]]>	
+	</update>	
+	
+	<update id="updateSalaryCyberNSubjQna" parameterType="Map">
+	<![CDATA[
+		-- 외래강사관리 사이버강사료 N등록시 질의응답부분 샐러리를 N-> Y로 변경한다.	
+		-- 외래강사관리 사이버강사료 N등록시 질의응답부분 샐러리를 Y-> N로 변경한다.	
+			UPDATE TB_SUBJQNA
+					SET SALARY_YN = #{gubunYn}
+			WHERE 
+				USERNO IN (#{sel}) AND REGDATE BETWEEN TO_DATE(#{sDate}, 'YYYYMMDD') AND TO_DATE(#{eeDate}, 'YYYYMMDDHH24MISS') AND DEPTH = 1
+	]]>					
+	</update>
+	
+	<update id="deleteSalaryCyber" parameterType="Map">
+	<![CDATA[
+		-- 외래강사관리 사이버강사료 확정취소
+			DELETE FROM TB_TUTOR_SALARY 
+			WHERE USERNO IN (#{sel})
+						AND SSTARTED = TO_DATE(#{sDate}, 'YYYYMMDD')
+						AND SENDDATE = TO_DATE(#{endDate}, 'YYYYMMDD')
+						AND AMT_GUBUN = '1'
+	]]>					
+	</update>	
+	
+	<select id="insertSalaryNcollecPayList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 외래강사관리 집합강사 수당관리 N--->Y 확정할때에 필요한 데이터를 셀렉트한다. 매게변수 sDate, edate, userno
+				SELECT A.TUSERNO AS USERNO,
+					A.GRCODE AS GRCODE,
+					A.GRSEQ,
+					A.SUBJ,
+					B.GRCODENM,
+					C.LECNM,													
+					E.NAME,
+					D.TPOSITION,
+					E.JIK,
+					SCP.DEC_B64('KEY1',E.RESNO) AS RESNO,
+					E.HOME_ADDR,
+					SCP.DEC_B64('KEY1',D.BANKNO) AS BANKNO,
+					D.BANKNAME,
+					1*F.G_DEFAULT_AMT + (A.TOTALCNT - 1)*F.G_OVER_AMT AS MONEY,
+					A.STUDYDATE,
+					1 ||'*'|| F.G_DEFAULT_AMT AS BIGO1,
+					(A.TOTALCNT - 1) ||'*'|| F.G_OVER_AMT AS BIGO2,
+					A.TOTALCNT													
+				FROM (
+						SELECT GRCODE,
+							GRSEQ,
+							SUBJ,
+							SUBJTYPE,
+							CLASSNO,
+							CLASSROOM_NO,
+							TUSERNO,
+							STUDYDATE,
+							COUNT(*) AS TOTALCNT
+						FROM TV_TUTOR_SALARY
+						WHERE ADDRESS IN (
+								SELECT MIN(ADDRESS)
+								FROM TV_TUTOR_SALARY
+	]]>					
+					<if test="grcode != null and grcode != ''">
+						WHERE GRCODE = #{grcode}
+					</if>
+	<![CDATA[
+								GROUP BY STUDYDATE, STUDYTIME, TUSERNO, CLASSROOM_NO)
+						GROUP BY GRCODE, GRSEQ, SUBJ, SUBJTYPE, CLASSNO, CLASSROOM_NO, TUSERNO, STUDYDATE) A,
+					TB_GRCODE B,
+					TB_SUBJSEQ C,
+					TB_TUTOR D,
+					tb_member E,
+					TB_TUTOR_ALLOWANCE F
+				WHERE A.GRCODE = B.GRCODE
+					AND A.GRCODE = C.GRCODE
+					AND A.GRSEQ = C.GRSEQ
+					AND A.SUBJ = C.SUBJ
+					AND A.TUSERNO = D.USERNO
+					AND A.TUSERNO = E.USERNO
+					AND D.TLEVEL = F.TLEVEL
+					AND A.STUDYDATE BETWEEN TO_DATE(#{sDate}, 'YYYYMMDD') AND TO_DATE(#{endDate}, 'YYYYMMDD')
+					AND A.TUSERNO IN (#{sel})
+	]]>					
+					<if test="grcode != null and grcode != ''">
+						AND A.GRCODE = #{grcode}
+					</if>
+					ORDER BY A.TUSERNO
+			
+	</select>
+	
+	<update id="insertTutorSalaryNcollecPay" parameterType="Map">
+	<![CDATA[
+		-- 집합강사 수당 확정
+		INSERT INTO 
+			TB_TUTOR_SALARY(SSTARTED, SENDDATE, AMT_GUBUN, GRCODE, GRSEQ, SUBJ, USERNO, POSITION, THJIK, NAME, ADDR, AMT1, AMT2, AMT3, BANKNAME, BANKNO, LECTUREDATE, LECTURETIME, LUSERNO, LDATE)
+			VALUES (TO_DATE(#{sDate}, 'YYYYMMDD'), TO_DATE(#{endDate}, 'YYYYMMDD'),	'2', #{grcode, jdbcType=VARCHAR}, #{grseq}, #{subj}, #{sel}, #{tposition}, #{jik}, #{name}
+			,	#{homeAddr}, #{money}, 0, 0, #{bankname}, SCP.ENC_B64('KEY1',#{bankno}), TO_DATE(#{studydate}, 'YYYY-MM-DD'),	#{totalcnt}, #{userNo}, SYSDATE)
+			
+	]]>					
+	</update>
+	
+	<update id="updateTutorSalaryTime" parameterType="Map">
+	<![CDATA[
+		-- 시간표부분 salayYn을 업데이트
+		UPDATE 
+			TB_TIMETABLE_TU
+		SET 
+			SALARY_YN = #{gubun}
+		WHERE 
+			STUDYDATE BETWEEN TO_DATE(#{sDate}, 'YYYYMMDD') AND TO_DATE(#{endDate}, 'YYYYMMDD')
+			AND USERNO IN (#{sel}) 
+	]]>					
+			<if test="grcode != null and grcode != ''">
+				AND GRCODE = #{grcode}
+			</if>
+	</update>
+	
+	<update id="updateTutorSalaryLecHistory" parameterType="Map">
+	<![CDATA[
+		-- 강의직권입력부분의 SALARY_YN 수정
+		UPDATE 
+			TB_TUTOR_LEC_HISTORY
+		SET SALARY_YN = #{gubun}
+		WHERE 	
+			STR_DATE = TO_DATE(#{sDate}, 'YYYYMMDD') 
+			AND END_DATE = TO_DATE(#{endDate}, 'YYYYMMDD')
+			AND TUSERNO IN (#{sel})
+	]]>					
+			<if test="grcode != null and grcode != ''">
+				AND GRCODE = #{grcode}
+			</if>
+	</update>
+	
+	<update id="insertCopyPay" parameterType="Map">
+	<![CDATA[
+		-- 외래강사 수당관리 원고료 확정
+		INSERT INTO TB_TUTOR_SALARY (SSTARTED,SENDDATE,AMT_GUBUN,GRCODE,GRSEQ,SUBJ,USERNO,POSITION,THJIK,NAME,ADDR,AMT1,AMT2,AMT3,BANKNAME,BANKNO,LECTUREDATE,LECTURETIME,LUSERNO,LDATE,P_CNT)
+            SELECT 
+                TO_DATE(#{sDate}, 'YYYYMMDD'), TO_DATE(#{endDate}, 'YYYYMMDD'), #{gubun}, A.GRCODE,
+                A.GRSEQ, A.SUBJ, A.TUSERNO AS USERNO, D.TPOSITION, E.JIK,
+                E.NAME, E.HOME_ADDR, #{money}, 0, 0, D.BANKNAME, SCP.DEC_B64('KEY1',D.BANKNO) AS BANKNO, A.P_DATE,
+                1, #{userNo}, SYSDATE, A.P_CNT
+			FROM (
+                	SELECT GRCODE,
+                   	 	GRSEQ,
+                   	 	SUBJ,
+                   	 	TUSERNO,
+                   	 	P_DATE,
+                  		SUM(P_CNT) AS P_CNT
+               		FROM TB_TUTOR_PAPER A
+                	WHERE SALARY_YN = 'N'
+                	GROUP BY GRCODE, GRSEQ, SUBJ, TUSERNO, P_DATE
+             	) A,
+            	TB_GRCODE B,
+            	TB_SUBJSEQ C,
+            	TB_TUTOR D,
+            	tb_member E
+			WHERE A.GRCODE = B.GRCODE
+           		AND A.GRCODE = C.GRCODE
+           		AND A.GRSEQ = C.GRSEQ
+            	AND A.SUBJ = C.SUBJ
+            	AND A.TUSERNO = D.USERNO
+            	AND A.TUSERNO = E.USERNO
+            	AND A.P_DATE BETWEEN TO_DATE(#{sDate}, 'YYYYMMDD') AND TO_DATE(#{endDate}, 'YYYYMMDD')
+            	AND A.TUSERNO = #{sel}
+	]]>					
+            	<if test="grcode != null and grcode != ''">
+            		AND A.GRCODE = #{grcode}
+            	</if>
+	        ORDER BY A.TUSERNO    		
+		
+	</update>
+	
+	<update id="updateSalaryCopyYn" parameterType="Map">
+	<![CDATA[
+		-- 원고 제출 부분 SALARY_YN 을 Y로 수정
+            
+            UPDATE TB_TUTOR_PAPER
+               SET SALARY_YN = #{gubun}
+            WHERE 
+            	P_DATE BETWEEN 
+            		TO_DATE (#{sDate}, 'YYYYMMDD')
+					AND TO_DATE (#{endDate}, 'YYYYMMDD')
+					AND TUSERNO = #{sel}
+	]]>					
+            	<if test="grcode != null and grcode != ''">
+            		AND A.GRCODE = #{grcode}
+            	</if>
+					
+	</update>
+	
+	<update id="insertExam" parameterType="Map">
+	<![CDATA[
+		-- 출제료 수당 확정
+		INSERT INTO TB_TUTOR_SALARY
+            (SSTARTED, SENDDATE, AMT_GUBUN, GRCODE, GRSEQ, SUBJ, USERNO,
+             POSITION, THJIK, NAME, ADDR, AMT1, AMT2, AMT3, BANKNAME, BANKNO,
+             LECTUREDATE, LECTURETIME, LUSERNO, LDATE, CNTSINGLE, CNTDESC)
+   		SELECT   TO_DATE (#{sDate}, 'YYYYMMDD'), TO_DATE (#{endDate}, 'YYYYMMDD'), '4', A.GRCODE,
+            A.GRSEQ, A.SUBJ, A.TUSERNO AS USERNO, D.TPOSITION, E.JIK, E.NAME,
+            E.HOME_ADDR,
+            (SELECT A.CNTSINGLE * START_CNT + A.CNTDESC * END_CNT
+               FROM TB_TUTOR_ETC_ALLOWANCE
+              WHERE PART = 'E') AS MONEY, 0, 0, D.BANKNAME, D.BANKNO,
+            A.ESAL_DATE, 1, #{userNo}, SYSDATE, A.CNTSINGLE, A.CNTDESC
+     	FROM TB_EXPAGE A, TB_GRCODE B, TB_SUBJSEQ C, TB_TUTOR D, tb_member E
+      	WHERE 	A.GRCODE = B.GRCODE
+				AND A.GRCODE = C.GRCODE
+        		AND A.GRSEQ = C.GRSEQ
+        		AND A.SUBJ = C.SUBJ
+        		AND A.TUSERNO = D.USERNO
+        		AND A.TUSERNO = E.USERNO
+        		AND ESAL_DATE IS NOT NULL
+        		AND SALARY_YN = 'N'
+        		AND A.ESAL_DATE BETWEEN TO_DATE (#{sDate}, 'YYYYMMDD')
+                AND TO_DATE (#{eendDate}, 'YYYYMMDDHH24MISS')
+        		AND A.TUSERNO IN (#{sel})
+	]]>					
+            	<if test="grcode != null and grcode != ''">
+            		AND A.GRCODE = #{grcode}
+            	</if>
+   		ORDER BY A.TUSERNO
+	</update>
+	
+	<update id="updateSalaryYnExam" parameterType="Map">
+	<![CDATA[
+		-- 제출료 salary Y---N로 변경
+		-- 제출료 salary N---Y로 변경
+	UPDATE TB_EXPAGE
+            SET SALARY_YN = #{gubun}
+    WHERE ESAL_DATE BETWEEN TO_DATE (#{sDate}, 'YYYYMMDD')
+    		AND TO_DATE (#{endDate}, 'YYYYMMDDHH24MISS')
+			AND TUSERNO IN (#{sel})
+	
+	]]>					
+	</update>
+	
+	<update id="deleteExam" parameterType="Map">
+	<![CDATA[
+		-- 제출료 수당확정 취소
+		DELETE FROM TB_TUTOR_SALARY
+		WHERE USERNO IN (#{sel})
+        	AND SSTARTED = TO_DATE (#{sDate}, 'YYYYMMDD')
+        	AND SENDDATE = TO_DATE (#{endDate}, 'YYYYMMDD')
+        	AND AMT_GUBUN = '4'
+	]]>					
+           		<if test="grcode != null and grcode != ''">
+            		AND A.GRCODE = #{grcode}
+            	</if>
+	
+	</update>
+	
+	<select id="selectTutorSubjectCountRow" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 사이버강사수당 팝업 등록하기전 카운터를 먼저 구해오자. 0일경우  insert 1일경우 수정이다.
+		SELECT 
+			COUNT(*) AS ETC_CNT 
+		FROM 
+			TB_TUTOR_ETC_ALLOWANCE 
+		WHERE 
+			PART = 'H'
+
+	]]>					
+	</select>
+	
+	<update id="insertTutorSubject" parameterType="Map">
+	<![CDATA[
+		-- selectTutorSubjectCountRow 카운터수가 0일경우 등록
+		INSERT INTO 
+				TB_TUTOR_ETC_ALLOWANCE (ETC_WANNO, PART, START_CNT, END_CNT) 
+		SELECT 
+			NVL(MAX(ETC_WANNO), 0)+1, 'H', #{startCnt}, #{endCnt} 
+		FROM 
+			TB_TUTOR_ETC_ALLOWANCE
+	
+	]]>					
+	</update>
+	
+	<update id="updateTutorSubject" parameterType="Map">
+	<![CDATA[
+		-- selectTutorSubjectCountRow 카운터수가 1일경우 수정
+		UPDATE 
+			TB_TUTOR_ETC_ALLOWANCE SET START_CNT = #{startCnt}, END_CNT = #{endCnt}  
+		WHERE 
+			PART = 'H'
+	
+	]]>					
+	</update>
+	
+	<select id="selectTutorQuestionCountRow" resultType="Integer">
+	<![CDATA[
+		-- 과제물 출제 수당 카운터수 체크
+		SELECT 
+			COUNT(*) as ETC_CNT 
+		FROM 
+			TB_TUTOR_ETC_ALLOWANCE 
+		WHERE 
+			PART = 'Q'
+	]]>					
+	</select>
+	
+	<update id="insertTutorQuestion" parameterType="Map">
+	<![CDATA[
+		-- selectTutorQuestionCountRow 카운터수가 0일경우 등록
+		INSERT INTO 
+				TB_TUTOR_ETC_ALLOWANCE (ETC_WANNO, PART, START_CNT, AMT) 
+			SELECT 
+				nvl(max(ETC_WANNO), 0)+1, 'Q', #{quetionCount}, #{endCnt}
+			FROM 
+				TB_TUTOR_ETC_ALLOWANCE
+	
+	]]>					
+	</update>
+	
+	<update id="updateTutorQuestion" parameterType="Map">
+	<![CDATA[
+		-- selectTutorQuestionCountRow 카운터수가 1일경우 수정
+		UPDATE 
+			TB_TUTOR_ETC_ALLOWANCE 
+		SET 
+			START_CNT = #{questionCount}, AMT = #{endCnt} 
+		WHERE 
+			PART = 'Q'
+	
+	]]>					
+	</update>
+	
+	<update id="updateTutorAllowance" parameterType="Map">
+	<![CDATA[
+		-- 등급별 기본수당과 초과수당 수정
+		UPDATE 
+			TB_TUTOR_ALLOWANCE SET 
+				C_DEFAULT_AMT = #{cDefaultAmt}, C_OVER_AMT = #{cOverAmt} 
+			WHERE 
+				TLEVEL = #{tlevel}
+	]]>					
+	</update>	
+	
+	<update id="insertCopyPayPOP" parameterType="Map">
+	<![CDATA[
+		-- 원고료 팝업 등록
+		INSERT INTO 
+			TB_TUTOR_ETC_ALLOWANCE (ETC_WANNO, PART, START_CNT, END_CNT, AMT) 
+		SELECT 
+			NVL(MAX(ETC_WANNO), 0)+1, 'W', #{startCnt}, #{endCnt}, #{amt}
+		FROM 
+			TB_TUTOR_ETC_ALLOWANCE
+	]]>					
+	</update>
+	
+	<update id="deleteCopyPayPOP" parameterType="String">
+	<![CDATA[
+		-- 원고료 팝업 삭제
+		DELETE FROM 
+			TB_TUTOR_ETC_ALLOWANCE 
+		WHERE 
+			ETC_WANNO = #{value}
+	]]>					
+	</update>
+	
+	<select id="selectSalaryExamPopCountPopRow" resultType="Integer">
+	<![CDATA[
+		-- 출제료 카운터 
+		SELECT 
+			COUNT(*) as ETC_CNT 
+		FROM 
+			TB_TUTOR_ETC_ALLOWANCE 
+		WHERE 
+			PART = 'E'
+	]]>					
+	</select>
+	
+	<update id="insertSalaryExamPop" parameterType="Map">
+	<![CDATA[
+		-- 출제료 등록 
+		INSERT INTO 
+			TB_TUTOR_ETC_ALLOWANCE (ETC_WANNO, PART, START_CNT, END_CNT, AMT) 
+		SELECT 
+			NVL(MAX(ETC_WANNO), 0)+1, 'E', #{startCnt}, #{endCnt}, #{amt}
+		FROM 
+			TB_TUTOR_ETC_ALLOWANCE
+	]]>					
+	</update>
+	
+	<update id="updateSalaryExamPop" parameterType="Map">
+	<![CDATA[
+		-- 출제료 등록 
+		UPDATE 
+			TB_TUTOR_ETC_ALLOWANCE 
+		SET 
+			START_CNT = #{startCnt}, END_CNT = #{endCnt}, AMT = #{amt} 
+		WHERE 
+			PART = 'E'
+	]]>					
+	</update>
+	
+	<select id="selectTutorSalaryCopyPayRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 원고료 수당 관리, 평가 출제 수당관리 Row데이터
+		-- 평가 출제 수당관리는 한개의 로우만 나오기때문에 ORDER BY 절은 상관이 없다.
+		SELECT 
+			ETC_WANNO, PART, START_CNT, END_CNT, AMT 
+		FROM 
+			TB_TUTOR_ETC_ALLOWANCE 
+		WHERE 
+			PART = #{value} 
+		ORDER BY START_CNT
+	
+	]]>
+	</select>
+	
+	<select id="checkMemberDamoByResno" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 주민등록번호 중복 체크
+		SELECT	COUNT(RESNO) COUNT_NUM
+		FROM	tb_member
+		WHERE	SCP.DEC_B64('KEY1',RESNO)	=	#{value}
+	]]>
+	</select>
+	
+	<select id="checkMemberDamoByUserId" parameterType="String" resultType="DataMap"> 
+	<![CDATA[
+		-- 유저ID 중복 체크
+		SELECT	COUNT(USER_ID) COUNT_NUM
+		FROM	tb_member
+		WHERE	USER_ID	=	  #{value}
+	]]>
+	</select>
+	
+	<select id="selectSubjCode" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 과목 검색 (강사등록 시 사용함)
+		SELECT	SUBJ, SUBJNM
+		FROM	TB_SUBJ
+		WHERE 	SUBJNM LIKE '%' || #{value} || '%'
+		AND 	USE_YN = 'Y'
+		ORDER BY
+				SUBJNM		
+	]]>
+	</select>
+	
+	<select id="selectSearchTutorPop" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사검색 팝업
+		-- 이름, 주민번호로 검색
+		SELECT 	A.USERNO, SCP.DEC_B64('KEY1',A.RESNO) AS RESNO, A.NAME, A.DELETE_YN,
+		 
+				CASE WHEN B.USERNO IS NULL THEN '2' 
+		        ELSE '3' 
+		        END AS TYPE,
+		         
+				B.DISABLED
+		         
+		FROM 	tb_member A, TB_TUTOR B 
+		WHERE 	A.USERNO 	= B.USERNO (+)
+	]]>
+		<choose>
+			<when test="hidSearchType == 'resno'">
+				--AND		A.RESNO		LIKE '%' || #{searchTxt} || '%'
+				AND RESNO LIKE '%' || #{searchTxt} || '%'
+			</when>
+			<otherwise>
+				AND		A.NAME		LIKE '%' || #{searchTxt} || '%'
+			</otherwise>
+		</choose>
+		
+		ORDER BY 
+				A.NAME
+	</select>
+	
+	<select id="selectMaxByUserNo" resultType="DataMap">
+	<![CDATA[
+		-- UserNo Max
+		SELECT 	( 'A' || TO_CHAR(LPAD(NVL(MAX(SUBSTR(USERNO,2,12))+1, 1), 12, '0')) ) USERNO
+		FROM 	tb_member 
+		WHERE 	USERNO LIKE 'A%'
+	]]>
+	</select>
+	
+	<update id="insertMemberDamo" parameterType="Map">
+	<![CDATA[
+		-- tb_member insert
+		INSERT INTO tb_member
+		(
+		    USERNO,		RESNO, 			NAME, 			PWD, 			SEX,
+		    AUTHORITY, 	HOME_POST1,		HOME_POST2, 	HOME_ADDR,		HOME_TEL,
+		    HP,			OFFICE_POST1,	OFFICE_POST2,	OFFICE_ADDR,	OFFICE_TEL,
+		    EMAIL,		JIKWI,			USER_ID,		DEPTSUB,		INDATE, SMS_YN ,MAILYN,
+		    NEWHOMEPOST, NEWADDR1, NEWADDR2
+		)
+		VALUES
+		(
+			#{userno}     ,SCP.ENC_B64('KEY1',#{resno})      ,#{name}       ,SCP.ENC_B64('KEY1',pwd)       ,#{sex},
+			#{authority}  ,#{homePost1}  ,#{homePost2}  ,#{homeAddr}  ,SCP.ENC_B64('KEY1',#{homeTel}),
+		    SCP.ENC_B64('KEY1',#{hp})         ,#{officePost1},#{officePost2},#{officeAddr},SCP.ENC_B64('KEY1',#{officeTel}),
+		    #{email}      ,#{jikwi}      ,#{userId}     ,#{tposition} ,SYSDATE, 'Y', 'Y',
+		    #{newHomePost},#{newAddr1}   ,#{newAddr2}
+		)
+	]]>
+	</update>
+	
+	<update id="insertTutorDamo" parameterType="Map">
+	<![CDATA[
+		-- TB_TUTOR insert
+		INSERT INTO TB_TUTOR
+		(
+		    USERNO,		NAME,		CNAME,		BIRTH,		BANKNAME,
+		    BANKNO,		TLEVEL,		GUBUN,		FAX,		SUBJ1,
+		    SUBJ2,		SUBJ3,		SUBJ4,		SUBJ5,		SUBJ6,
+		    SUBJ7,		LUSERNO,	DISABLED,	TPOSITION,	JOB,
+		    GRU_CODE, 	LDATE, GROUPFILE_NO
+		)
+		VALUES
+		(
+			#{userno}, #{name}, #{cname}, #{birth}, #{bankname},
+		    SCP.ENC_B64('KEY1',#{bankno}), #{tlevel}, #{gubun}, #{fax}, #{subj1},
+		    #{subj2}, #{subj3}, #{subj4}, #{subj5}, #{subj6},
+		    #{subj7}, #{luserno}, 'N', #{tposition}, #{job},
+		    #{gruCode}, SYSDATE, #{fileGroupNo}
+		)
+	]]>
+	</update>
+	
+	<update id="updateMemberDamo" parameterType="Map">
+	<![CDATA[
+		-- tb_member update
+		UPDATE 	tb_member SET 
+				NAME			=	#{name},
+		        AUTHORITY		=	#{authority},
+		        HOME_POST1		=	#{homePost1},
+		        HOME_POST2		=	#{homePost2},
+		        HOME_ADDR		=	#{homeAddr},
+		        HOME_TEL		=	SCP.ENC_B64('KEY1',#{homeTel}),
+		        HP				=	SCP.ENC_B64('KEY1',#{hp}),
+		        OFFICE_POST1	=	#{officePost1},
+		        OFFICE_POST2	=	#{officePost2},
+		        OFFICE_ADDR		=	#{officeAddr},
+		        OFFICE_TEL		=	SCP.ENC_B64('KEY1',#{officeTel}),
+		        EMAIL			=	#{email},
+		        JIKWI			=	#{jikwi},
+		        DEPTSUB			=	#{tposition},
+		        NEWHOMEPOST	=	#{newHomePost},
+		        NEWADDR1		=	#{newAddr1},
+		        NEWADDR2		=	#{newAddr2}		        		         
+		WHERE 	USERNO			=	#{userno}
+	]]>
+	</update>
+	
+	<select id="selectMangerDupCnt" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 강사권한 잔여여부 체크
+		SELECT 	COUNT(*) AS DUPCNT
+		FROM 	TB_MANAGER
+		WHERE 	USERNO = #{value}
+		AND 	GADMIN = '7'
+	]]>
+	</select>
+	
+	<update id="updateTutorDamo" parameterType="Map">
+	<![CDATA[
+		-- TB_TUTOR update
+		UPDATE	TB_TUTOR SET
+		        NAME		=	#{name},
+		        CNAME		=	#{cname},
+		        BANKNAME	=	#{bankname},
+		        BANKNO		=	SCP.ENC_B64('KEY1',#{bankno}),
+		        TLEVEL		=	#{tlevel},
+		        GUBUN		=	#{gubun},
+		        FAX			=	#{fax},
+		        SUBJ1		=	#{subj1},
+		        SUBJ2		=	#{subj2},
+		        SUBJ3		=	#{subj3},
+		        SUBJ4		=	#{subj4},
+		        SUBJ5		=	#{subj5},
+		        SUBJ6		=	#{subj6},
+		        SUBJ7		=	#{subj7},
+		        LUSERNO		=	#{luserno},
+		        TPOSITION	=	#{tposition}, 
+		        JOB			=	#{job},
+		        GRU_CODE	=	#{gruCode},
+		        LDATE		=	SYSDATE,
+		        GROUPFILE_NO = #{fileGroupNo}
+		WHERE 	USERNO		=	#{userno}
+	]]>
+	</update>
+	
+	<update id="insertManger" parameterType="Map">
+	<![CDATA[
+		-- TB_MANAGER insert
+		INSERT INTO TB_MANAGER
+		(	USERNO, GADMIN, LUSERNO, 	LDATE	) 
+		VALUES 
+		(	#{userno}, 		'7',	#{luserno}, 			SYSDATE	)
+	]]>
+	</update>
+	
+	<update id="insertTutorHistory" parameterType="Map">
+	<![CDATA[
+		-- TB_TUTOR_HISTORY INSERT
+		INSERT INTO TB_TUTOR_HISTORY 
+		(	USERNO, OCGUBUN, OC_NO, OCINFO, LUSERNO, LDATE	)
+		VALUES
+		(
+			#{userno},	#{ocgubun},
+			(
+		        SELECT	NVL(MAX(OC_NO),0) + 1
+		        FROM	TB_TUTOR_HISTORY
+		        WHERE	USERNO	=	#{userno}
+		        AND		OCGUBUN	=	#{ocgubun}
+			),
+			#{ocinfo},	#{luserno},	SYSDATE
+		)
+	]]>
+	</update>
+	
+	<update id="deleteTutorHistory" parameterType="String">
+	<![CDATA[
+		-- TB_TUTOR_HISTORY delete
+		DELETE FROM TB_TUTOR_HISTORY WHERE USERNO = #{value}
+	]]>
+	</update>
+	
+	<select id="selectTutorSalaryList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사별 수당 내역
+			SELECT A.USERNO, A.AMT_GUBUN, D.NAME, SCP.DEC_B64('KEY1',D.RESNO) AS RESNO, E.TPOSITION, D.JIKWI,
+				   SCP.DEC_B64('KEY1',D.HOME_TEL) AS HOME_TEL, B.GRCODENM, C.LECNM, A.LECTUREDATE, A.LECTURETIME,
+				   A.CMONEY, A.GMONEY, A.PMONEY, A.TMONEY, F.LEVEL_NAME
+				   ,(
+                    SELECT MIN(STUDYTIME) MIN_STUDYTIME
+                    FROM TB_TIMETABLE_TU
+                    WHERE A.GRCODE = GRCODE AND A.GRSEQ = GRSEQ AND A.USERNO = USERNO
+                   ) AS MIN_STUDYTIME
+                   ,(
+                    SELECT MAX(STUDYTIME) MAX_STUDYTIME
+                    FROM TB_TIMETABLE_TU
+                    WHERE A.GRCODE = GRCODE AND A.GRSEQ = GRSEQ AND A.USERNO = USERNO
+                   ) AS MAX_STUDYTIME,
+                   (
+                     SELECT COUNT(STUDYTIME) TIME_CNT
+                     FROM TB_TIMETABLE_TU
+                     WHERE A.GRCODE = GRCODE AND A.GRSEQ = GRSEQ AND A.USERNO = USERNO
+                    ) AS TOTIME
+			  FROM (SELECT   GRCODE, GRSEQ, SUBJ, USERNO, POSITION, LECTUREDATE,
+							 LECTURETIME, AMT_GUBUN,
+							 SUM (DECODE (AMT_GUBUN, '1', AMT1 + AMT2 + AMT3, 0)
+								 ) AS CMONEY,
+							 SUM (DECODE (AMT_GUBUN, '2', AMT1, 0)) AS GMONEY,
+							 SUM (DECODE (AMT_GUBUN, '3', AMT1, 0)) AS PMONEY,
+							 SUM (DECODE (AMT_GUBUN, '4', AMT1, 0)) AS TMONEY
+						FROM TB_TUTOR_SALARY
+					   WHERE SSTARTED >= TO_DATE (#{sDate}, 'YYYYMMDD')
+						 AND SENDDATE <= TO_DATE (#{eDate}, 'YYYYMMDD')
+					GROUP BY GRCODE,
+							 GRSEQ,
+							 SUBJ,
+							 USERNO,
+							 POSITION,
+							 LECTUREDATE,
+							 LECTURETIME,
+							 AMT_GUBUN
+					ORDER BY USERNO) A,
+				   TB_GRCODE B,
+				   TB_SUBJSEQ C,
+				   tb_member D,
+				   TB_TUTOR E,
+				   TB_TUTOR_LEVEL F
+			 WHERE A.GRCODE = B.GRCODE
+			   AND A.GRCODE = C.GRCODE
+			   AND A.GRSEQ = C.GRSEQ
+			   AND A.SUBJ = C.SUBJ
+			   AND A.USERNO = D.USERNO
+			   AND A.USERNO = E.USERNO
+			   AND E.TLEVEL = F.TLEVEL
+	]]>			
+	
+		<if test="tlevle != null or tlevle != ''">
+           	AND E.TLEVEL = #{tlevle}
+		</if>		
+		<if test="grcodenm != null or grcodenm != ''">
+           	AND B.GRCODENM LIKE '%' || #{grcodenm} || '%'
+		</if>		
+		<if test="tutornm != null or tutornm != ''">
+           	AND E.name LIKE '%' || #{tutornm} || '%'
+		</if>		
+            
+	</select>
+	
+	<select id="selectTutorLevelList" resultType="DataMap">
+	<![CDATA[
+		-- 강사별 수당 내역
+		SELECT 
+			TLEVEL, LEVEL_NAME 
+		FROM 
+			TB_TUTOR_LEVEL 
+		ORDER BY LEVEL_NAME
+	]]>					
+	</select>	
+	
+	<select id="selectGreadeResultList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 등급별수당지급내역   
+			SELECT 
+			  F.LEVEL_NAME, COUNT('X') CNT_TUTOR, SUM(A.GMONEY) SUM_SALARY,
+			  DECODE(F.LEVEL_NAME, '특A급', '0', 'A급', '1', 'B급', '2', 'C1급', '3', 'C2급', '4', 'D급', '5') AS ORD
+			FROM (
+				SELECT GRCODE, GRSEQ, SUBJ, USERNO, POSITION, LECTUREDATE, LECTURETIME, AMT_GUBUN,
+				  SUM(DECODE(AMT_GUBUN, '1', AMT1+AMT2+AMT3, 0)) AS CMONEY,
+				  SUM(DECODE(AMT_GUBUN, '2', AMT1, 0)) AS GMONEY,
+				  SUM(DECODE(AMT_GUBUN, '3', AMT1, 0)) AS PMONEY,
+				  SUM(DECODE(AMT_GUBUN, '4', AMT1, 0)) AS TMONEY
+				FROM TB_TUTOR_SALARY
+				WHERE SSTARTED >= TO_DATE(#{sDate}, 'YYYYMMDD')
+				  AND SENDDATE <= TO_DATE(#{eDate}, 'YYYYMMDD')
+				GROUP BY GRCODE, GRSEQ, SUBJ, USERNO, POSITION, LECTUREDATE, LECTURETIME, AMT_GUBUN
+				ORDER BY USERNO ) A,
+			  TB_TUTOR E,
+			  TB_TUTOR_LEVEL F
+			WHERE A.USERNO = E.USERNO
+			  AND E.TLEVEL = F.TLEVEL 
+			GROUP BY F.LEVEL_NAME
+			ORDER BY ORD
+	]]>					
+	</select>
+	
+	<select id="selectTseat" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 등급별수당지급내역   
+			SELECT 
+				NVL(SUM (B.TSEAT),0) TSEAT
+			FROM 
+				TB_TUTOR_SALARY A, TB_GRSEQ B, TB_TUTOR C
+			WHERE 
+				A.SSTARTED >= TO_DATE (#{sDate}, 'YYYYMMDD')
+			   AND A.SENDDATE <= TO_DATE (#{eDate}, 'YYYYMMDD')
+			   AND A.GRCODE = B.GRCODE
+			   AND A.GRSEQ = B.GRSEQ
+			   AND A.USERNO = C.USERNO
+			   AND C.TLEVEL = #{tlevel}
+	]]>					
+	</select>
+	
+	<sql id="tutorPaperList">
+		FROM TB_TUTOR_PAPER L,
+                 TB_SUBJSEQ B,
+                 TB_GRCODE C,
+                 TB_TUTOR D
+            WHERE 1=1
+                AND L.GRSEQ = B.GRSEQ
+                AND L.GRCODE = B.GRCODE
+                AND L.SUBJ = B.SUBJ
+                AND L.GRCODE = C.GRCODE
+                AND L.TUSERNO = D.USERNO
+			<if test="sDate != null and sDate != '' and eDate != null and eDate != ''">
+				AND L.P_DATE BETWEEN TO_DATE(#{sDate}) AND TO_DATE (#{eDate})
+			</if>
+			<if test="name != null and name != ''">
+				AND D.NAME LIKE '%' || #{name} || '%'
+			</if>
+			ORDER BY L.P_DATE DESC 
+	</sql>
+	<select id="selectTutorPaperListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount"></include>
+      	<include refid="tutorPaperList"></include>
+	</select>
+	<select id="selectTutorPaperList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+	<![CDATA[
+		-- 강사관리 --> 강사원고관리 리스트
+            SELECT   
+                L.GRCODE AS GRCODE, L.GRSEQ AS GRSEQ, L.SUBJ AS SUBJ,
+                C.GRCODENM AS GRCODENM, B.LECNM AS LECNM, 
+                L.TUSERNO AS TUSERNO,
+                (	SELECT 
+                   		TGUBUN 
+                 	FROM 
+                    	TB_CLASSTUTOR 
+                 	WHERE 
+                    	GRCODE = L.GRCODE AND GRSEQ = L.GRSEQ AND SUBJ = L.SUBJ AND ROWNUM <= 1
+                 ) GUBUN,
+                 L.P_DATE AS P_DATE, L.P_CNT AS P_CNT,
+                 D.NAME AS NAME
+	]]>					
+      	<include refid="tutorPaperList"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<select id="selectTutorPaperCountRow" parameterType="Map" resultType="Integer"> 
+	<![CDATA[
+		-- 강사관리 --> 강사원고관리 교육기관 중복여부 체크
+		SELECT 
+			COUNT(*) AS DUPCNT 
+		FROM 
+			TB_TUTOR_PAPER 
+		WHERE 
+			P_DATE BETWEEN TO_DATE(#{sDate}, 'YYYYMMDD') AND  TO_DATE(#{eDate}, 'YYYYMMDD') 
+			AND GRCODE = #{grcode} AND GRSEQ = #{grseq} 
+			AND SUBJ = #{subj} 
+			AND TUSERNO = #{tutorName}
+	]]>					
+	</select>	
+	
+	<update id="insertTutorPaper" parameterType="Map">
+	<![CDATA[
+		-- 강사관리 --> 강사원고관리 등록
+            INSERT INTO 
+                TB_TUTOR_PAPER(GRCODE, GRSEQ, SUBJ, TUSERNO, P_DATE, P_CNT, LUSERNO, LDATE)
+                VALUES(#{grcode}, #{grseq}, #{subj}, #{tutorName}, to_date(#{pDate}, 'YYYYMMDD'), #{pCnt}, #{sessNo}, SYSDATE)
+
+	]]>
+	</update>
+	
+	<update id="deleteTutorPaper" parameterType="Map">
+	<![CDATA[
+		-- 강사관리 --> 강사원고관리 삭제
+		DELETE 
+			FROM 
+				TB_TUTOR_PAPER
+			WHERE
+				GRCODE = #{grcode}
+				AND GRSEQ = #{grseq}
+				AND SUBJ = #{subj}
+				AND TUSERNO = #{tuserno}
+	]]>
+	</update>
+	
+	<select id="seleteTutorPaperGrcodeList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사관리 --> 강사원고관리폼 과정명 셀렉박스 리스트 데이터
+        SELECT 
+            DISTINCT A.GRCODE, B.GRCODENM 
+        FROM 
+            TB_CLASSTUTOR A, TB_GRCODE B
+        WHERE 
+            A.GRCODE = B.GRCODE
+
+	]]>
+	</select>
+	
+	<select id="seleteTutorPaperGrseqList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사관리 --> 강사원고관리폼 과정기수 셀렉박스 리스트 데이터
+        SELECT 
+            DISTINCT A.GRSEQ 
+        FROM 
+            TB_CLASSTUTOR A, TB_GRCODE B	
+        WHERE 
+            A.GRCODE = B.GRCODE AND A.GRCODE = #{grcode}
+
+	]]>
+	</select>
+	
+	<select id="seleteTutorPaperSubjList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사관리 --> 강사원고관리폼 과목코드  셀렉박스 리스트 데이터
+        SELECT 
+            DISTINCT A.SUBJ, B.LECNM
+        FROM 
+            TB_CLASSTUTOR A, TB_SUBJSEQ B
+        WHERE 
+            A.GRCODE = B.GRCODE
+            AND A.GRSEQ = B.GRSEQ
+            AND A.SUBJ = B.SUBJ
+            AND A.GRSEQ = #{grseq}
+            AND A.GRCODE = #{grcode}
+	]]>
+	</select>
+	
+	<select id="seleteTutorPaperTutorNameList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사관리 --> 강사원고관리폼 지정강사  셀렉박스 리스트 데이터
+        SELECT 
+            A.TUSERNO, C.NAME
+        FROM 
+            TB_CLASSTUTOR A, TB_SUBJSEQ B, TB_TUTOR C
+        WHERE 
+            A.GRCODE = B.GRCODE
+            AND A.GRSEQ = B.GRSEQ
+            AND A.SUBJ = B.SUBJ
+            AND A.TUSERNO = C.USERNO
+            AND A.SUBJ = #{subj}
+            AND A.GRSEQ = #{grseq}
+            AND A.GRCODE = #{grcode}
+	]]>
+	</select>
+	
+</mapper>

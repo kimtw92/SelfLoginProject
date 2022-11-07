@@ -1,0 +1,159 @@
+TD {
+	FONT-SIZE: 9pt; COLOR: #666666; FONT-FAMILY: "돋움"
+}
+A:link {
+	COLOR: #666666; TEXT-DECORATION: none
+}
+A:visited {
+	COLOR: #666666; TEXT-DECORATION: none
+}
+A:active {
+	COLOR: #666666; TEXT-DECORATION: none
+}
+A:hover {
+	COLOR: #999999; TEXT-DECORATION: none
+}
+.font1 {
+	FONT-SIZE: 8pt; FONT-FAMILY: "돋움"
+}
+.font2 {
+	FONT-SIZE: 9pt; FONT-FAMILY: "돋움"
+}
+A {
+	TEXT-DECORATION: none
+}
+.textfield {
+	BORDER-RIGHT: #cccccc 1px solid; PADDING-RIGHT: 0px; BORDER-TOP: #cccccc 1px solid; PADDING-LEFT: 0px; FONT-SIZE: 12px; PADDING-BOTTOM: 0px; BORDER-LEFT: #cccccc 1px solid; COLOR: #333333; PADDING-TOP: 3px; BORDER-BOTTOM: #cccccc 1px solid; FONT-FAMILY: "굴림"; HEIGHT: 18px; TEXT-DECORATION: none
+}
+.texthidefield {
+	BORDER-RIGHT: #ffffff 1px solid; PADDING-RIGHT: 0px; BORDER-TOP: #ffffff 1px solid; PADDING-LEFT: 0px; FONT-SIZE: 12px; PADDING-BOTTOM: 0px; BORDER-LEFT: #ffffff 1px solid; COLOR: #333333; PADDING-TOP: 3px; BORDER-BOTTOM: #ffffff 1px solid; FONT-FAMILY: "굴림"; HEIGHT: 18px; TEXT-DECORATION: none
+}
+.pathlink:link {
+	COLOR: #333333; TEXT-DECORATION: none
+}
+.pathlink:active {
+	COLOR: #333333; TEXT-DECORATION: none
+}
+.pathlink:visited {
+	COLOR: #333333; TEXT-DECORATION: none
+}
+.pathlink:hover {
+	COLOR: #999999; TEXT-DECORATION: none
+}
+.mainmenu:link {
+	FONT-WEIGHT: bold; FONT-SIZE: 10pt; COLOR: #ffffff; TEXT-DECORATION: none
+}
+.mainmenu:active {
+	FONT-WEIGHT: bold; FONT-SIZE: 10pt; COLOR: #ffffff; TEXT-DECORATION: none
+}
+.mainmenu:visited {
+	FONT-WEIGHT: bold; FONT-SIZE: 10pt; COLOR: #ffffff; TEXT-DECORATION: none
+}
+.mainmenu:hover {
+	COLOR: #006699; TEXT-DECORATION: none
+}
+.mainmenu_choice:link {
+	FONT-WEIGHT: bold; FONT-SIZE: 10pt; COLOR: #ffbc79; TEXT-DECORATION: underline
+}
+.mainmenu_choice:active {
+	FONT-WEIGHT: bold; FONT-SIZE: 10pt; COLOR: #ffbc79; TEXT-DECORATION: underline
+}
+.mainmenu_choice:visited {
+	FONT-WEIGHT: bold; FONT-SIZE: 10pt; COLOR: #ffbc79; TEXT-DECORATION: underline
+}
+.dotline {
+	BACKGROUND-POSITION: left bottom; BACKGROUND-ATTACHMENT: fixed; BACKGROUND-IMAGE: url(/template/manager/images/left_subm_dotline.gif); BACKGROUND-REPEAT: repeat-x
+}
+.sublink1:link {
+	COLOR: #333333; TEXT-DECORATION: none
+}
+.sublink1:active {
+	COLOR: #333333; TEXT-DECORATION: none
+}
+.sublink1:visited {
+	COLOR: #333333; TEXT-DECORATION: none
+}
+.sublink1:hover {
+	COLOR: #999999; TEXT-DECORATION: none
+}
+.sublink2:link {
+	FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: "돋움"; TEXT-DECORATION: none
+}
+.sublink2:active {
+	FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: "돋움"; TEXT-DECORATION: none
+}
+.sublink2:visited {
+	FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: "돋움"; TEXT-DECORATION: none
+}
+.sublink2:hover {
+	FONT-SIZE: 8pt; COLOR: #ff9900; FONT-FAMILY: "돋움"; TEXT-DECORATION: none
+}
+.sublink_choice1:link {
+	COLOR: #ff8040; FONT-FAMILY: "돋움"
+}
+.sublink_choice1:active {
+	COLOR: #ff8040; FONT-FAMILY: "돋움"
+}
+.sublink_choice1:visited {
+	COLOR: #ff8040; FONT-FAMILY: "돋움"
+}
+.sublink_choice2:link {
+	FONT-SIZE: 8pt; COLOR: #ff8040; FONT-FAMILY: "돋움"
+}
+.sublink_choice2:active {
+	FONT-SIZE: 8pt; COLOR: #ff8040; FONT-FAMILY: "돋움"
+}
+.sublink_choice2:visited {
+	FONT-SIZE: 8pt; COLOR: #ff8040; FONT-FAMILY: "돋움"
+}
+.contitle {
+	FONT-WEIGHT: bold; FONT-SIZE: 16px; COLOR: #333333; FONT-FAMILY: "돋움"
+}
+.tablelink1:link {
+	COLOR: #666666; TEXT-DECORATION: none
+}
+.tablelink1:active {
+	COLOR: #666666; TEXT-DECORATION: none
+}
+.tablelink1:visited {
+	COLOR: #666666; TEXT-DECORATION: none
+}
+.tablelink1:hover {
+	COLOR: #999999; TEXT-DECORATION: none
+}
+.tableoutline {
+	BORDER-RIGHT: #ffffff 1px solid; BORDER-TOP: #ffffff 1px solid; BORDER-LEFT: #ffffff 1px solid; BORDER-BOTTOM: #ffffff 1px solid
+}
+.tableline11 {
+	BORDER-RIGHT: #e5e5e5 1px solid; BORDER-TOP: #e5e5e5 0px solid; BORDER-LEFT: #e5e5e5 0px solid; PADDING-TOP: 5px; BORDER-BOTTOM: #e5e5e5 1px solid
+}
+.tableline21 {
+	BORDER-RIGHT: 0px solid; BORDER-TOP: 0px solid; BORDER-LEFT: 0px solid; PADDING-TOP: 5px; BORDER-BOTTOM: #e5e5e5 1px solid
+}
+.tablefont1 {
+	COLOR: #333333
+}
+.white {
+	COLOR: #ffffff
+}
+.boardbtn1 {
+	BORDER-RIGHT: #ffffff 1px solid; PADDING-RIGHT: 3px; BACKGROUND-POSITION: left top; BORDER-TOP: #ffffff 1px solid; PADDING-LEFT: 3px; FONT-SIZE: 12px; BACKGROUND-ATTACHMENT: fixed; BACKGROUND-IMAGE: url(/images/boardbtn_img.gif); PADDING-BOTTOM: 3px; BORDER-LEFT: #ffffff 1px solid; CURSOR: hand; COLOR: #333333; PADDING-TOP: 3px; BORDER-BOTTOM: #ffffff 1px solid; FONT-FAMILY: "돋움"; HEIGHT: 21px; TEXT-ALIGN: center
+}
+.boardbtn1_red {
+	BORDER-RIGHT: #ffffff 1px solid; PADDING-RIGHT: 3px; BACKGROUND-POSITION: left top; BORDER-TOP: #ffffff 1px solid; PADDING-LEFT: 3px; FONT-SIZE: 12px; BACKGROUND-ATTACHMENT: fixed; BACKGROUND-IMAGE: url(/images/boardbtn_img2.gif); PADDING-BOTTOM: 3px; BORDER-LEFT: #ffffff 1px solid; CURSOR: hand; COLOR: white; PADDING-TOP: 3px; BORDER-BOTTOM: #ffffff 1px solid; FONT-FAMILY: "돋움"; HEIGHT: 21px; TEXT-ALIGN: center
+}
+.button {
+	BORDER-RIGHT: #cccccc 1px solid; PADDING-RIGHT: 0px; BORDER-TOP: #cccccc 1px solid; PADDING-LEFT: 0px; FONT-SIZE: 11px; PADDING-BOTTOM: 0px; BORDER-LEFT: #cccccc 1px solid; CURSOR: hand; COLOR: #000000; PADDING-TOP: 3px; BORDER-BOTTOM: #cccccc 1px solid; FONT-STYLE: normal; BACKGROUND-COLOR: #f7f7f7; TEXT-DECORATION: none
+}
+.poptitle {
+	FONT-WEIGHT: bold; FONT-SIZE: 14px; COLOR: #ffffff; FONT-FAMILY: "돋움"
+}
+.a_topmenu_list:link {
+	FONT-SIZE: 13px; COLOR: #00689f; FONT-FAMILY: "돋움", "Verdana"
+}
+.a_topmenu_list:visited {
+	COLOR: #00689f; FONT-FAMILY: "돋움", "Verdana"
+}
+.a_topmenu_list:hover {
+	FONT-WEIGHT: bold; COLOR: #00689f; BORDER-BOTTOM: #03af9d 3px solid; FONT-FAMILY: "돋움", "Verdana"
+}

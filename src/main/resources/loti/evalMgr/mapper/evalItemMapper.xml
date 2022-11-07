@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.evalMgr.mapper.EvalItemMapper">
+
+	<!--  평가항목 관리 Param  -->
+	<select id="selectEvalItemClosing" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT CLOSING
+		     , TO_CHAR(ENDDATE,'YYYYMMDD') AS ENDDAY
+		     , NVL(REPORT_CNT,0) AS REPORT_CNT
+		  FROM TB_GRSEQ
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+	]]>
+	</select>
+	
+	<!--  평가항목관리 평가횟수  -->
+	<select id="selectEvalItemEvalCnt" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT MEVAL_YN
+		     , LEVAL_YN
+		     , NVL(NEVAL_CNT,0) AS NEVAL_CNT
+		  FROM TB_EVLINFO_GRSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+	]]>
+	</select>
+	
+	<!--  평가항목관리 자식과목의 부모과목 정보  -->
+	<select id="selectEvalItemChildParent" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT REF_SUBJ
+		     , COUNT(*) AS C_CNT
+		     , MIN(LECNM) AS LECNM 
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND LEC_TYPE='C'
+		 GROUP BY REF_SUBJ
+	]]>
+	</select>
+	
+	<!--  평가항목관리 리스트  -->
+	<select id="selectEvalItemRecordList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT SB.SUBJ
+		     , SB.LECNM
+		     , SJ.SUBJTYPE
+		     , SB.LEC_TYPE
+		     , NVL(SB.REF_SUBJ,0) AS REF_SUBJ
+		     , TO_NUMBER(SB.MGAKPOINT) AS MGAKPOINT
+		     , SB.MJUPOINT
+		     , SB.LGAKPOINT
+		     , SB.LJUPOINT
+		     , SB.NGAKPOINT1
+		     , SB.NJUPOINT1
+		     , SB.NGAKPOINT2
+		     , SB.NJUPOINT2
+		     , SB.NGAKPOINT3
+		     , SB.NJUPOINT3
+		     , SB.NGAKPOINT4
+		     , SB.NJUPOINT4
+		     , SB.NGAKPOINT5
+		     , SB.NJUPOINT5
+		     , SB.MGAKWEIGHT*100 AS MGAKWEIGHT
+		     , SB.MJUWEIGHT*100 AS MJUWEIGHT
+		     , SB.LGAKWEIGHT*100 AS LGAKWEIGHT
+		     , SB.LJUWEIGHT*100 AS LJUWEIGHT
+		     , SB.NGAKWEIGHT1*100 AS NGAKWEIGHT1
+		     , SB.NJUWEIGHT1*100 AS NJUWEIGHT1
+		     , SB.NGAKWEIGHT2*100 AS NGAKWEIGHT2
+		     , SB.NJUWEIGHT2*100 AS NJUWEIGHT2
+		     , SB.NGAKWEIGHT3*100 AS NGAKWEIGHT3
+		     , SB.NJUWEIGHT3*100 AS NJUWEIGHT3
+		     , SB.NGAKWEIGHT4*100 AS NGAKWEIGHT4
+		     , SB.NJUWEIGHT4*100 AS NJUWEIGHT4
+		     , SB.NGAKWEIGHT5*100 AS NGAKWEIGHT5
+		     , SB.NJUWEIGHT5*100 AS NJUWEIGHT5
+		     , SB.REPORTPOINT*100 AS REPORTPOINT
+		     , SB.STEPPOINT*100 AS STEPPOINT
+		     , SB.GRASTEP*100 AS GRASTEP
+		     , SB.TOTPOINT*100 AS TOTPOINT
+		     , EV.EVL_CNT
+		     , NVL(PM.STATE,0) AS PTYPEM
+		     , NVL(PT.STATE,0) AS PTYPET
+		     , NVL(P1.STATE,0) AS PTYPE1
+		     , NVL(P2.STATE,0) AS PTYPE2
+		     , NVL(P3.STATE,0) AS PTYPE3
+		     , NVL(P4.STATE,0) AS PTYPE4
+		     , NVL(P5.STATE,0) AS PTYPE5
+		  FROM TB_SUBJSEQ SB
+		     , TB_SUBJ SJ
+		     , (SELECT GRCODE,GRSEQ,SUBJ,COUNT(*) EVL_CNT FROM TB_EVLINFO_SUBJ GROUP BY GRCODE, GRSEQ, SUBJ) EV
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+		          FROM TB_EVLINFO_SUBJ EJ
+		             , TB_EXPAGE EP
+		         WHERE 1=1
+		           AND EJ.PTYPE = 'M'
+		           AND EJ.GRCODE = EP.GRCODE(+)
+		           AND EJ.GRSEQ = EP.GRSEQ(+)
+		           AND EJ.SUBJ = EP.SUBJ(+)
+		           AND EJ.PTYPE = EP.PTYPE(+)
+		       ) PM
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+		          FROM TB_EVLINFO_SUBJ EJ
+		             , TB_EXPAGE EP
+		         WHERE 1=1
+		           AND EJ.PTYPE = 'T'
+		           AND EJ.GRCODE = EP.GRCODE(+)
+		           AND EJ.GRSEQ = EP.GRSEQ(+)
+		           AND EJ.SUBJ = EP.SUBJ(+)
+		           AND EJ.PTYPE=EP.PTYPE(+)
+		       ) PT
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+		         FROM TB_EVLINFO_SUBJ EJ
+		            , TB_EXPAGE EP
+		        WHERE 1=1
+		          AND EJ.PTYPE = '1'
+		          AND EJ.GRCODE = EP.GRCODE(+)
+		          AND EJ.GRSEQ = EP.GRSEQ(+)
+		          AND EJ.SUBJ = EP.SUBJ(+)
+		          AND EJ.PTYPE = EP.PTYPE(+)
+		       ) P1
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+		         FROM TB_EVLINFO_SUBJ EJ
+		            , TB_EXPAGE EP
+		        WHERE 1=1
+		          AND EJ.PTYPE = '2'
+		          AND EJ.GRCODE = EP.GRCODE(+)
+		          AND EJ.GRSEQ = EP.GRSEQ(+)
+		          AND EJ.SUBJ = EP.SUBJ(+)
+		          AND EJ.PTYPE = EP.PTYPE(+)
+		       ) P2
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+		         FROM TB_EVLINFO_SUBJ EJ
+		            , TB_EXPAGE EP
+		        WHERE 1=1
+		          AND EJ.PTYPE = '3'
+		          AND EJ.GRCODE = EP.GRCODE(+)
+		          AND EJ.GRSEQ = EP.GRSEQ(+)
+		          AND EJ.SUBJ = EP.SUBJ(+)
+		          AND EJ.PTYPE = EP.PTYPE(+)
+		       ) P3
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+		         FROM TB_EVLINFO_SUBJ EJ
+		            , TB_EXPAGE EP
+		        WHERE 1=1
+		          AND EJ.PTYPE = '4'
+		          AND EJ.GRCODE = EP.GRCODE(+)
+		          AND EJ.GRSEQ = EP.GRSEQ(+)
+		          AND EJ.SUBJ = EP.SUBJ(+)
+		          AND EJ.PTYPE = EP.PTYPE(+)
+		       ) P4
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+		         FROM TB_EVLINFO_SUBJ EJ
+		            , TB_EXPAGE EP
+		        WHERE 1=1
+		          AND EJ.PTYPE = '5'
+		          AND EJ.GRCODE = EP.GRCODE(+)
+		          AND EJ.GRSEQ = EP.GRSEQ(+)
+		          AND EJ.SUBJ = EP.SUBJ(+)
+		          AND EJ.PTYPE = EP.PTYPE(+)
+		       ) P5
+		 WHERE 1=1
+		   AND SB.GRCODE = #{commGrcode}
+		   AND SB.GRSEQ = #{commGrseq}
+		   AND SB.LEC_TYPE <> 'P'
+		   AND SB.SUBJ = SJ.SUBJ
+		   AND SJ.SUBJTYPE <> 'S'
+		   AND SB.SUBJ <> 'SUB1000025'
+		   AND SB.GRCODE = EV.GRCODE(+)
+		   AND SB.GRSEQ = EV.GRSEQ(+)
+		   AND SB.SUBJ = EV.SUBJ(+)
+		   AND (SB.REF_SUBJ IS NOT NULL OR EV.EVL_CNT > 0)
+		   AND PM.GRCODE(+) = SB.GRCODE
+		   AND PM.GRSEQ(+) = SB.GRSEQ
+		   AND PM.SUBJ(+) = SB.SUBJ
+		   AND PT.GRCODE(+) = SB.GRCODE
+		   AND PT.GRSEQ(+) = SB.GRSEQ
+		   AND PT.SUBJ(+) = SB.SUBJ
+		   AND P1.GRCODE(+) = SB.GRCODE
+		   AND P1.GRSEQ(+) = SB.GRSEQ
+		   AND P1.SUBJ(+) = SB.SUBJ
+		   AND P2.GRCODE(+) = SB.GRCODE
+		   AND P2.GRSEQ(+) = SB.GRSEQ
+		   AND P2.SUBJ(+) = SB.SUBJ
+		   AND P3.GRCODE(+) = SB.GRCODE
+		   AND P3.GRSEQ(+) = SB.GRSEQ
+		   AND P3.SUBJ(+) = SB.SUBJ
+		   AND P4.GRCODE(+) = SB.GRCODE
+		   AND P4.GRSEQ(+) = SB.GRSEQ
+		   AND P4.SUBJ(+) = SB.SUBJ
+		   AND P5.GRCODE(+) = SB.GRCODE
+		   AND P5.GRSEQ(+) = SB.GRSEQ
+		   AND P5.SUBJ(+) = SB.SUBJ
+		 ORDER BY DECODE(SB.LEC_TYPE, 'S', 1, 2), DECODE(SB.LEC_TYPE, 'S', DECODE(EV.EVL_CNT, NULL, 2, 1), 3), DECODE(SB.LEC_TYPE, 'S', SB.LECNM, SB.REF_SUBJ), DECODE(SB.LEC_TYPE, 'C', SB.LECNM)
+	]]>
+	</select>
+	
+	<!-- 평가항목관리 특수과목 리스트 -->
+	<select id="selectEvalItemSrecordList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT SB.SUBJ
+		     , SB.LECNM
+		     , SJ.SUBJTYPE
+		     , SB.LEC_TYPE
+		     , SB.REF_SUBJ
+		     , SB.TOTPOINT
+		  FROM TB_SUBJSEQ SB
+		     , TB_SUBJ SJ
+		 WHERE 1=1
+		   AND SB.GRCODE = #{commGrcode}
+		   AND SB.GRSEQ = #{commGrseq}
+		   AND SB.SUBJ = SJ.SUBJ
+		   AND SJ.SUBJTYPE = 'S'
+		   AND SB.SUBJ <> 'SUB1000025'
+		 ORDER BY SB.LECNM
+	]]>
+	</select>
+	
+	<!-- 평가항목관리 과제물 출제정보-->
+	<select id="selectEvalItemReportPoint" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT REPORTPOINT 
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = 'SUB1000025' 
+	]]>
+	</select>
+	
+	<!-- 평가항목관리 과제물 출제횟수-->
+	<select id="selectEvalItemReportCnt" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT COUNT(*) AS CNT
+		  FROM TB_REPORT
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = 'SUB1000025' 
+		 GROUP BY GRCODE, GRSEQ, SUBJ, CLASSNO 
+	]]>
+	</select>
+	
+	<!--  평가항목관리 과제물 등급 정보  -->
+	<select id="selectEvalItemGradeInfo" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT DATES
+		     , CLASSNO
+		     , MAX(DECODE(GRADE_NO, 1, GRADE_POINT)) AS APOINT
+		     , COUNT(*) AS GRD_CNT
+		  FROM TB_REPORT_GRADE 
+		 WHERE 1=1
+           AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ='SUB1000025'
+		 GROUP BY GRCODE, GRSEQ, SUBJ, CLASSNO, DATES  
+		 ORDER BY DATES, CLASSNO
+	]]>
+	</select>
+	
+	<!-- 평가항목관리 과제물 클래스 정보-->
+	<select id="selectEvalItemClassInfo" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT CLASSNO
+		     , CLASSNM 
+		  FROM TB_SUBJCLASS 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ='SUB1000025'
+		 ORDER BY CLASSNO
+	]]>
+	</select>
+	
+	<!-- 평가항목관리 과목 종료 여부-->
+	<select id="selectEvalItemSubjClosing" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT CLOSING 
+		  FROM TB_GRSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+	]]>
+	</select>
+	
+	<!-- 평가항목관리 과목점수 업데이트 -->
+	<update id="updateEvalItemSubjList" parameterType="Map">
+	<![CDATA[
+		UPDATE TB_SUBJSEQ
+		   SET MGAKPOINT = #{mgakpoint}
+		     , MJUPOINT = #{mjupoint}
+		     , LGAKPOINT = #{lgakpoint}
+		     , LJUPOINT = #{ljupoint}
+		     , MGAKWEIGHT = #{mgakweight}
+		     , MJUWEIGHT = #{mjuweight}
+		     , LGAKWEIGHT = #{lgakweight}
+		     , LJUWEIGHT = #{ljuweight}
+		     , REPORTPOINT = #{reportpoint}
+		     , STEPPOINT = #{steppoint}
+		     , TOTPOINT = #{totpoint}
+		     , GRASTEP = #{grastep}
+		     , NGAKPOINT1 = #{ngakpoint1}
+		     , NJUPOINT1 = #{njupoint1}
+		     , NGAKWEIGHT1 = #{ngakweight1}
+		     , NJUWEIGHT1 = #{njuweight1}
+		     , NGAKPOINT2 = #{ngakpoint2}
+		     , NJUPOINT2 = #{njupoint2}
+		     , NGAKWEIGHT2 = #{ngakweight2}
+		     , NJUWEIGHT2 = #{njuweight2}
+		     , NGAKPOINT3 = #{ngakpoint3}
+		     , NJUPOINT3 = #{njupoint3}
+		     , NGAKWEIGHT3 = #{ngakweight3}
+		     , NJUWEIGHT3 = #{njuweight3}
+		     , NGAKPOINT4 = #{ngakpoint4}
+		     , NJUPOINT4 = #{njupoint4}
+		     , NGAKWEIGHT4 = #{ngakweight4}
+		     , NJUWEIGHT4 = #{njuweight4}
+		     , NGAKPOINT5 = #{ngakpoint5}
+		     , NJUPOINT5 = #{njupoint5}
+		     , NGAKWEIGHT5 = #{ngakweight5}
+		     , NJUWEIGHT5 = #{njuweight5}
+	     WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{pSubj}
+	]]>
+	</update>
+	
+	<!-- 평가항목관리 특수과목 점수 업데이트 -->
+	<update id="updateEvalItemSubjSlist" parameterType="Map">
+	<![CDATA[
+		UPDATE TB_SUBJSEQ 
+		   SET TOTPOINT = #{totpoint2}
+         WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = #{pSubj2}
+	]]>
+	</update>
+	
+	<!-- 평가항목관리 과제물 과목 점수 업데이트 -->
+	<update id="updateEvalItemReportpoint" parameterType="Map">
+	<![CDATA[
+		UPDATE TB_SUBJSEQ 
+		   SET REPORTPOINT = #{spReportpoint}
+		     , TOTPOINT = #{spReportpoint}
+		 WHERE 1=1 
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = 'SUB1000025'
+	]]>
+	</update>
+	
+	<!-- 평가항목관리 과제물 과목 횟수 업데이트 -->
+	<update id="updateEvalItemReportCnt" parameterType="Map">
+	<![CDATA[
+		UPDATE TB_GRSEQ
+		   SET REPORT_CNT = #{spreportCnt}
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+	]]>
+	</update>
+	
+	<!-- 과정기수별 중간-기말평가 배점정보 -->
+	<select id="selectEvalItemPointInfo" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT GRCODENIKNM
+		     , MEXAMPROPOSE
+		     , LEXAMPROPOSE
+		     , CLOSING
+		     , GUN_EVALMENT
+		     , STEP_EVALMENT
+		     , QUIZ_EVALMENT
+		  FROM TB_GRSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+	]]>
+	</select>
+	
+	<!-- 과제물과목 or 일반과목(온라인, 오프라인) 강의별 평가 배점정보 -->
+	<select id="selectEvalItemSubjPointInfo" parameterType="Map" resultType="DataMap">
+	<![CDATA[		
+		SELECT SUM(NVL(MGAKPOINT,0)*NVL(MGAKWEIGHT,0)+NVL(MJUPOINT,0)*NVL(MJUWEIGHT,0)+NVL(LGAKPOINT,0)*NVL(LGAKWEIGHT,0)+NVL(LJUPOINT,0)*NVL(LJUWEIGHT,0)) AS EXAM_POINT
+		     , SUM(REPORTPOINT) AS REPORTPOINT
+		     , SUM(STEPPOINT) AS STEPPOINT
+		     , SUM(QUIZPOINT) AS QUIZPOINT
+		     , SUM(NVL(MGAKPOINT,0)*NVL(MGAKWEIGHT,0)+NVL(MJUPOINT,0)*NVL(MJUWEIGHT,0)) AS MEXAM_POINT
+		     , SUM(NVL(LGAKPOINT,0)*NVL(LGAKWEIGHT,0)+NVL(LJUPOINT,0)*NVL(LJUWEIGHT,0)) AS LEXAM_POINT
+		     , SUM(NVL(NGAKPOINT1,0)*NVL(NGAKWEIGHT1,0)+NVL(NJUPOINT1,0)*NVL(NJUWEIGHT1,0)) AS NEXAM_POINT1
+		     , SUM(NVL(NGAKPOINT2,0)*NVL(NGAKWEIGHT2,0)+NVL(NJUPOINT2,0)*NVL(NJUWEIGHT2,0)) AS NEXAM_POINT2
+		     , SUM(NVL(NGAKPOINT3,0)*NVL(NGAKWEIGHT3,0)+NVL(NJUPOINT3,0)*NVL(NJUWEIGHT3,0)) AS NEXAM_POINT3
+		     , SUM(NVL(NGAKPOINT4,0)*NVL(NGAKWEIGHT4,0)+NVL(NJUPOINT4,0)*NVL(NJUWEIGHT4,0)) AS NEXAM_POINT4
+		     , SUM(NVL(NGAKPOINT5,0)*NVL(NGAKWEIGHT5,0)+NVL(NJUPOINT5,0)*NVL(NJUWEIGHT5,0)) AS NEXAM_POINT5
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ IN (SELECT SUBJ FROM TB_SUBJ WHERE SUBJ ='SUB1000025' OR SUBJTYPE IN ('Y','N')) 
+	]]>
+	</select>
+	
+	<!-- 근태과목 평가정보 -->
+	<select id="selectEvalItemGunTaePoint" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT TOTPOINT AS GUNPOINT 
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND SUBJ = 'GUN0000001'
+	]]>
+	</select>
+	
+	<!-- 중간필답평가 정보 -->
+	<select id="selectEvalItemMpoint" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT SUBJ
+		     , LECNM
+		     , (NVL(MGAKPOINT,0)*NVL(MGAKWEIGHT,0)+NVL(MJUPOINT,0)*NVL(MJUWEIGHT,0)) AS M_POINT 
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND (NVL(MGAKPOINT,0)*NVL(MGAKWEIGHT,0)+NVL(MJUPOINT,0)*NVL(MJUWEIGHT,0)) > 0 
+	]]>
+	</select>
+	
+	<!-- 최종필답평가 정보 -->
+	<select id="selectEvalItemLpoint" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT SUBJ
+		     , LECNM
+		     , (NVL(LGAKPOINT,0)*NVL(LGAKWEIGHT,0)+NVL(LJUPOINT,0)*NVL(LJUWEIGHT,0)) AS L_POINT 
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND (NVL(LGAKPOINT,0)*NVL(LGAKWEIGHT,0)+NVL(LJUPOINT,0)*NVL(LJUWEIGHT,0)) > 0 
+	]]>
+	</select>
+	
+	<!-- 분임평가 (과제물과 근태)를 제외한 특수과목 -->
+	<select id="selectEvalItemSsubjPoint" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT SUBJ
+		     , LECNM
+		     , TOTPOINT AS GRP_POINT
+		     , EXAMTIME 
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND (SUBJ IN (SELECT SUBJ FROM TB_SUBJ WHERE SUBJ NOT IN ('SUB1000025','GUN0000001') AND SUBJTYPE='S') )
+		   AND TOTPOINT > 0
+	]]>
+	</select>
+	
+	<!-- 근태과목이 아닌 과목중 진도율점수가 0 을 초과하는 경우 -->
+	<select id="selectEvalItemStepPoint" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT STEPPOINT
+		     , LECNM 
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND NVL(STEPPOINT,0) > 0
+		   AND SUBJ <> 'GUN0000001' 
+	]]>
+	</select>
+	
+	<!-- 차시평가 점수가 0 을 초과하는 경우 -->
+	<select id="selectEvalItemQuizPoint" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT QUIZPOINT
+		     , LECNM 
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+	       AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+		   AND NVL(QUIZPOINT,0) > 0
+	]]>
+	</select>
+	
+	<!-- 교육훈련 평가 내용 수정 -->
+	<update id="updateEvalItemEduTrain" parameterType="Map">
+	<![CDATA[
+		UPDATE TB_GRSEQ
+		   SET GUN_EVALMENT = #{gun_evalment}
+		     , STEP_EVALMENT = #{step_evalment}
+		     , QUIZ_EVALMENT = #{quiz_evalment}
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+	]]>
+	</update>
+</mapper>

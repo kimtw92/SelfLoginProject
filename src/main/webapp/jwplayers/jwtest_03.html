@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+
+  <head>
+
+    <title>JW API Example 5-1-0-0 - JW FLV Media Player</title> 
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/swfobject/2.1/swfobject.js"></script>
+
+    <!-- inline script #1 - player API code -->
+    <script type="text/javascript">
+      var player = null;
+
+
+      function playerReady(obj)
+      {
+        player = gid(obj.id);
+      };
+
+
+      function gid(name)
+      {
+        return document.getElementById(name);
+      };
+    </script>
+
+    <!-- inline script #2 - player embedding code -->
+    <script type="text/javascript">
+      var flashvars =
+      {
+        file:                   'video.flv', 
+        id:                     'playerID1', 
+        autostart:              'true'
+      };
+
+      var params =
+      {
+        allowfullscreen:        'true', 
+        allowscriptaccess:      'always'
+      };
+
+      var attributes =
+      {
+        id:                     'playerID1', 
+        name:                   'playerID1'
+      };
+
+      swfobject.embedSWF('player.swf', 'player', '320', '196', '9.0.124', false, flashvars, params, attributes);
+    </script>
+
+  </head>
+
+  <body>
+
+    <div id="playercontainer"><a id="player" href="http://www.adobe.com/go/getflashplayer">Get flash to see this player </a></div>
+    <br> 
+    <a href="#" onclick="player.sendEvent('PLAY'); return false;">PLAY/PAUSE toggle</a> 
+    <br> 
+    <a href="#" onclick="player.sendEvent('STOP'); return false;">STOP playing and buffering</a> 
+    <br> 
+    <a href="#" onclick="player.sendEvent('SEEK', 10); return false;">SEEK absolute position (10th. second)</a> 
+    <br> 
+    <a href="#" onclick="player.sendEvent('VOLUME', 50); return false;">set absolute VOLUME to 50%</a> 
+
+  </body> 
+
+</html>

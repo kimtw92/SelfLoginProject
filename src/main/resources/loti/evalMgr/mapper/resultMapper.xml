@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.evalMgr.mapper.ResultMapper">
+
+	<select id="selectResultList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가결과보고 상세정보 
+		SELECT TSEAT
+		     , TO_CHAR(GS.STARTED,'YYYY.MM.DD') AS STARTED
+		     , TO_CHAR(GS.ENDDATE,'MM.DD') AS ENDDATE
+		     , CASE WHEN GS.ENDDATE IS NULL OR GS.STARTED IS NULL THEN 0
+			        ELSE DECODE(MOD(GS.ENDDATE-GS.STARTED+1, 7), 0, TRUNC((GS.ENDDATE-GS.STARTED+1)/7), TRUNC((GS.ENDDATE-GS.STARTED+1)/7)+1)
+			   END AS GAP
+			 , MC.MCODE_NAME||SC.SCODE_NAME||'교육' AS GUBUNNM 
+		  FROM TB_GRSEQ GS
+		     , TB_GRCODE GC
+		     , TB_MAINCODE MC
+		     , TB_SUBCODE SC
+		 WHERE 1=1
+		   AND GS.GRCODE = #{commGrcode}
+		   AND GS.GRSEQ = #{commGrseq}
+		   AND GS.GRCODE = GC.GRCODE
+		   AND MC.CD_GUBUN = 'G'
+		   AND GC.GRTYPE = MC.MAJOR_CODE
+		   AND SC.CD_GUBUN = 'G'
+		   AND GC.GRTYPE = SC.MAJOR_CODE
+		   AND GC.GRSUBCD = SC.MINOR_CODE
+	]]>
+	</select>
+	
+	<select id="selectResultList2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가결과보고 상세정보2 
+		SELECT SUM(DECODE(SUBSTR(RRESNO, 7,1),'1',1, 0)) AS MAN_CNT
+		     , ROUND(MAX(PACCEPT),2) AS MAX_PACCEPT
+		     , ROUND(MIN(PACCEPT),2) AS MIN_PACCEPT
+		     , ROUND(AVG(PACCEPT),2) AS AVG_PACCEPT
+		     , SUM(DECODE(SUBSTR(RRESNO, 7,1),'2',1, 0)) AS WOMAN_CNT
+		     , COUNT(*) AS TOT_CNT  
+		  FROM TB_GRRESULT 
+		 WHERE 1=1
+		   AND GRCODE = #{commGrcode}
+		   AND GRSEQ = #{commGrseq}
+	]]>
+	</select>
+	
+	<select id="selectJachiList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가결과보고 자치회 유공자 리스트
+		SELECT GR.RNAME
+		     , DECODE(SM.MAS_GUBUN,'M','학생장','S','부학생장') AS MAS_GUBUN
+		     , GR.RRESNO
+		     , GR.EDUNO
+		     , JK.JIKNM
+		     , DT.DEPTNM
+		     , DECODE(SUBSTR(GR.RRESNO, 7,1),'1','남', '2', '여') AS SEXNM 
+	      FROM TB_GRRESULT GR
+	         , TB_GRSTUMAS SM
+	         , TB_DEPT DT
+	         , TB_JIK JK
+		 WHERE 1=1
+		  AND GR.GRCODE = SM.GRCODE
+		  AND GR.GRSEQ = SM.GRSEQ
+		  AND GR.USERNO = SM.USERNO 
+          AND GR.RDEPT = DT.DEPT
+          AND GR.RJIK = JK.JIK 
+		  AND GR.GRCODE = #{commGrcode}
+		  AND GR.GRSEQ = #{commGrseq}
+        ORDER BY DECODE(SM.MAS_GUBUN, 'M',1,2) ASC, GR.RNAME
+	]]>
+	</select>
+	
+	<select id="selectSungJukList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 평가결과보고 성적우수자 리스트 
+		SELECT GR.RNAME
+		     , GR.SEQNO
+		     , GR.RRESNO
+		     , GR.EDUNO
+		     , GR.PACCEPT
+		     , JK.JIKNM
+		     , DT.DEPTNM
+		     , DECODE(SUBSTR(GR.RRESNO, 7,1),'1','남', '2', '여') AS SEXNM
+		     , TO_CHAR(SYSDATE, 'YYYY')-(SUBSTR(RRESNO, 1, 2)+1900) AS AGE 
+	      FROM TB_GRRESULT GR
+	         , TB_DEPT DT
+	         , TB_JIK JK 
+		 WHERE 1=1
+		   AND GR.RDEPT = DT.DEPT
+		   AND GR.RJIK = JK.JIK 
+		   AND GR.GRCODE = #{commGrcode}
+		   AND GR.GRSEQ = #{commGrseq}
+		   AND GR.SEQNO <= 3 
+			ORDER BY GR.SEQNO ASC 
+	]]>
+	</select>
+</mapper>

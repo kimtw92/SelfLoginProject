@@ -1,0 +1,722 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.baseCodeMgr.mapper.SubjMapper">
+
+	<select id="selectCharIndex" resultType="DataMap">
+	<![CDATA[
+		--  가 ~ 기타 까지 한글인덱스 코드
+		SELECT INDEXSEQ
+		     , STARTCHAR 
+		  FROM TB_CHARINDEX
+		 WHERE 1=1
+		   AND INDEXSEQ > 0
+		 ORDER BY INDEXSEQ		
+	]]>
+	</select>
+	
+	<select id="selectSubjListCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		--  과목관리 리스트(인덱스 사용안하는 것)
+		SELECT COUNT(0) AS CNT		        
+		  FROM TB_SUBJ A
+		     , (SELECT XA.SUBJ
+		             , XA.MAPPING_SEQ
+		             , SUM(DECODE(NVL(PREVIEW_YN, 'N'), 'Y', 1, 0) ) AS ISSAMPLE
+		             , COUNT(ORG_SEQ) AS ISVIEW
+                  FROM SCORM_MAPPING_INFO XA
+                     , SCORM_MAPPING_ORGANIZATION XB
+                 WHERE 1=1
+                   AND XA.MAPPING_SEQ = XB.MAPPING_SEQ
+                 GROUP BY XA.SUBJ, XA.MAPPING_SEQ
+                 ORDER BY XA.MAPPING_SEQ
+               ) B
+		 WHERE 1=1
+		   AND A.SUBJ = B.SUBJ(+)
+	]]>
+	<if test="s_useYn != null and s_useYn != ''">
+	<![CDATA[
+	       AND A.USE_YN = #{s_useYn}
+	]]>
+	</if>
+	<if test="s_subType != null and s_subType != ''">
+	<![CDATA[
+	       AND A.SUBJTYPE = #{s_subType}
+	]]>
+	</if>
+	<if test="s_searchTxt != null and s_searchTxt != ''">
+	<![CDATA[
+	       AND A.SUBJNM LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+	</if>
+	</select>
+	
+	<select id="selectSubjList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (--  과목관리 리스트(인덱스 사용안하는 것)
+						SELECT A.SUBJ
+						     , A.SUBJNM
+						     , A.SUBJTYPE
+						     , A.EVALUTEGUBUN
+						     , A.OPENEDUGUBUN
+						     , A.F_NEW
+						     , A.LUSERNO
+						     , A.LDATE
+						     , A.LANGUAGE
+						     , A.SUBJGUBUN
+						     , A.LIMIT
+						     , A.LIMIT_TIME
+						     , A.SEL_GUBUN
+						     , A.APP_GUBUN
+						     , A.USE_YN
+						     , A.RECOM_YN
+						     , NVL(B.ISSAMPLE, 0) AS ISSAMPLE
+						     , NVL(B.ISVIEW, 0) AS ISVIEW
+						     , CASE WHEN A.SEL_GUBUN = 'P' THEN '선택'
+						            ELSE '일반'
+							   END AS SEL_GUBUN_NM
+							 , CASE WHEN A.SUBJGUBUN = '01' THEN '소양분야'
+						            WHEN A.SUBJGUBUN = '02' THEN '직무분야'
+						            WHEN A.SUBJGUBUN = '03' THEN '행정및기타'
+						            ELSE '기타'
+						       END AS SUBJGUBUN_NM
+						     , CASE WHEN A.SUBJTYPE = 'Y' THEN '사이버'
+						            WHEN A.SUBJTYPE = 'N' THEN '집합'
+						            WHEN A.SUBJTYPE = 'S' THEN '특수'
+						            WHEN A.SUBJTYPE = 'M' THEN '동영상'
+						            ELSE ''
+							   END AS SUBJTYPE_NM		        
+						  FROM TB_SUBJ A
+						     , (SELECT XA.SUBJ
+						             , XA.MAPPING_SEQ
+						             , SUM(DECODE(NVL(PREVIEW_YN, 'N'), 'Y', 1, 0) ) AS ISSAMPLE
+						             , COUNT(ORG_SEQ) AS ISVIEW
+				                  FROM SCORM_MAPPING_INFO XA
+				                     , SCORM_MAPPING_ORGANIZATION XB
+				                 WHERE 1=1
+				                   AND XA.MAPPING_SEQ = XB.MAPPING_SEQ
+				                 GROUP BY XA.SUBJ, XA.MAPPING_SEQ
+				                 ORDER BY XA.MAPPING_SEQ
+				               ) B
+						 WHERE 1=1
+						   AND A.SUBJ = B.SUBJ(+)
+	]]>
+	<if test="s_useYn != null and s_useYn != ''">
+	<![CDATA[
+					       AND A.USE_YN = #{s_useYn}
+	]]>
+	</if>
+	<if test="s_subType != null and s_subType != ''">
+	<![CDATA[
+					       AND A.SUBJTYPE = #{s_subType}
+	]]>
+	</if>
+	<if test="s_searchTxt != null and s_searchTxt != ''">
+	<![CDATA[
+					       AND A.SUBJNM LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+	</if>
+	<![CDATA[
+						 ORDER BY A.SUBJNM
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectSubjListByIndexCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		--  과목관리 리스트(인덱스 사용)
+		SELECT COUNT(0) AS CNT
+		  FROM TB_SUBJ A
+		     , TB_CHARINDEX B
+		     , (SELECT XA.SUBJ
+		             , XA.MAPPING_SEQ
+		             , SUM(DECODE(NVL(PREVIEW_YN, 'N'), 'Y', 1, 0) ) AS ISSAMPLE
+		             , COUNT(ORG_SEQ) AS ISVIEW
+                  FROM SCORM_MAPPING_INFO XA
+                     , SCORM_MAPPING_ORGANIZATION XB 
+                 WHERE 1=1
+                   AND XA.MAPPING_SEQ = XB.MAPPING_SEQ
+                 GROUP BY XA.SUBJ, XA.MAPPING_SEQ
+                 ORDER BY XA.MAPPING_SEQ
+               ) C
+		 WHERE 1=1
+		   AND A.SUBJ = C.SUBJ(+)
+		   AND ASCII(SUBSTR(SUBJNM,1,1)) BETWEEN B.STARTNUM AND B.ENDNUM
+	]]>
+	<if test="s_indexSeq != null and s_indexSeq != ''">
+	<![CDATA[
+		   AND B.INDEXSEQ = #{s_indexSeq}
+	]]>
+	</if>
+	<if test="s_useYn != null and s_useYn != ''">
+	<![CDATA[
+	       AND A.USE_YN = #{s_useYn}
+	]]>
+	</if>
+	<if test="s_subType != null and s_subType != ''">
+	<![CDATA[
+	       AND A.SUBJTYPE = #{s_subType}
+	]]>
+	</if>
+	<if test="s_searchTxt != null and s_searchTxt != ''">
+	<![CDATA[
+	       AND A.SUBJNM LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+	</if>
+	</select>
+	
+	<select id="selectSubjListByIndex" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (--  과목관리 리스트(인덱스 사용)
+						SELECT A.SUBJ
+						     , A.SUBJNM
+						     , A.SUBJTYPE
+						     , A.EVALUTEGUBUN
+						     , A.OPENEDUGUBUN
+						     , A.F_NEW
+						     , A.LUSERNO
+						     , A.LDATE
+						     , A.LANGUAGE
+						     , A.SUBJGUBUN
+						     , A.LIMIT
+						     , A.LIMIT_TIME
+						     , A.SEL_GUBUN
+						     , A.APP_GUBUN
+						     , A.USE_YN
+						     , A.RECOM_YN
+						     , NVL(C.ISSAMPLE, 0) AS ISSAMPLE
+						     , NVL(C.ISVIEW, 0) AS ISVIEW
+						     , CASE WHEN A.SEL_GUBUN = 'P' THEN '선택'
+						            ELSE '일반'
+							   END AS SEL_GUBUN_NM
+							 , CASE WHEN A.SUBJGUBUN = '01' THEN '소양분야'
+							        WHEN A.SUBJGUBUN = '02' THEN '직무분야'
+							        WHEN A.SUBJGUBUN = '03' THEN '행정및기타'
+						            ELSE '기타'
+						       END AS SUBJGUBUN_NM
+						     , CASE WHEN A.SUBJTYPE = 'Y' THEN '사이버'
+						            WHEN A.SUBJTYPE = 'N' THEN '집합'
+						            WHEN A.SUBJTYPE = 'S' THEN '특수'
+						            WHEN A.SUBJTYPE = 'M' THEN '동영상'
+						            ELSE ''
+							   END AS SUBJTYPE_NM
+						  FROM TB_SUBJ A
+						     , TB_CHARINDEX B
+						     , (SELECT XA.SUBJ
+						             , XA.MAPPING_SEQ
+						             , SUM(DECODE(NVL(PREVIEW_YN, 'N'), 'Y', 1, 0) ) AS ISSAMPLE
+						             , COUNT(ORG_SEQ) AS ISVIEW
+				                  FROM SCORM_MAPPING_INFO XA
+				                     , SCORM_MAPPING_ORGANIZATION XB 
+				                 WHERE 1=1
+				                   AND XA.MAPPING_SEQ = XB.MAPPING_SEQ
+				                 GROUP BY XA.SUBJ, XA.MAPPING_SEQ
+				                 ORDER BY XA.MAPPING_SEQ
+				               ) C
+						 WHERE 1=1
+						   AND A.SUBJ = C.SUBJ(+)
+						   AND ASCII(SUBSTR(SUBJNM,1,1)) BETWEEN B.STARTNUM AND B.ENDNUM
+	]]>
+	<if test="s_indexSeq != null and s_indexSeq != ''">
+	<![CDATA[
+					       AND B.INDEXSEQ = #{s_indexSeq}
+	]]>
+	</if>
+	<if test="s_useYn != null and s_useYn != ''">
+	<![CDATA[
+					       AND A.USE_YN = #{s_useYn}
+	]]>
+	</if>
+	<if test="s_subType != null and s_subType != ''">
+	<![CDATA[
+					       AND A.SUBJTYPE = #{s_subType}
+	]]>
+	</if>
+	<if test="s_searchTxt != null and s_searchTxt != ''">
+	<![CDATA[
+					       AND A.SUBJNM LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+	</if>
+	<![CDATA[
+						 ORDER BY A.SUBJNM
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectSubjRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		--  과목코드 기본 정보 (업데이트 상세보기용)
+		SELECT S.SUBJ
+		     , S.SUBJNM
+		     , S.SUBJTYPE
+		     , S.EVALUTEGUBUN
+		     , S.OPENEDUGUBUN
+		     , S.F_NEW
+		     , S.LUSERNO
+		     , S.LDATE
+		     , S.LANGUAGE
+		     , S.SUBJGUBUN
+		     , TO_CHAR(S.LIMIT) LIMIT
+		     , TO_CHAR(S.LIMIT_TIME) LIMIT_TIME
+		     , S.SEL_GUBUN
+		     , S.APP_GUBUN
+		     , S.USE_YN
+		     , S.BOOK_FILENAME
+		     , S.PRO_FILENAME
+		     , S.RECOM_YN
+		     , S.DEVORG
+		     , S.DEVYEAR
+		     , S.LCMS_WIDTH
+		     , S.LCMS_HEIGHT
+		     , S.MENUYN
+		     , S.MENUNUM
+		     , NVL(Q.COUNT_SUBJ,0) AS COUNT_DELYN
+		  FROM TB_SUBJ S
+		     , (SELECT COUNT(0) AS COUNT_SUBJ, SUBJ FROM TB_SUBJSEQ GROUP BY SUBJ) Q
+		 WHERE 1=1
+		   AND Q.SUBJ(+) = S.SUBJ
+		   AND S.SUBJ = #{subj}
+	]]>
+	</select>
+	
+	<select id="selectSubjNextSubj" parameterType="String" resultType="String">
+	<![CDATA[
+		--  과목코드 생성(일반과목)
+		SELECT NVL(SUBSTR(MAX(SUBJ),1,3), #{tmpSubj})||LPAD(NVL(TO_NUMBER(SUBSTR(MAX(SUBJ),4,LENGTH(MAX(SUBJ))) + 1), '0000001'), 7,0)
+		  FROM TB_SUBJ
+		 WHERE 1=1
+		   AND SUBJ LIKE #{tmpSubj}||'%'
+	]]>
+	</select>
+	
+	<insert id="insertSubjByCyber" parameterType="Map">
+	<![CDATA[
+		--  과목 등록(일반과목)
+		INSERT INTO TB_SUBJ (
+		       SUBJ        , SEL_GUBUN      , APP_GUBUN   , SUBJNM         , SUBJGUBUN
+		     , SUBJTYPE    , EVALUTEGUBUN   , F_NEW       , OPENEDUGUBUN   , LANGUAGE
+		     , RECOM_YN    , LUSERNO        , LDATE       , USE_YN         , BOOK_FILENAME
+		     , PRO_FILENAME, LIMIT          , LIMIT_TIME  , LCMS_WIDTH     , LCMS_HEIGHT
+		     , MENUYN      , MENUNUM        , DEVORG      , DEVYEAR
+		) VALUES (
+		       #{nextSubj} , #{sel_gubun}   , #{app_gubun}, #{subject_name}, #{subjgubun}
+		     , #{subjtype} , #{evalutegubun}, #{f_new}    , #{openedugubun}, #{language}
+		     , #{recom_yn} , #{sessNo}      , SYSDATE     , #{use_yn}      , #{bookFileNm}
+		     , #{proFileNm}, #{limit}       , #{limitTime}, #{lcmsWidth}   , #{lcmsHeight}
+		     , #{menuyn}   , #{menunum}     , #{devorg}   , #{devyear}
+		)
+	]]>
+	</insert>
+	
+	<select id="selectScormMappingInfoMaxSeq" resultType="int">
+	<![CDATA[
+		-- LCMS콘텐츠의 등록시 사용할 INFO 최고 seq
+		SELECT NVL(MAX(MAPPING_SEQ), 0) +1 
+		  FROM SCORM_MAPPING_INFO
+	]]>
+	</select>
+	
+	<insert id="insertScormMappingInfo" parameterType="Map">
+	<![CDATA[
+		-- LCMS콘텐츠의 등록 (과목매핑)
+		INSERT INTO SCORM_MAPPING_INFO (
+		       MAPPING_SEQ, SUBJ
+		) VALUES (
+		       #{mappingSeq}, #{subj}
+		)
+	]]>
+	</insert>
+	
+	<select id="selectScormMappingOrgMaxSeq" resultType="int">
+	<![CDATA[
+		-- LCMS콘텐츠의 등록시 사용할 ORG 최고 seq
+		SELECT NVL(MAX(ORG_SEQ), 0) + 1 
+		  FROM SCORM_MAPPING_ORGANIZATION
+	]]>
+	</select>
+	
+	<insert id="insertScormMappingOrg" parameterType="Map">
+	<![CDATA[
+		-- LCMS콘텐츠의 등록 (콘텐츠ORG정보)
+		INSERT INTO SCORM_MAPPING_ORGANIZATION (
+		       ORG_SEQ  , ORG_DIR  , MAPPING_SEQ  , DATES   , PREVIEW_YN
+		) VALUES (
+		       #{orgSeq}, #{orgDir}, #{mappingSeq}, #{dates}, #{previewYn}
+		)
+	]]>
+	</insert>
+	
+	<select id="selectLcmsItemListBySimple" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- LCMS_ITEM 리스트
+ 		SELECT ITEM_ID
+ 		  FROM LCMSINCH.LCMS_ITEM
+ 		 WHERE 1=1
+ 		   AND ORG_DIR = #{orgDir}
+ 		 ORDER BY ORG_ITEM_NO
+	]]>
+	</select>
+	
+	<insert id="insertScormMappingItem" parameterType="Map">
+	<![CDATA[
+		-- LCMS콘텐츠의 등록 (item정보)
+		INSERT INTO SCORM_MAPPING_ITEM (
+		       ITEM_SEQ
+		     , ITEM_ID, ORG_SEQ
+		) VALUES (
+		       (SELECT NVL(MAX(ITEM_SEQ), 0) + 1 FROM SCORM_MAPPING_ITEM)
+		     , #{itemId}, #{orgSeq}
+		)
+	]]>
+	</insert>
+	
+	<insert id="insertSubjByGeneral" parameterType="Map">
+	<![CDATA[
+		--  과목코드 (일반과목) 등록
+		INSERT INTO TB_SUBJ (
+		       SUBJ
+		     , SEL_GUBUN      , APP_GUBUN   , SUBJNM         , SUBJGUBUN    , SUBJTYPE
+		     , EVALUTEGUBUN   , F_NEW       , OPENEDUGUBUN   , LANGUAGE     , RECOM_YN
+		     , LUSERNO        , LDATE       , USE_YN         , BOOK_FILENAME, PRO_FILENAME
+		) VALUES (
+			   (SELECT NVL(SUBSTR(MAX(SUBJ),1,3), #{subjCode})||LPAD(NVL(TO_NUMBER(SUBSTR(MAX(SUBJ),4,LENGTH(MAX(SUBJ))) + 1), '0000001'), 7,0)
+			      FROM TB_SUBJ
+			     WHERE 1=1
+			       AND SUBJ LIKE #{subjCode}||'%'
+			   )
+			 , #{sel_gubun}   , #{app_gubun}, #{subject_name}, #{subjgubun} , #{subjtype}
+			 , #{evalutegubun}, #{f_new}    , #{openedugubun}, #{language}  , #{recom_yn}
+			 , #{sessNo}      , SYSDATE     , #{use_yn}      , #{bookFileNm}, #{proFileNm}
+		)
+	]]>
+	</insert>
+	
+	<insert id="insertSubjByMov" parameterType="Map">
+	<![CDATA[
+		--  과목 등록(일반과목)
+		INSERT INTO TB_SUBJ (
+		       SUBJ        , SEL_GUBUN      , APP_GUBUN   , SUBJNM         , SUBJGUBUN
+		     , SUBJTYPE    , EVALUTEGUBUN   , F_NEW       , OPENEDUGUBUN   , LANGUAGE
+		     , RECOM_YN    , LUSERNO        , LDATE       , USE_YN         , BOOK_FILENAME
+		     , PRO_FILENAME, LIMIT          , LIMIT_TIME  , LCMS_WIDTH     , LCMS_HEIGHT
+		     , MENUYN      , MENUNUM
+		) VALUES (
+               #{subj}     , #{sel_gubun}   , #{app_gubun}, #{subject_name}, #{subjgubun}
+             , #{subjtype} , #{evalutegubun}, #{f_new}    , #{openedugubun}, #{language}
+             , #{recom_yn} , #{sessNo}      , SYSDATE     , #{use_yn}      , #{bookFileNm}
+             , #{proFileNm}, #{limit}       , #{limitTime}, #{lcmsWidth}   , #{lcmsHeight}
+             , #{menuyn}   , #{menunum}
+		)
+	]]>
+	</insert>
+	
+	<insert id="insertOrganization" parameterType="Map">
+	<![CDATA[
+		-- LCMS에 ORG 등록(동영상과목)
+		INSERT INTO LCMSINCH.LCMS_ORGANIZATION (
+		       ORG_DIR     , ORG_ID   , CT_ID       , CT_SEQ   , ORG_TITLE
+		     , ORG_DIR_NAME, CP_ID    , COMMENT_DESC, FILE_NAME, FILE_SIZE
+		) VALUES (
+               #{orgDir}   , #{orgDir}, 999999999   , #{dates} , #{orgTitle}
+             , #{subj}     , #{sessNo}, ''          , ''       , ''
+		)
+	]]>
+	</insert>
+	
+	<delete id="deleteScormMappingItem" parameterType="String">
+	<![CDATA[
+		-- LCMS콘텐츠의 콘텐츠 아이템 정보 삭제 (ITEM 정보)
+		DELETE
+		  FROM SCORM_MAPPING_ITEM
+		 WHERE 1=1
+		   AND ORG_SEQ IN (SELECT ORG_SEQ
+		                     FROM SCORM_MAPPING_ORGANIZATION A
+		                        , SCORM_MAPPING_INFO B
+			                WHERE 1=1
+			                  AND A.MAPPING_SEQ = B.MAPPING_SEQ
+			                  AND B.SUBJ = #{subj}
+			              )
+	]]>
+	</delete>
+	
+	<delete id="deleteScormMappingOrg" parameterType="String">
+	<![CDATA[
+		-- LCMS콘텐츠의 매핑 회차 정보 삭제 (org 정보)
+		DELETE
+		  FROM SCORM_MAPPING_ORGANIZATION
+		 WHERE 1=1
+		   AND MAPPING_SEQ IN (SELECT MAPPING_SEQ FROM SCORM_MAPPING_INFO WHERE SUBJ = #{subj})
+	]]>
+	</delete>
+	
+	<delete id="deleteScormMappingInfo" parameterType="String">
+	<![CDATA[
+		-- LCMS콘텐츠의 삭제 (INFO 정보)
+		DELETE
+		  FROM SCORM_MAPPING_INFO
+		 WHERE 1=1
+		   AND SUBJ = #{subj}
+	]]>
+	</delete>
+	
+	<update id="updateSubjByCyber" parameterType="Map">
+	<![CDATA[
+		--  과목코드 수정
+		UPDATE TB_SUBJ
+		   SET SEL_GUBUN = #{sel_gubun}
+		     , APP_GUBUN = #{app_gubun}
+		     , SUBJNM = #{subject_name}
+		     , SUBJGUBUN = #{subjgubun}
+		     , SUBJTYPE = #{subjtype}
+		     , EVALUTEGUBUN = #{evalutegubun}
+		     , F_NEW = #{f_new}
+		     , OPENEDUGUBUN = #{openedugubun}
+		     , LANGUAGE = #{language}
+		     , RECOM_YN = #{recom_yn}
+		     , USE_YN = #{use_yn}
+		     , BOOK_FILENAME = #{bookFileNm}
+		     , PRO_FILENAME = #{proFileNm}
+		     , DEVORG = #{devorg}
+		     , DEVYEAR = #{devyear}
+		     , LIMIT = #{limit}
+		     , LIMIT_TIME = #{limitTime}
+		     , LCMS_WIDTH = #{lcmsWidth}
+		     , LCMS_HEIGHT = #{lcmsHeight}
+		     , MENUYN = #{menuyn}
+		     , MENUNUM = #{menunum}
+		 WHERE 1=1
+		   AND SUBJ = #{subj}
+	]]>
+	</update>
+	
+	<update id="updateSubjByGeneral" parameterType="Map">
+	<![CDATA[
+		--  과목코드 수정
+		UPDATE TB_SUBJ
+		  SET SEL_GUBUN = #{sel_gubun}
+		    , APP_GUBUN = #{app_gubun}
+		    , SUBJNM = #{subject_name}
+		    , SUBJGUBUN = #{subjgubun}
+		    , SUBJTYPE = #{subjtype}
+		    , EVALUTEGUBUN = #{evalutegubun}
+		    , F_NEW = #{f_new}
+		    , OPENEDUGUBUN = #{openedugubun}
+		    , LANGUAGE = #{language}
+		    , RECOM_YN = #{recom_yn}
+		    , USE_YN = #{use_yn}
+		    , BOOK_FILENAME = #{bookFileNm}
+		    , PRO_FILENAME = #{proFileNm}
+		WHERE 1=1
+		  AND SUBJ = #{subj}
+	]]>
+	</update>
+	
+	<insert id="insertSubjgrp" parameterType="Map">
+	<![CDATA[
+		--  선택과목 등록
+		INSERT INTO TB_SUBJGRP (
+		       SUBJ, SUB_SUBJ
+		) VALUES (
+		       #{subj}, #{subSubj}
+		)
+	]]>
+	</insert>
+	
+	<delete id="deleteSubjByStep1" parameterType="String">
+	<![CDATA[
+		--  과목 삭제시 삭제할 테이블 1
+		DELETE
+		  FROM TB_SUBJWEEK
+		 WHERE 1=1
+		   AND SUBJ = #{subj}
+	]]>
+	</delete>
+	
+	<delete id="deleteSubjByStep2" parameterType="String">
+	<![CDATA[
+		--  과목 삭제시 삭제할 테이블 2
+		DELETE
+		  FROM TB_SUBJGRP
+		 WHERE 1=1
+		   AND SUBJ = #{subj}
+	]]>
+	</delete>
+	
+	<delete id="deleteSubjByStep3" parameterType="String">
+	<![CDATA[
+		--  과목 삭제시 삭제할 테이블 3
+		DELETE
+		  FROM TB_SUBJ
+		 WHERE 1=1
+		   AND SUBJ = #{subj}
+	]]>
+	</delete>
+	
+	<delete id="deleteLcmsOrg" parameterType="String">
+	<![CDATA[
+		-- LCMSINCH.LCMS_ORGANIZATION 콘텐츠의 회차 정보 삭제 (org 정보)
+		DELETE
+		  FROM LCMSINCH.LCMS_ORGANIZATION 
+		 WHERE 1=1
+		   AND ORG_DIR IN (SELECT B.ORG_DIR
+		                     FROM SCORM_MAPPING_INFO A
+		                        , SCORM_MAPPING_ORGANIZATION B
+		                    WHERE 1=1
+		                      AND A.MAPPING_SEQ = B.MAPPING_SEQ
+		                      AND A.SUBJ = #{subj}
+                          )
+	]]>
+	</delete>
+	
+	<select id="selectSearchSubjPop" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		--  선택과목 추가용 검색 리스트
+		SELECT SUBJ
+		     , SUBJNM
+		  FROM TB_SUBJ
+		 WHERE 1=1
+		   AND SUBJNM LIKE '%'||#{searchText}||'%' 
+		   AND SEL_GUBUN != 'P' 
+		   AND SUBJTYPE != 'S'
+		 ORDER BY SUBJNM
+	]]>
+	</select>
+	
+	<select id="selectSubjgrp" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		--  선택과목 리스트
+		SELECT SJ.SUBJNM AS SUBJNM
+		     , SG.SUB_SUBJ AS SUBJ
+		     , SJ.SUBJTYPE AS SUBJTYPE
+		     , SJ.BOOK_FILENAME AS BOOK_FILENAME
+		     , SJ.PRO_FILENAME AS PRO_FILENAME
+		     , KK.DATES AS DATES
+		     , KK.SAMPLE AS SAMPLE
+		     , KK.DATES_NM AS DATES_NM
+		     , KK.ORG_ID AS ORG_ID
+		     , KK.CT_ID AS CT_ID
+		     , KK.CT_SEQ AS CT_SEQ
+		     , KK.ORG_DIR AS ORG_DIR
+		  FROM TB_SUBJ SJ
+		     , (SELECT * FROM TB_SUBJGRP WHERE SUBJ = #{subj}) SG
+		     , (SELECT A.SUBJ
+		             , A.DATES
+		             , A.SAMPLE
+		             , A.DATES_NM
+		             , A.ORG_ID
+		             , B.CT_ID
+		             , B.CT_SEQ
+		             , B.ORG_DIR 
+		          FROM TB_SUBJWEEK A
+		             , LCMS_ORGANIZATION B 
+		         WHERE 1=1
+		           AND A.ORG_ID=B.ORG_ID
+		           AND A.SAMPLE='Y'
+		       ) KK
+		 WHERE 1=1
+		   AND SJ.SUBJ = SG.SUB_SUBJ 
+		   AND SJ.SUBJ = KK.SUBJ(+) 
+		 ORDER BY SG.SUB_SUBJ DESC			
+	]]>
+	</select>
+	
+	<select id="selectMaxSubj" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		--  과목코드 MAX(subj)
+		SELECT (NVL(SUBSTR(MAX(SUBJ),1,3), #{subjCode})||LPAD(NVL(TO_NUMBER(SUBSTR(MAX(SUBJ),4, LENGTH(MAX(SUBJ))) + 1), '0000001'), 7,0)) AS SUBJ
+		  FROM TB_SUBJ
+		 WHERE 1=1
+		   AND SUBJ LIKE #{subjCode}||'%'		
+	]]>
+	</select>
+	
+	<insert id="insertSubjBySelect" parameterType="Map">
+	<![CDATA[
+		--  과목코드 (선택과목 등록시) 등록
+		INSERT INTO TB_SUBJ (
+		       SUBJ        , SEL_GUBUN      , APP_GUBUN   , SUBJNM         , SUBJGUBUN
+		     , SUBJTYPE    , EVALUTEGUBUN   , F_NEW       , OPENEDUGUBUN   , LANGUAGE
+		     , RECOM_YN    , LUSERNO        , LDATE       , USE_YN         , BOOK_FILENAME
+		     , PRO_FILENAME
+		) VALUES (
+			   #{subj}     , #{sel_gubun}   , #{app_gubun}, #{subject_name}, #{subjgubun}
+			 , #{subjtype} , #{evalutegubun}, #{f_new}    , #{openedugubun}, #{language}
+			 , #{recom_yn} , #{sessNo}      , SYSDATE     , #{use_yn}      , #{bookFileNm}
+			 , #{proFileNm}
+		)
+
+	]]>
+	</insert>
+	
+	<select id="selectLcmsCategoryList" resultType="DataMap">
+	<![CDATA[
+		-- Lcms 카테고리(콘텐츠) 리스트
+		SELECT A.CT_ID
+		     , A.CT_NAME 
+		  FROM LCMSINCH.LCMS_CATEGORY A
+		 ORDER BY A.CT_NAME
+	]]>
+	</select>
+	
+	<select id="selectSubjByContentMappingList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 과목의 등록된 콘텐츠 매핑 정보
+		SELECT A.MAPPING_SEQ
+		     , A.SUBJ
+		     , A.ORG_SEQ
+		     , A.ORG_DIR
+		     , C.SUBJNM
+		     , B.ORG_TITLE
+		     , A.DATES
+		  FROM (SELECT A.MAPPING_SEQ
+		             , A.SUBJ
+		             , B.ORG_SEQ
+		             , B.ORG_DIR
+		             , B.DATES
+			      FROM SCORM_MAPPING_INFO A INNER JOIN SCORM_MAPPING_ORGANIZATION B
+			        ON A.MAPPING_SEQ = B.MAPPING_SEQ
+			     WHERE 1=1
+			       AND A.SUBJ = #{subj}) A 
+			   INNER JOIN LCMSINCH.LCMS_ORGANIZATION B 
+				  ON A.ORG_DIR = B.ORG_DIR
+			   INNER JOIN TB_SUBJ C 
+				  ON A.SUBJ = C.SUBJ
+		 ORDER BY A.DATES
+	]]>
+	</select>
+	
+	<select id="selectLcmsOrganizationList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- LCMS콘텐츠의 등록된 회차 정보 리스트
+		SELECT A.CT_ID
+		     , A.CT_NAME
+		     , B.ORG_ID
+		     , B.ORG_DIR
+		     , B.ORG_TITLE
+		  FROM LCMSINCH.LCMS_CATEGORY A 
+			   INNER JOIN LCMSINCH.LCMS_ORGANIZATION B
+				  ON A.CT_ID = B.CT_ID
+		 WHERE 1=1
+		   AND A.CT_ID = #{lcmsCtId}
+		 ORDER BY B.CT_SEQ
+
+	]]>
+	</select>
+</mapper>

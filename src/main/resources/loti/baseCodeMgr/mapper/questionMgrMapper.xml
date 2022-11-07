@@ -1,0 +1,842 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.baseCodeMgr.mapper.QuestionMgrMapper">
+
+	<select id="selectSubjWithQuestionListCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		--  과목관리 리스트(인덱스 사용안하는 것)
+		SELECT COUNT(0) AS CNT		        
+		  FROM TB_SUBJ A
+		     , (SELECT XA.SUBJ
+		             , XA.MAPPING_SEQ
+		             , SUM(DECODE(NVL(PREVIEW_YN, 'N'), 'Y', 1, 0) ) AS ISSAMPLE
+		             , COUNT(ORG_SEQ) AS ISVIEW
+                  FROM SCORM_MAPPING_INFO XA
+                     , SCORM_MAPPING_ORGANIZATION XB
+                 WHERE 1=1
+                   AND XA.MAPPING_SEQ = XB.MAPPING_SEQ
+                 GROUP BY XA.SUBJ, XA.MAPPING_SEQ
+                 ORDER BY XA.MAPPING_SEQ
+               ) B
+		 WHERE 1=1
+		   AND A.SUBJ = B.SUBJ(+)
+	]]>
+	<if test="s_useYn != null and s_useYn != ''">
+	<![CDATA[
+	       AND A.USE_YN = #{s_useYn}
+	]]>
+	</if>
+	<if test="s_subType != null and s_subType != ''">
+	<![CDATA[
+	       AND A.SUBJTYPE = #{s_subType}
+	]]>
+	</if>
+	<if test="s_searchTxt != null and s_searchTxt != ''">
+	<![CDATA[
+	       AND A.SUBJNM LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+	</if>
+	</select>
+	
+	<select id="selectSubjWithQuestionList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (--  과목관리 리스트(인덱스 사용안하는 것)
+						SELECT A.SUBJ
+						     , A.SUBJNM
+						     , A.SUBJTYPE
+						     , A.EVALUTEGUBUN
+						     , A.OPENEDUGUBUN
+						     , A.F_NEW
+						     , A.LUSERNO
+						     , A.LDATE
+						     , A.LANGUAGE
+						     , A.SUBJGUBUN
+						     , A.LIMIT
+						     , A.LIMIT_TIME
+						     , A.SEL_GUBUN
+						     , A.APP_GUBUN
+						     , A.USE_YN
+						     , A.RECOM_YN
+						     , NVL(B.ISSAMPLE, 0) AS ISSAMPLE
+						     , NVL(B.ISVIEW, 0) AS ISVIEW
+						     , CASE WHEN A.SEL_GUBUN = 'P' THEN '선택'
+						            ELSE '일반'
+							   END AS SEL_GUBUN_NM
+							 , CASE WHEN A.SUBJGUBUN = '01' THEN '소양분야'
+						            WHEN A.SUBJGUBUN = '02' THEN '직무분야'
+						            WHEN A.SUBJGUBUN = '03' THEN '행정및기타'
+						            ELSE '기타'
+						       END AS SUBJGUBUN_NM
+						     , CASE WHEN A.SUBJTYPE = 'Y' THEN '사이버'
+						            WHEN A.SUBJTYPE = 'N' THEN '집합'
+						            WHEN A.SUBJTYPE = 'S' THEN '특수'
+						            WHEN A.SUBJTYPE = 'M' THEN '동영상'
+						            ELSE ''
+							   END AS SUBJTYPE_NM
+							 , NVL(QT.QCNT, 0) AS QCNT
+						  FROM TB_SUBJ A
+						     , (SELECT XA.SUBJ
+						             , XA.MAPPING_SEQ
+						             , SUM(DECODE(NVL(PREVIEW_YN, 'N'), 'Y', 1, 0) ) AS ISSAMPLE
+						             , COUNT(ORG_SEQ) AS ISVIEW
+				                  FROM SCORM_MAPPING_INFO XA
+				                     , SCORM_MAPPING_ORGANIZATION XB
+				                 WHERE 1=1
+				                   AND XA.MAPPING_SEQ = XB.MAPPING_SEQ
+				                 GROUP BY XA.SUBJ, XA.MAPPING_SEQ
+				                 ORDER BY XA.MAPPING_SEQ
+				               ) B
+				             , (SELECT CH.COURSE_CODE AS SUBJ, COUNT(Q.ID_Q) AS QCNT
+				                  FROM ETEST.C_CHAPTER CH
+				                     , ETEST.Q Q
+				                 WHERE 1=1
+				                   AND Q.ID_COURSE = CH.ID_COURSE
+				                   AND Q.ID_SUBJECT = CH.ID_SUBJECT
+				                   AND Q.ID_CHAPTER = CH.ID_CHAPTER
+				                 GROUP BY CH.COURSE_CODE
+				               ) QT
+						 WHERE 1=1
+						   AND A.SUBJ = QT.SUBJ(+)
+						   AND A.SUBJ = B.SUBJ(+)
+	]]>
+	<if test="s_useYn != null and s_useYn != ''">
+	<![CDATA[
+					       AND A.USE_YN = #{s_useYn}
+	]]>
+	</if>
+	<if test="s_subType != null and s_subType != ''">
+	<![CDATA[
+					       AND A.SUBJTYPE = #{s_subType}
+	]]>
+	</if>
+	<if test="s_searchTxt != null and s_searchTxt != ''">
+	<![CDATA[
+					       AND A.SUBJNM LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+	</if>
+	<![CDATA[
+						 ORDER BY A.SUBJNM
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectSubjWithQuestionByIndexCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		--  과목관리 리스트(인덱스 사용)
+		SELECT COUNT(0) AS CNT
+		  FROM TB_SUBJ A
+		     , TB_CHARINDEX B
+		     , (SELECT XA.SUBJ
+		             , XA.MAPPING_SEQ
+		             , SUM(DECODE(NVL(PREVIEW_YN, 'N'), 'Y', 1, 0) ) AS ISSAMPLE
+		             , COUNT(ORG_SEQ) AS ISVIEW
+                  FROM SCORM_MAPPING_INFO XA
+                     , SCORM_MAPPING_ORGANIZATION XB 
+                 WHERE 1=1
+                   AND XA.MAPPING_SEQ = XB.MAPPING_SEQ
+                 GROUP BY XA.SUBJ, XA.MAPPING_SEQ
+                 ORDER BY XA.MAPPING_SEQ
+               ) C
+		 WHERE 1=1
+		   AND A.SUBJ = C.SUBJ(+)
+		   AND ASCII(SUBSTR(SUBJNM,1,1)) BETWEEN B.STARTNUM AND B.ENDNUM
+	]]>
+	<if test="s_indexSeq != null and s_indexSeq != ''">
+	<![CDATA[
+					       AND B.INDEXSEQ = #{s_indexSeq}
+	]]>
+	</if>
+	<if test="s_useYn != null and s_useYn != ''">
+	<![CDATA[
+	       AND A.USE_YN = #{s_useYn}
+	]]>
+	</if>
+	<if test="s_subType != null and s_subType != ''">
+	<![CDATA[
+	       AND A.SUBJTYPE = #{s_subType}
+	]]>
+	</if>
+	<if test="s_searchTxt != null and s_searchTxt != ''">
+	<![CDATA[
+	       AND A.SUBJNM LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+	</if>
+	</select>
+	
+	<select id="selectSubjWithQuestionByIndex" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (--  과목관리 리스트(인덱스 사용)
+						SELECT A.SUBJ
+						     , A.SUBJNM
+						     , A.SUBJTYPE
+						     , A.EVALUTEGUBUN
+						     , A.OPENEDUGUBUN
+						     , A.F_NEW
+						     , A.LUSERNO
+						     , A.LDATE
+						     , A.LANGUAGE
+						     , A.SUBJGUBUN
+						     , A.LIMIT
+						     , A.LIMIT_TIME
+						     , A.SEL_GUBUN
+						     , A.APP_GUBUN
+						     , A.USE_YN
+						     , A.RECOM_YN
+						     , NVL(C.ISSAMPLE, 0) AS ISSAMPLE
+						     , NVL(C.ISVIEW, 0) AS ISVIEW
+						     , CASE WHEN A.SEL_GUBUN = 'P' THEN '선택'
+						            ELSE '일반'
+							   END AS SEL_GUBUN_NM
+							 , CASE WHEN A.SUBJGUBUN = '01' THEN '소양분야'
+							        WHEN A.SUBJGUBUN = '02' THEN '직무분야'
+							        WHEN A.SUBJGUBUN = '03' THEN '행정및기타'
+						            ELSE '기타'
+						       END AS SUBJGUBUN_NM
+						     , CASE WHEN A.SUBJTYPE = 'Y' THEN '사이버'
+						            WHEN A.SUBJTYPE = 'N' THEN '집합'
+						            WHEN A.SUBJTYPE = 'S' THEN '특수'
+						            WHEN A.SUBJTYPE = 'M' THEN '동영상'
+						            ELSE ''
+							   END AS SUBJTYPE_NM
+						  FROM TB_SUBJ A
+						     , TB_CHARINDEX B
+						     , (SELECT XA.SUBJ
+						             , XA.MAPPING_SEQ
+						             , SUM(DECODE(NVL(PREVIEW_YN, 'N'), 'Y', 1, 0) ) AS ISSAMPLE
+						             , COUNT(ORG_SEQ) AS ISVIEW
+				                  FROM SCORM_MAPPING_INFO XA
+				                     , SCORM_MAPPING_ORGANIZATION XB 
+				                 WHERE 1=1
+				                   AND XA.MAPPING_SEQ = XB.MAPPING_SEQ
+				                 GROUP BY XA.SUBJ, XA.MAPPING_SEQ
+				                 ORDER BY XA.MAPPING_SEQ
+				               ) C
+						 WHERE 1=1
+						   AND A.SUBJ = C.SUBJ(+)
+						   AND ASCII(SUBSTR(SUBJNM,1,1)) BETWEEN B.STARTNUM AND B.ENDNUM
+	]]>
+	<if test="s_indexSeq != null and s_indexSeq != ''">
+	<![CDATA[
+					       AND B.INDEXSEQ = #{s_indexSeq}
+	]]>
+	</if>
+	<if test="s_useYn != null and s_useYn != ''">
+	<![CDATA[
+					       AND A.USE_YN = #{s_useYn}
+	]]>
+	</if>
+	<if test="s_subType != null and s_subType != ''">
+	<![CDATA[
+					       AND A.SUBJTYPE = #{s_subType}
+	]]>
+	</if>
+	<if test="s_searchTxt != null and s_searchTxt != ''">
+	<![CDATA[
+					       AND A.SUBJNM LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+	</if>
+	<![CDATA[
+						 ORDER BY A.SUBJNM
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectQuestionListBySubjCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		SELECT COUNT(0) AS CNT
+		  FROM ETEST.Q Q
+		     , ETEST.C_CHAPTER CH
+		     , ETEST.R_DIFFICULTY DF
+		     , ETEST.R_QTYPE TP
+		     , ETEST.Q_REF RF
+		     , (SELECT COUNT(0) AS ECNT, ID_Q FROM ETEST.EXAM_Q GROUP BY ID_Q) EQ
+		 WHERE 1=1
+		   AND Q.ID_COURSE = CH.ID_COURSE
+		   AND Q.ID_SUBJECT = CH.ID_SUBJECT
+		   AND Q.ID_CHAPTER = CH.ID_CHAPTER
+		   AND DF.ID_DIFFICULTY(+) = Q.ID_DIFFICULTY1
+		   AND TP.ID_QTYPE(+) = Q.ID_QTYPE
+		   AND CH.COURSE_CODE = #{subj}
+		   AND RF.ID_COURSE(+) = Q.ID_COURSE
+           AND RF.ID_SUBJECT(+) = Q.ID_SUBJECT
+           AND RF.ID_REF(+) = Q.ID_REF
+           AND EQ.ID_Q(+) = Q.ID_Q
+	]]>
+	<if test="s_difficulty != null and s_difficulty != ''">
+	<![CDATA[
+	       AND Q.ID_DIFFICULTY1 = #{s_difficulty}
+	]]>
+	</if>
+	<if test="s_useYn != null and s_useYn != ''">
+	<![CDATA[
+	       AND Q.USE_YN = #{s_useYn}
+	]]>
+	</if>
+	<if test="s_qType != null and s_qType != ''">
+	<![CDATA[
+	       AND Q.ID_QTYPE = #{s_qType}
+	]]>
+	</if>
+	<if test="s_searchTxt != null and s_searchTxt != ''">
+		<if test="s_searchType == ('Q').toString()">
+	<![CDATA[
+	       AND Q.Q LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+		</if>
+		<if test="s_searchType == ('E').toString()">
+	<![CDATA[
+	       AND (Q.EX1 LIKE '%'||#{s_searchTxt}||'%'
+	            OR Q.EX2 LIKE '%'||#{s_searchTxt}||'%'
+	            OR Q.EX3 LIKE '%'||#{s_searchTxt}||'%'
+	            OR Q.EX4 LIKE '%'||#{s_searchTxt}||'%'
+	            OR Q.EX5 LIKE '%'||#{s_searchTxt}||'%'
+	           )
+	]]>
+		</if>
+		<if test="s_searchType == ('X').toString()">
+	<![CDATA[
+	       AND Q.EXPLAIN LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+		</if>
+		<if test="s_searchType == ('H').toString()">
+	<![CDATA[
+	       AND Q.HINT LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+		</if>
+		<if test="s_searchType == ('T').toString()">
+	<![CDATA[
+	       AND (RF.REFTITLE LIKE '%'||#{s_searchTxt}||'%'
+	            OR RF.REFBODY1 LIKE '%'||#{s_searchTxt}||'%'
+	            OR RF.REFBODY2 LIKE '%'||#{s_searchTxt}||'%'
+	            OR RF.REFBODY3 LIKE '%'||#{s_searchTxt}||'%'
+	           )
+	]]>
+		</if>
+	</if>
+	</select>
+	
+	<select id="selectQuestionListBySubj" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (SELECT Q.ID_Q
+						     , Q.ID_COURSE
+						     , Q.ID_SUBJECT
+						     , Q.ID_CHAPTER
+						     , Q.ID_DIFFICULTY1
+						     , DF.DIFFICULTY
+						     , Q.ID_QTYPE
+						     , TP.QTYPE
+						     , Q.EXCOUNT
+						     , Q.CACOUNT
+						     , Q.Q
+						     , Q.EX1
+						     , Q.EX2
+						     , Q.EX3
+						     , Q.EX4
+						     , Q.EX5
+						     , Q.CA
+						     , Q.USE_YN
+						     , CH.COURSE_CODE
+						     , Q.EXPLAIN
+						     , Q.HINT
+						     , RF.REFTITLE
+						     , RF.REFBODY1
+						     , RF.REFBODY2
+						     , RF.REFBODY3
+						     , NVL(EQ.ECNT,0) AS ECNT
+						  FROM ETEST.Q Q
+						     , ETEST.C_CHAPTER CH
+						     , ETEST.R_DIFFICULTY DF
+						     , ETEST.R_QTYPE TP
+						     , ETEST.Q_REF RF
+						     , (SELECT COUNT(0) AS ECNT, ID_Q FROM ETEST.EXAM_Q GROUP BY ID_Q) EQ
+						 WHERE 1=1
+						   AND Q.ID_COURSE = CH.ID_COURSE
+						   AND Q.ID_SUBJECT = CH.ID_SUBJECT
+						   AND Q.ID_CHAPTER = CH.ID_CHAPTER
+						   AND DF.ID_DIFFICULTY(+) = Q.ID_DIFFICULTY1
+						   AND TP.ID_QTYPE(+) = Q.ID_QTYPE
+						   AND CH.COURSE_CODE = #{subj}
+						   AND RF.ID_COURSE(+) = Q.ID_COURSE
+				           AND RF.ID_SUBJECT(+) = Q.ID_SUBJECT
+				           AND RF.ID_REF(+) = Q.ID_REF
+				           AND EQ.ID_Q(+) = Q.ID_Q
+	]]>
+	<if test="s_difficulty != null and s_difficulty != ''">
+	<![CDATA[
+					       AND Q.ID_DIFFICULTY1 = #{s_difficulty}
+	]]>
+	</if>
+	<if test="s_useYn != null and s_useYn != ''">
+	<![CDATA[
+					       AND Q.USE_YN = #{s_useYn}
+	]]>
+	</if>
+	<if test="s_qType != null and s_qType != ''">
+	<![CDATA[
+					       AND Q.ID_QTYPE = #{s_qType}
+	]]>
+	</if>
+	<if test="s_searchTxt != null and s_searchTxt != ''">
+		<if test="s_searchType == ('Q').toString()">
+	<![CDATA[
+					       AND Q.Q LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+		</if>
+		<if test="s_searchType == ('E').toString()">
+	<![CDATA[
+					       AND (Q.EX1 LIKE '%'||#{s_searchTxt}||'%'
+					            OR Q.EX2 LIKE '%'||#{s_searchTxt}||'%'
+					            OR Q.EX3 LIKE '%'||#{s_searchTxt}||'%'
+					            OR Q.EX4 LIKE '%'||#{s_searchTxt}||'%'
+					            OR Q.EX5 LIKE '%'||#{s_searchTxt}||'%'
+					           )
+	]]>
+		</if>
+		<if test="s_searchType == ('X').toString()">
+	<![CDATA[
+					       AND Q.EXPLAIN LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+		</if>
+		<if test="s_searchType == ('H').toString()">
+	<![CDATA[
+					       AND Q.HINT LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+		</if>
+		<if test="s_searchType == ('T').toString()">
+	<![CDATA[
+					       AND (RF.REFTITLE LIKE '%'||#{s_searchTxt}||'%'
+					            OR RF.REFBODY1 LIKE '%'||#{s_searchTxt}||'%'
+					            OR RF.REFBODY2 LIKE '%'||#{s_searchTxt}||'%'
+					            OR RF.REFBODY3 LIKE '%'||#{s_searchTxt}||'%'
+					           )
+	]]>
+		</if>
+	</if>
+	<![CDATA[
+					     ORDER BY Q.ID_Q
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectQuestionExcelBySubj" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT Q.ID_Q
+		     , Q.ID_COURSE
+		     , Q.ID_SUBJECT
+		     , Q.ID_CHAPTER
+		     , Q.ID_DIFFICULTY1
+		     , DF.DIFFICULTY
+		     , Q.ID_QTYPE
+		     , TP.QTYPE
+		     , Q.EXCOUNT
+		     , Q.CACOUNT
+		     , Q.Q
+		     , Q.EX1
+		     , Q.EX2
+		     , Q.EX3
+		     , Q.EX4
+		     , Q.EX5
+		     , Q.CA
+		     , Q.USE_YN
+		     , CH.COURSE_CODE
+		     , Q.EXPLAIN
+		     , Q.HINT
+		     , RF.REFTITLE
+		     , RF.REFBODY1
+		     , RF.REFBODY2
+		     , RF.REFBODY3
+		     , NVL(EQ.ECNT,0) AS ECNT
+		  FROM ETEST.Q Q
+		     , ETEST.C_CHAPTER CH
+		     , ETEST.R_DIFFICULTY DF
+		     , ETEST.R_QTYPE TP
+		     , ETEST.Q_REF RF
+		     , (SELECT COUNT(0) AS ECNT, ID_Q FROM ETEST.EXAM_Q GROUP BY ID_Q) EQ
+		 WHERE 1=1
+		   AND Q.ID_COURSE = CH.ID_COURSE
+		   AND Q.ID_SUBJECT = CH.ID_SUBJECT
+		   AND Q.ID_CHAPTER = CH.ID_CHAPTER
+		   AND DF.ID_DIFFICULTY(+) = Q.ID_DIFFICULTY1
+		   AND TP.ID_QTYPE(+) = Q.ID_QTYPE
+		   AND CH.COURSE_CODE = #{subj}
+		   AND RF.ID_COURSE(+) = Q.ID_COURSE
+           AND RF.ID_SUBJECT(+) = Q.ID_SUBJECT
+           AND RF.ID_REF(+) = Q.ID_REF
+           AND EQ.ID_Q(+) = Q.ID_Q
+	]]>
+	<if test="s_difficulty != null and s_difficulty != ''">
+	<![CDATA[
+	       AND Q.ID_DIFFICULTY1 = #{s_difficulty}
+	]]>
+	</if>
+	<if test="s_useYn != null and s_useYn != ''">
+	<![CDATA[
+	       AND Q.USE_YN = #{s_useYn}
+	]]>
+	</if>
+	<if test="s_qType != null and s_qType != ''">
+	<![CDATA[
+	       AND Q.ID_QTYPE = #{s_qType}
+	]]>
+	</if>
+	<if test="s_searchTxt != null and s_searchTxt != ''">
+		<if test="s_searchType == ('Q').toString()">
+	<![CDATA[
+	       AND Q.Q LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+		</if>
+		<if test="s_searchType == ('E').toString()">
+	<![CDATA[
+	       AND (Q.EX1 LIKE '%'||#{s_searchTxt}||'%'
+	            OR Q.EX2 LIKE '%'||#{s_searchTxt}||'%'
+	            OR Q.EX3 LIKE '%'||#{s_searchTxt}||'%'
+	            OR Q.EX4 LIKE '%'||#{s_searchTxt}||'%'
+	            OR Q.EX5 LIKE '%'||#{s_searchTxt}||'%'
+	           )
+	]]>
+		</if>
+		<if test="s_searchType == ('X').toString()">
+	<![CDATA[
+	       AND Q.EXPLAIN LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+		</if>
+		<if test="s_searchType == ('H').toString()">
+	<![CDATA[
+	       AND Q.HINT LIKE '%'||#{s_searchTxt}||'%'
+	]]>
+		</if>
+		<if test="s_searchType == ('T').toString()">
+	<![CDATA[
+	       AND (RF.REFTITLE LIKE '%'||#{s_searchTxt}||'%'
+	            OR RF.REFBODY1 LIKE '%'||#{s_searchTxt}||'%'
+	            OR RF.REFBODY2 LIKE '%'||#{s_searchTxt}||'%'
+	            OR RF.REFBODY3 LIKE '%'||#{s_searchTxt}||'%'
+	           )
+	]]>
+		</if>
+	</if>
+	<![CDATA[
+		 ORDER BY Q.ID_Q
+	]]>
+	</select>
+	
+	<update id="updateUseYn" parameterType="Map">
+	<![CDATA[
+		UPDATE ETEST.Q
+		   SET USE_YN = #{useYn}
+		 WHERE 1=1
+		   AND ID_Q IN
+	]]>
+	<foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+	<![CDATA[
+		       ${item}
+	]]>
+	</foreach>
+	</update>
+	
+	<select id="selectChapter" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT C.ID_COURSE
+		             , C.ID_SUBJECT
+		             , C.ID_CHAPTER
+		             , C.CHAPTER
+		             , C.CHAPTER_ORDER
+		             , C.COURSE_CODE
+		             , C.REGDATE
+		             , NVL(Q.CNT,0) AS QCNT
+		          FROM ETEST.C_CHAPTER C
+                     , (SELECT COUNT(0) CNT, ID_COURSE, ID_SUBJECT, ID_CHAPTER FROM ETEST.Q GROUP BY ID_COURSE, ID_SUBJECT, ID_CHAPTER) Q
+		         WHERE 1=1
+		           AND C.COURSE_CODE = #{subj}
+                   AND Q.ID_COURSE(+) = C.ID_COURSE
+                   AND Q.ID_SUBJECT(+) = C.ID_SUBJECT
+                   AND Q.ID_CHAPTER(+) = C.ID_CHAPTER
+                 ORDER BY REGDATE DESC
+               )
+         WHERE 1=1
+           AND ROWNUM = 1
+	]]>
+	</select>
+	
+	<select id="selectIdChapter" resultType="String">
+	<![CDATA[
+		SELECT 'P10034' || TO_CHAR(SYSDATE, 'YYMMDDHH24MISS') || DBMS_RANDOM.STRING('U', 2) AS ID_CHAPTER
+		  FROM DUAL
+	]]>
+	</select>
+	
+	<insert id="insertChapter" parameterType="Map">
+	<![CDATA[
+		INSERT INTO ETEST.C_CHAPTER (
+			   ID_COURSE  , ID_SUBJECT     , ID_CHAPTER
+			 , CHAPTER    , CHAPTER_ORDER  , REGDATE, COURSE_CODE
+		) VALUES (
+			   #{idCourse}, #{idSubject}   , 'P10034' || TO_CHAR(SYSDATE, 'YYMMDDHH24MISS') || DBMS_RANDOM.STRING('U', 2)
+			 , #{chapter} , #{chapterOrder}, SYSDATE, #{courseCode}
+		)
+	]]>
+	</insert>
+	
+	<insert id="insertQuestion" parameterType="Map">
+	<![CDATA[
+		INSERT INTO ETEST.Q (
+			   ID_COURSE     , ID_SUBJECT  , ID_CHAPTER   , ID_REF      , ID_QTYPE
+			 , EXCOUNT       , CACOUNT     , ALLOTTING    , LIMITTIME   , ID_DIFFICULTY1
+			 , ID_DIFFICULTY2, Q           , EX1          , EX2         , EX3
+			 , EX4           , EX5         , CA           , YN_CAORDER  , YN_CASE
+			 , YN_BLANK      , EXPLAIN     , HINT
+			 , ID_COMPANY    , USERID      , ID_VALID_TYPE, REGDATE     , UP_DATE
+			 , ID_Q_USE      , Q_USE_DETAIL, USE_YN       , QFILE       , QFILE_RN
+			 , QFILE_TP      , EX1FILE     , EX1FILE_RN   , EX1FILE_TP  , EX2FILE
+			 , EX2FILE_RN    , EX2FILE_TP  , EX3FILE      , EX3FILE_RN  , EX3FILE_TP
+			 , EX4FILE       , EX4FILE_RN  , EX4FILE_TP   , EX5FILE     , EX5FILE_RN
+			 , EX5FILE_TP    , XFILE       , XFILE_RN     , XFILE_TP    , HFILE
+			 , HFILE_RN      , HFILE_TP
+		) VALUES (
+			   #{idCourse}   , #{idSubject}, #{idChapter} , '0'         , #{idQtype}
+			 , #{excount}    , #{cacount}  , 0            , 0           , #{idDifficulty1}
+			 , 0             , #{q}        , #{ex1}       , #{ex2}      , #{ex3}
+			 , #{ex4}        , #{ex5}      , #{ca}        , 'N'         , 'N'
+			 , 'N'           , #{explain}  , #{hint}
+			 , '10034'       , #{userid}   , 0            , SYSDATE     , SYSDATE
+			 , 0             , null        , #{useYn}     , #{qfile}    , #{qfileRn, jdbcType=VARCHAR}
+			 , #{qfileTp, jdbcType=VARCHAR}    , #{ex1file}  , #{ex1fileRn, jdbcType=VARCHAR} , #{ex1fileTp, jdbcType=VARCHAR}, #{ex2file}
+			 , #{ex2fileRn, jdbcType=VARCHAR}  , #{ex2fileTp, jdbcType=VARCHAR}, #{ex3file}   , #{ex3fileRn, jdbcType=VARCHAR}, #{ex3fileTp, jdbcType=VARCHAR}
+			 , #{ex4file}    , #{ex4fileRn, jdbcType=VARCHAR}, #{ex4fileTp, jdbcType=VARCHAR} , #{ex5file}  , #{ex5fileRn, jdbcType=VARCHAR}
+			 , #{ex5fileTp, jdbcType=VARCHAR}  , #{xfile, jdbcType=VARCHAR}    , #{xfileRn, jdbcType=VARCHAR}   , #{xfileTp, jdbcType=VARCHAR}  , #{hfile, jdbcType=VARCHAR}
+			 , #{hfileRn, jdbcType=VARCHAR}    , #{hfileTp, jdbcType=VARCHAR}
+		)
+	]]>
+	</insert>
+	
+	<select id="selectQuestionCountInExam" parameterType="int" resultType="int">
+	<![CDATA[
+		SELECT COUNT(0) AS CNT
+		  FROM ETEST.EXAM_Q
+		 WHERE 1=1
+		   AND ID_Q = #{idQ}
+	]]>
+	</select>
+	
+	<select id="selectQuestion" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT Q.ID_Q
+		     , Q.ID_COURSE
+		     , Q.ID_SUBJECT
+		     , Q.ID_CHAPTER
+		     , Q.ID_DIFFICULTY1
+		     , DF.DIFFICULTY
+		     , Q.ID_QTYPE
+		     , TP.QTYPE
+		     , Q.EXCOUNT
+		     , Q.CACOUNT
+		     , Q.Q
+		     , Q.EX1
+		     , Q.EX2
+		     , Q.EX3
+		     , Q.EX4
+		     , Q.EX5
+		     , Q.CA
+		     , Q.USE_YN
+		     , CH.COURSE_CODE
+		     , Q.EXPLAIN
+		     , Q.HINT
+		     , RF.REFTITLE
+		     , RF.REFBODY1
+		     , RF.REFBODY2
+		     , RF.REFBODY3
+		     , Q.QFILE
+		     , Q.QFILE_RN
+		     , Q.QFILE_TP
+		     , Q.EX1FILE
+		     , Q.EX1FILE_RN
+		     , Q.EX1FILE_TP
+			 , Q.EX2FILE
+			 , Q.EX2FILE_RN
+			 , Q.EX2FILE_TP
+			 , Q.EX3FILE
+			 , Q.EX3FILE_RN
+			 , Q.EX3FILE_TP
+			 , Q.EX4FILE
+			 , Q.EX4FILE_RN
+			 , Q.EX4FILE_TP
+			 , Q.EX5FILE
+			 , Q.EX5FILE_RN
+			 , Q.EX5FILE_TP
+			 , Q.XFILE
+			 , Q.XFILE_RN
+			 , Q.XFILE_TP
+			 , Q.HFILE
+			 , Q.HFILE_RN
+			 , Q.HFILE_TP
+			 , Q.ID_VALID_TYPE
+		  FROM ETEST.Q Q
+		     , ETEST.C_CHAPTER CH
+		     , ETEST.R_DIFFICULTY DF
+		     , ETEST.R_QTYPE TP
+		     , ETEST.Q_REF RF
+		 WHERE 1=1
+		   AND Q.ID_COURSE = CH.ID_COURSE
+		   AND Q.ID_SUBJECT = CH.ID_SUBJECT
+		   AND Q.ID_CHAPTER = CH.ID_CHAPTER
+		   AND DF.ID_DIFFICULTY(+) = Q.ID_DIFFICULTY1
+		   AND TP.ID_QTYPE(+) = Q.ID_QTYPE
+		   AND Q.ID_Q = #{idQ}
+		   AND RF.ID_COURSE(+) = Q.ID_COURSE
+           AND RF.ID_SUBJECT(+) = Q.ID_SUBJECT
+           AND RF.ID_REF(+) = Q.ID_REF
+	]]>
+	</select>
+	
+	<update id="updateQuestion" parameterType="Map">
+	<![CDATA[
+		UPDATE ETEST.Q
+		   SET USE_YN = #{useYn}
+		     , ID_DIFFICULTY1 = #{idDifficulty1}
+		     , CACOUNT = #{cacount}
+		     , Q = #{q}
+		     , EX1 = #{ex1}
+		     , EX2 = #{ex2}
+		     , EX3 = #{ex3}
+		     , EX4 = #{ex4}
+		     , EX5 = #{ex5}
+		     , CA = #{ca}
+		     , EXPLAIN = #{explain}
+		     , HINT = #{hint}
+		     , QFILE = DECODE(#{qfile}, '', QFILE, #{qfile})
+		     , QFILE_RN = DECODE(#{qfileRn}, '', QFILE_RN, #{qfileRn})
+		     , QFILE_TP = DECODE(#{qfileTp}, '', QFILE_TP, #{qfileTp})
+		     , EX1FILE = DECODE(#{ex1file}, '', EX1FILE, #{ex1file})
+		     , EX1FILE_RN = DECODE(#{ex1fileRn}, '', EX1FILE_RN, #{ex1fileRn})
+		     , EX1FILE_TP = DECODE(#{ex1fileTp}, '', EX1FILE_TP, #{ex1fileTp})
+			 , EX2FILE = DECODE(#{ex2file}, '', EX2FILE, #{ex2file})
+			 , EX2FILE_RN = DECODE(#{ex2fileRn}, '', EX2FILE_RN, #{ex2fileRn})
+			 , EX2FILE_TP = DECODE(#{ex2fileTp}, '', EX2FILE_TP, #{ex2fileTp})
+			 , EX3FILE = DECODE(#{ex3file}, '', EX3FILE, #{ex3file})
+			 , EX3FILE_RN = DECODE(#{ex3fileRn}, '', EX3FILE_RN, #{ex3fileRn})
+			 , EX3FILE_TP = DECODE(#{ex3fileTp}, '', EX3FILE_TP, #{ex3fileTp})
+			 , EX4FILE = DECODE(#{ex4file}, '', EX4FILE, #{ex4file})
+			 , EX4FILE_RN = DECODE(#{ex4fileRn}, '', EX4FILE_RN, #{ex4fileRn})
+			 , EX4FILE_TP = DECODE(#{ex4fileTp}, '', EX4FILE_TP, #{ex4fileTp})
+			 , EX5FILE = DECODE(#{ex5file}, '', EX5FILE, #{ex5file})
+			 , EX5FILE_RN = DECODE(#{ex5fileRn}, '', EX5FILE_RN, #{ex5fileRn})
+			 , EX5FILE_TP = DECODE(#{ex5fileTp}, '', EX5FILE_TP, #{ex5fileTp})
+			 , XFILE = DECODE(#{xfile}, '', XFILE, #{xfile})
+			 , XFILE_RN = DECODE(#{xfileRn}, '', XFILE_RN, #{xfileRn})
+			 , XFILE_TP = DECODE(#{xfileTp}, '', XFILE_TP, #{xfileTp})
+			 , HFILE = DECODE(#{hfile}, '', HFILE, #{hfile})
+			 , HFILE_RN = DECODE(#{hfileRn}, '', HFILE_RN, #{hfileRn})
+			 , HFILE_TP = DECODE(#{hfileTp}, '', HFILE_TP, #{hfileTp})
+		 WHERE 1=1
+		   AND ID_Q = #{idQ}
+	]]>
+	</update>
+	
+	<delete id="deleteQuestion" parameterType="Map">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.Q
+		 WHERE 1=1
+		   AND ID_Q IN
+	]]>
+	<foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+	<![CDATA[
+		       ${item}
+	]]>
+	</foreach>
+	</delete>
+	
+	<insert id="insertQForOff" parameterType="Map">
+	<![CDATA[
+		INSERT INTO ETEST.Q (
+		       ID_COURSE  , ID_SUBJECT          , ID_CHAPTER          , Q       , EX1
+		     , EX2        , EX3                 , EX4                 , CA      , ID_COMPANY
+		     , USERID     , REGDATE             , UP_DATE             , USE_YN
+		) VALUES (
+		       #{idCourse}, #{idSubject}        , #{idChapter}        , #{q}    , #{ex1}
+		     , #{ex2}     , LPAD(#{ex3}, 2, '0'), LPAD(#{ex4}, 3, '0'), #{ca}   , #{idCompany}
+		     , #{userid}  , SYSDATE             , SYSDATE             , #{useYn}
+		)
+	]]>
+	</insert>
+	
+	<select id="selectIdChapterFromDual" parameterType="String" resultType="String">
+	<![CDATA[
+		SELECT 'P' || #{idCompany} || TO_CHAR(SYSDATE, 'YYMMDDHH24MISS') || DBMS_RANDOM.STRING('U', 2) AS ID_CHAPTER
+		  FROM DUAL
+	]]>
+	</select>
+	
+	<insert id="insertChapter2" parameterType="Map">
+	<![CDATA[
+		INSERT INTO ETEST.C_CHAPTER (
+			   ID_COURSE  , ID_SUBJECT     , ID_CHAPTER
+			 , CHAPTER    , CHAPTER_ORDER  , REGDATE     , COURSE_CODE
+		) VALUES (
+			   #{idCourse}, #{idSubject}   , #{idChapter}
+			 , #{chapter} , #{chapterOrder}, SYSDATE     , #{courseCode}
+		)
+	]]>
+	</insert>
+	
+	<select id="selectChapter2" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT ID_COURSE
+		     , ID_SUBJECT
+		     , ID_CHAPTER
+		     , CHAPTER
+		     , CHAPTER_ORDER
+		     , COURSE_CODE
+		     , REGDATE
+		  FROM ETEST.C_CHAPTER
+		 WHERE 1=1
+		   AND ID_CHAPTER = #{idChapter}
+	]]>
+	</select>
+	
+	<delete id="deleteQuestion2" parameterType="Map">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.Q
+		 WHERE 1=1
+		   AND ID_CHAPTER = #{idChapter}
+		   AND EX1 = #{grcode}
+		   AND EX2 = #{grseq}
+		   AND EX3 = LPAD(#{nrSet}, 2, '0')
+	]]>
+	</delete>
+	
+	<update id="updateErrorQuestion" parameterType="Map">
+		UPDATE ETEST.Q
+		SET CA = #{ca}
+			, ID_VALID_TYPE = #{idValidType}
+		WHERE ID_Q = #{idQ}
+	</update>
+</mapper>

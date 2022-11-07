@@ -1,0 +1,45 @@
+<HTML> 
+ 
+<!-- page by andersen --> 
+<HEAD> 
+<TITLE>JW WMV-Player - simple multiple players example</TITLE> 
+ 
+<script type="text/javascript" src="silverlight.js"></script> 
+<script type="text/javascript"  src="wmvplayer.js"></script> 
+ 
+<script type="text/javascript"> 
+ 
+function createPlayer(theContainer, theFile, go) {
+	var cnt = document.getElementById(theContainer);
+	var src = "wmvplayer.xaml";
+	var cfg = {
+		height:"250", 
+		width:"470", 
+		file:theFile, 
+		autostart:go
+	};
+ 
+	var ply = new jeroenwijering.Player(cnt,src,cfg);
+}
+ 
+ 
+function init() {
+	createPlayer("mediaspace1", "http://www.jeroenwijering.com/upload/silverlight.wmv", "true");
+	createPlayer("mediaspace2", "mms://wm9.maelstrom.jet-stream.nl/demo/goldfish_WMV_Web.wmv", "false");
+}
+</script> 
+ 
+</HEAD> 
+<BODY onload="init()"> 
+ 
+Simple example using multiple instances of the <a href="http://www.jeroenwijering.com/?item=JW_WMV_Player">JW WMV-Player</a> v.1.1<br><br> 
+ 
+<div id="mediaspace1"></div> 
+<br> 
+<div id="mediaspace2"></div> 
+ 
+</BODY> 
+</HTML> 
+ 
+ 
+<!-- end of page - delete this and next lines --><!-- Nedenst?nde indsat af TDC for at m?e trafikken samtidig med at brugeren er 100% anonym. Koden m? ikke s?tes ud af funktion, kopieres, eller ?dres. --> <img src="http://statistik-gallup.net/V11***tdckoncern_dk/dk/ISO-8859-1//"> 

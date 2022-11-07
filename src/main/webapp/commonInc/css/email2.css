@@ -1,0 +1,33 @@
+﻿
+/* default */
+html, body {margin:0; padding:0; height:100%; font-family:Dotum, "돋움", sans-serif;color:#454545; font-size:12px; line-height:140%;}
+ul { list-style:none;margin-top:5px; }
+li { list-style-type:none;background:url("img/icon01.gif") no-repeat 12px 7px;line-height:19px;}
+img { border:0px; padding:0px; }
+table {border-collapse:collapse; border-spacing:0;}
+a {text-decoration: none;}
+a:link {text-decoration: none ; color: #666666;}
+a:visited {text-decoration: none ; color: #666666;}
+a:active {text-decoration: none ; color: #666666;}
+a:hover {text-decoration: none ; color: #999999;}
+
+
+
+table {margin:0; width:677px; background:url("img/mail_bg.gif") repeat-y left top;}
+.txt1{margin:20px 0 0 35px;line-height:21px;}
+.txt11{margin:20px 0 0 47px;line-height:21px;}
+.t01{color:#309700;font-weight:bold;}
+.t02{color:#00888a;font-weight:bold;}
+strong{color:#486c19;font-weight:bold;}
+.t03{margin-left:60px;color:#ff0000;font-size:11px;}
+.t04{margin-left:22px;color:#00888a;}
+
+.txt2{margin:30px 0 0 50px;line-height:20px;color: #0099d6;font-size:16px;font-weight:bold;}
+.txt3{width:560px;height:125px;margin:3px 0 0 45px;padding:15px 0 0 32px;line-height:22px;color: #603913;background-color:#eef8e1;}
+.txt4{margin:15px 0 0 47px;color:#00888a;font-size:14px;font-weight:bold;}
+.txt5{width:600px;margin:25px 0 0 47px;color:#0099d6;font-size:15px;font-weight:bold;}
+.txt6{width:600px;margin:15px 0 0 47px;color:#049b7d;font-weight:bold;}
+.txt7{width:600px;margin:0 0 0 47px;line-height:21px;}
+.txt8{width:600px;margin:15px 0 0 47px;line-height:21px;}
+.t05{color:#00a99d;}
+.t06{color:#00a99d;font-weight:bold;}

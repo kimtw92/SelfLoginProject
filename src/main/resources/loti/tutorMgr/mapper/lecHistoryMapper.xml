@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.tutorMgr.mapper.LecHistoryMapper">
+
+	<select id="tutorLecHistoryListCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		SELECT 	count(*) 
+		FROM 	TB_TUTOR A, tb_member B 
+		WHERE 	A.USERNO = B.USERNO 
+	]]>
+		
+		<if test="searchName != ''">
+			AND A.NAME LIKE '%' || #{searchName} || '%'
+		</if>
+		<if test="searchResno != ''">
+			--AND B.RESNO LIKE '%' || #{searchResno} || '%'
+			AND RESNO LIKE '%' || #{searchResno} || '%'
+		</if>
+	</select>
+
+	<!--[s] 강의기록입력 관련   -->
+	<select id="tutorLecHistoryList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		-- 강사강의기록 입력 리스트
+		SELECT 	B.USERNO, SCP.DEC_B64('KEY1',B.RESNO) AS RESNO, B.NAME, A.TPOSITION, A.TLEVEL,
+				(
+					SELECT 	GUBUNNM 
+		            FROM 	TB_GUBUN C 
+		            WHERE	C.GUBUN = A.GUBUN 
+		            AND 	C.GRSUBJ = 'SU'
+		        ) AS GUBUN, 
+		        SCP.DEC_B64('KEY1',B,OFFICE_TEL) AS OFFICE_TEL, B.EMAIL 
+		FROM 	TB_TUTOR A, tb_member B 
+		WHERE 	A.USERNO = B.USERNO 
+	]]>
+		
+		<if test="requestMap.searchName != ''">
+			AND A.NAME LIKE '%' || #{requestMap.searchName} || '%'
+		</if>
+		<if test="requestMap.searchResno != ''">
+			--AND B.RESNO LIKE '%' || #{requestMap.searchResno} || '%'
+			AND RESNO LIKE '%' || #{requestMap.searchResno} || '%'
+		</if>
+		
+	<![CDATA[
+	) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+		
+	</select>
+	
+	<select id="tutorLecHistoryInfo" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 강의기록 수정시 조회
+		SELECT	A.NO,
+				(SELECT GRCODENM FROM TB_GRCODE WHERE GRCODE = A.GRCODE) AS GRCODENM,
+				A.GRCODE,	A.GRSEQ,
+		        (SELECT LECNM FROM TB_SUBJSEQ WHERE GRCODE = A.GRCODE AND GRSEQ = A.GRSEQ AND SUBJ = A.SUBJ) AS LECNM,SUBJ,
+		        TO_CHAR(STR_DATE,'YYYYMMDD') AS STR_DATE,
+		        TO_CHAR(END_DATE,'YYYYMMDD') AS END_DATE,
+		        TDATE,	TTIME,	EDUINWON 
+		FROM 	TB_TUTOR_LEC_HISTORY A 
+		WHERE 	A.NO = #{value}
+	]]>
+	</select>
+	
+	<select id="checkMonday" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 월요일 체크
+		SELECT	DECODE(TO_CHAR(TO_DATE(#{value} ,'yyyymmdd'),'d'),'2','Y','N') CHK_MONDAY FROM DUAL		
+	]]>
+	</select>
+	
+	<select id="checkLecHistoryDupcnt" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 교육기간 중복 체크
+		SELECT	COUNT(*) AS DUPCNT 
+		FROM 	TB_TUTOR_LEC_HISTORY 
+		WHERE 	STR_DATE	>= TO_DATE(#{strDate}, 'YYYYMMDD') 
+		AND 	END_DATE	<= TO_DATE( (SELECT	TO_CHAR(TO_DATE( #{strDate} ,'yyyymmdd') + 4,'yyyymmdd') FROM	DUAL) , 'YYYYMMDD') 
+		AND 	GRCODE		=	#{grCode}
+		AND 	GRSEQ		=	#{grSeq}
+		AND 	SUBJ		=	#{subj}
+		AND 	TUSERNO		=	#{userno}
+	]]>
+		<if test="mode == 'update'">
+			<![CDATA[
+			AND NO <> #{no}
+			]]>
+		</if>
+	</select>
+	
+	<insert id="insertTutorLecHistory" parameterType="Map">
+	<![CDATA[
+		-- 강의기록 등록
+		INSERT	INTO	TB_TUTOR_LEC_HISTORY
+		(
+			NO, 		GRCODE, 	GRSEQ, SUBJ, 	TUSERNO, 
+		    STR_DATE, 	END_DATE, 	TDATE, TTIME, 	LUSERNO,
+		    LDATE, 		EDUINWON
+		)
+		VALUES
+		(
+			( SELECT NVL(MAX(NO),0) + 1 FROM TB_TUTOR_LEC_HISTORY ), #{grCode}, #{grSeq}, #{subj}, #{userno}, 
+		    TO_DATE( #{strDate} ,'yyyymmdd'), 
+		    ( SELECT	TO_DATE( #{strDate} ,'yyyymmdd') + 4 FROM	DUAL ), 
+		    #{tDate}, #{tTime}, #{sessNo}, SYSDATE, #{eduinwon}
+		)
+	]]>
+	</insert>
+	
+	<update id="updateTutorLecHistory" parameterType="Map">
+	<![CDATA[
+		-- 강의기록 수정
+		UPDATE	TB_TUTOR_LEC_HISTORY SET
+		        GRCODE		=	#{grCode},
+		        GRSEQ		=	#{grSeq},
+		        SUBJ		=	#{subj},
+		        TUSERNO		=	#{userno},
+		        STR_DATE	=	TO_DATE( #{strDate} ,'yyyymmdd') ,
+		        END_DATE	=	( SELECT	TO_DATE( #{strDate} ,'yyyymmdd') + 4 FROM	DUAL ),
+		        TDATE		=	#{tDate},
+		        TTIME		=	#{tTime},
+		        LUSERNO		=	#{sessNo},
+		        LDATE		=	SYSDATE,
+		        EDUINWON	=	#{eduinwon}
+		        
+		WHERE	NO			=	#{no}		
+	]]>
+	</update>
+	
+	<select id="selectLecHistoryDetail" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 강사 선택시 상세리스트
+		SELECT 	A.GRCODE, 	A.GRSEQ, 	A.SUBJ, 	A.GRCODENM, 
+				A.LECNM, 	A.NO, 		A.STR_DATE, A.END_DATE,
+		        A.TDATE,	A.TTIME,	
+		        B.TSEAT AS EDUINWON,	
+		        A.TUSERNO,	A.TGUBUN
+		FROM 	TV_TUTOR_HISTORY A, TB_GRSEQ B 
+		WHERE 	A.TUSERNO	= 	#{value}
+		AND 	A.TTIME 	>	0 
+		AND 	A.GRCODE 	= 	B.GRCODE 
+		AND 	A.GRSEQ 	= 	B.GRSEQ 
+		ORDER BY 
+				A.STR_DATE DESC 
+	]]>
+	</select>
+	
+	<update id="deleteTutorLecHistory" parameterType="String">
+	<![CDATA[
+		-- 강의기록 삭제
+		DELETE	TB_TUTOR_LEC_HISTORY
+		WHERE	NO	=	#{value}		
+	]]>
+	</update>
+	
+</mapper>

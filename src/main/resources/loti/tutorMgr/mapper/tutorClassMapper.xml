@@ -1,0 +1,608 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="loti.tutorMgr.mapper.TutorClassMapper">
+
+	<!--[s] 강사지정 관련   -->
+	<select id="selectTutorClassListCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 강사 지정 리스트	        		
+		SELECT	 	count(*) 
+				   
+		FROM
+		(
+		    SELECT 	A.GRCODE,  	A.GRSEQ, E.SUBJ, A.CLASSNO,
+		            A.CLASSNM, 	E.LECNM, B.TUSERNO AS USERNO,
+		            DECODE(B.TGUBUN, '1', '주강사', '0','보조강사','') TGUBUN_NM, B.TGUBUN, 
+		            B.GROUPFILE_NO,
+		            NVL(C.NAME,' ') NAME,
+		            DECODE(D.STU_CNT, 0, 0, NULL, 0, D.STU_CNT) AS EDUINWON
+		    FROM TB_SUBJCLASS A, TB_CLASSTUTOR B, TB_TUTOR C, 
+		    (
+		        SELECT 	GRCODE, GRSEQ, SUBJ, CLASSNO, COUNT(*) STU_CNT 
+		        FROM	TB_STU_LEC 
+		        GROUP BY 
+		                GRCODE, GRSEQ, SUBJ, CLASSNO
+		    ) D, 
+		    (
+		        SELECT 	GRCODE, GRSEQ, SUBJ, LECNM   
+		        FROM 	TB_SUBJSEQ WHERE LEC_TYPE <> 'P' 
+		    ) E 
+		     		
+		    WHERE A.GRCODE 	= B.GRCODE(+) 
+				AND A.GRSEQ 	= B.GRSEQ(+) 
+				AND A.SUBJ 		= B.SUBJ(+) 
+				AND A.CLASSNO 	= B.CLASSNO(+) 
+				AND B.TUSERNO 	= C.USERNO(+) 
+				AND A.GRCODE 	= D.GRCODE(+) 
+				AND A.GRSEQ 	= D.GRSEQ(+) 
+				AND A.SUBJ 		= D.SUBJ(+) 
+				AND A.CLASSNO 	= D.CLASSNO(+) 
+				AND A.GRCODE(+) = E.GRCODE 
+				AND A.GRSEQ(+) 	= E.GRSEQ 
+				AND A.SUBJ(+) 	= E.SUBJ 
+				AND A.GRCODE 	= #{grcode}
+				AND A.GRSEQ		= #{grseq}
+				
+	]]>
+				
+			<if test="subj != ''">
+				AND A.SUBJ = #{subj} 
+			</if>
+				
+	<![CDATA[
+	
+		) Z
+		LEFT OUTER JOIN
+		(            
+		    SELECT	A.GRCODE,  	A.GRSEQ, E.SUBJ, A.CLASSNO,
+		            E.LECNM,	MIN(NVL(C.NAME,' ')) NAME,
+		            COUNT(E.LECNM) ROW_COUNT
+		    FROM TB_SUBJCLASS A, TB_CLASSTUTOR B, TB_TUTOR C, 
+		    (
+		        SELECT 	GRCODE, GRSEQ, SUBJ, CLASSNO, COUNT(*) STU_CNT 
+		        FROM	TB_STU_LEC 
+		        GROUP BY 
+		                GRCODE, GRSEQ, SUBJ, CLASSNO
+		    ) D, 
+		    (
+		        SELECT 	GRCODE, GRSEQ, SUBJ, LECNM   
+		        FROM 	TB_SUBJSEQ WHERE LEC_TYPE <> 'P' 
+		    ) E 
+		     		
+		    WHERE A.GRCODE 	= B.GRCODE(+) 
+		    AND A.GRSEQ 	= B.GRSEQ(+) 
+		    AND A.SUBJ 		= B.SUBJ(+) 
+		    AND A.CLASSNO 	= B.CLASSNO(+) 
+		    AND B.TUSERNO 	= C.USERNO(+) 
+		    AND A.GRCODE 	= D.GRCODE(+) 
+		    AND A.GRSEQ 	= D.GRSEQ(+) 
+		    AND A.SUBJ 		= D.SUBJ(+) 
+		    AND A.CLASSNO 	= D.CLASSNO(+) 
+		    AND A.GRCODE(+) = E.GRCODE 
+		    AND A.GRSEQ(+) 	= E.GRSEQ 
+		    AND A.SUBJ(+) 	= E.SUBJ 
+		     		
+		    AND A.GRCODE 	= #{grcode}
+			AND A.GRSEQ		= #{grseq}
+				
+	]]>
+				
+			<if test="subj != ''">
+				AND A.SUBJ = #{subj} 
+			</if>
+				
+	<![CDATA[
+	
+		    GROUP BY 
+		            A.GRCODE,  	A.GRSEQ, E.SUBJ, A.CLASSNO,
+		            E.LECNM
+		    ORDER BY 
+		            E.LECNM, A.CLASSNO, A.GRCODE, A.GRSEQ               
+		        
+		) P        
+		ON		Z.GRCODE 	= 	P.GRCODE
+		AND		Z.GRSEQ		=	P.GRSEQ        
+		AND		Z.SUBJ		=	P.SUBJ
+		AND		Z.CLASSNO	=	P.CLASSNO
+		AND		Z.LECNM		=	P.LECNM
+		AND		Z.NAME		=	P.NAME        
+		               
+		ORDER BY 
+		        Z.LECNM, Z.CLASSNO, Z.GRCODE, Z.GRSEQ, Z.NAME        		        						
+	]]>
+	</select>
+	<!--[s] 강사지정 관련   -->
+	<select id="selectTutorClassList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		-- 강사 지정 리스트	        		
+		SELECT		Z.*, 
+				CASE	WHEN P.ROW_COUNT > 1 THEN TO_CHAR(P.ROW_COUNT)
+		        		WHEN P.ROW_COUNT = 1 THEN '0'
+		        ELSE ''
+		        END ROW_COUNT        
+		FROM
+		(
+		    SELECT 	A.GRCODE,  	A.GRSEQ, E.SUBJ, A.CLASSNO,
+		            A.CLASSNM, 	E.LECNM, B.TUSERNO AS USERNO,
+		            DECODE(B.TGUBUN, '1', '주강사', '0','보조강사','') TGUBUN_NM, B.TGUBUN, 
+		            B.GROUPFILE_NO,
+		            NVL(C.NAME,' ') NAME,
+		            DECODE(D.STU_CNT, 0, 0, NULL, 0, D.STU_CNT) AS EDUINWON
+		    FROM TB_SUBJCLASS A, TB_CLASSTUTOR B, TB_TUTOR C, 
+		    (
+		        SELECT 	GRCODE, GRSEQ, SUBJ, CLASSNO, COUNT(*) STU_CNT 
+		        FROM	TB_STU_LEC 
+		        GROUP BY 
+		                GRCODE, GRSEQ, SUBJ, CLASSNO
+		    ) D, 
+		    (
+		        SELECT 	GRCODE, GRSEQ, SUBJ, LECNM   
+		        FROM 	TB_SUBJSEQ WHERE LEC_TYPE <> 'P' 
+		    ) E 
+		     		
+		    WHERE A.GRCODE 	= B.GRCODE(+) 
+				AND A.GRSEQ 	= B.GRSEQ(+) 
+				AND A.SUBJ 		= B.SUBJ(+) 
+				AND A.CLASSNO 	= B.CLASSNO(+) 
+				AND B.TUSERNO 	= C.USERNO(+) 
+				AND A.GRCODE 	= D.GRCODE(+) 
+				AND A.GRSEQ 	= D.GRSEQ(+) 
+				AND A.SUBJ 		= D.SUBJ(+) 
+				AND A.CLASSNO 	= D.CLASSNO(+) 
+				AND A.GRCODE(+) = E.GRCODE 
+				AND A.GRSEQ(+) 	= E.GRSEQ 
+				AND A.SUBJ(+) 	= E.SUBJ 
+				AND A.GRCODE 	= #{grcode}
+				AND A.GRSEQ		= #{grseq}
+
+	]]>
+				
+			<if test="subj != ''">
+				AND A.SUBJ = #{subj} 
+			</if>
+				
+	<![CDATA[
+
+		) Z
+		LEFT OUTER JOIN
+		(            
+		    SELECT	A.GRCODE,  	A.GRSEQ, E.SUBJ, A.CLASSNO,
+		            E.LECNM,	MIN(NVL(C.NAME,' ')) NAME,
+		            COUNT(E.LECNM) ROW_COUNT
+		    FROM TB_SUBJCLASS A, TB_CLASSTUTOR B, TB_TUTOR C, 
+		    (
+		        SELECT 	GRCODE, GRSEQ, SUBJ, CLASSNO, COUNT(*) STU_CNT 
+		        FROM	TB_STU_LEC 
+		        GROUP BY 
+		                GRCODE, GRSEQ, SUBJ, CLASSNO
+		    ) D, 
+		    (
+		        SELECT 	GRCODE, GRSEQ, SUBJ, LECNM   
+		        FROM 	TB_SUBJSEQ WHERE LEC_TYPE <> 'P' 
+		    ) E 
+		     		
+		    WHERE A.GRCODE 	= B.GRCODE(+) 
+		    AND A.GRSEQ 	= B.GRSEQ(+) 
+		    AND A.SUBJ 		= B.SUBJ(+) 
+		    AND A.CLASSNO 	= B.CLASSNO(+) 
+		    AND B.TUSERNO 	= C.USERNO(+) 
+		    AND A.GRCODE 	= D.GRCODE(+) 
+		    AND A.GRSEQ 	= D.GRSEQ(+) 
+		    AND A.SUBJ 		= D.SUBJ(+) 
+		    AND A.CLASSNO 	= D.CLASSNO(+) 
+		    AND A.GRCODE(+) = E.GRCODE 
+		    AND A.GRSEQ(+) 	= E.GRSEQ 
+		    AND A.SUBJ(+) 	= E.SUBJ 
+		     		
+		    AND A.GRCODE 	= #{grcode}
+			AND A.GRSEQ		= #{grseq}
+			
+	]]>
+				
+			<if test="subj != ''">
+				AND A.SUBJ = #{subj} 
+			</if>
+				
+	<![CDATA[
+		
+		    GROUP BY 
+		            A.GRCODE,  	A.GRSEQ, E.SUBJ, A.CLASSNO,
+		            E.LECNM
+		    ORDER BY 
+		            E.LECNM, A.CLASSNO, A.GRCODE, A.GRSEQ               
+		        
+		) P        
+		ON		Z.GRCODE 	= 	P.GRCODE
+		AND		Z.GRSEQ		=	P.GRSEQ        
+		AND		Z.SUBJ		=	P.SUBJ
+		AND		Z.CLASSNO	=	P.CLASSNO
+		AND		Z.LECNM		=	P.LECNM
+		AND		Z.NAME		=	P.NAME        
+		               
+		ORDER BY 
+		        Z.LECNM, Z.CLASSNO, Z.GRCODE, Z.GRSEQ, Z.NAME        		  
+    ) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}      						
+	]]>
+	</select>
+	
+	<select id="selectSubjSeq" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과목 목록  P 가 아닌것
+		SELECT 	DISTINCT A.SUBJ, A.LECNM 
+		FROM 	TB_SUBJSEQ A 
+		WHERE 	A.GRCODE 	= #{grcode}
+		AND 	A.GRSEQ 	= #{grseq}
+		AND 	A.LEC_TYPE  <> 'P'
+		ORDER BY 
+				LECNM  
+	]]>
+	</select>
+
+	<select id="selectTutorSubjInputListCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 강사 지정 화면에 보여줄 리스트
+		SELECT	
+			count(*)
+		FROM	TB_TUTOR A	INNER JOIN tb_member B
+		ON		A.USERNO	=	B.USERNO
+		
+		LEFT OUTER JOIN TB_GUBUN C
+		ON		A.GUBUN		=	C.GUBUN
+		AND		C.GRSUBJ	=	'SU'
+		
+		WHERE 1=1
+	]]>
+	
+		<if test="modeType == 'insert'">
+			<if test="searchGubun != ''">
+				AND C.GUBUN = #{searchGubun}
+			</if>
+			<if test="searchAddr != ''">
+				AND B.HOME_ADDR LIKE '%' || #{searchAddr} || '%'
+			</if>
+			<if test="searchTxt != ''">
+				<if test="searchType == 'name'">
+					AND B.NAME		LIKE  '%' || #{searchTxt} || '%'
+				</if>
+				<if test="searchType == 'resno'">
+					AND SCP.DEC_B64('KEY1',B.RESNO)		LIKE  '%' || #{searchTxt} || '%'
+				</if>
+			</if>
+		</if>
+	
+	</select>
+	<select id="selectTutorSubjInputList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		-- 강사 지정 화면에 보여줄 리스트
+		SELECT	
+			B.USERNO, SCP.DEC_B64('KEY1',B.RESNO) AS RESNO, B.NAME, C.GUBUNNM 
+		FROM	TB_TUTOR A	INNER JOIN tb_member B
+		ON		A.USERNO	=	B.USERNO
+		
+		LEFT OUTER JOIN TB_GUBUN C
+		ON		A.GUBUN		=	C.GUBUN
+		AND		C.GRSUBJ	=	'SU'
+		
+		WHERE 1=1
+	]]>
+	
+		<if test="requestMap.modeType == 'insert'">
+			<if test="requestMap.searchGubun != ''">
+				AND C.GUBUN = #{requestMap.searchGubun}
+			</if>
+			<if test="requestMap.searchAddr != ''">
+				AND B.HOME_ADDR LIKE '%' || #{requestMap.searchAddr} || '%'
+			</if>
+			<if test="requestMap.searchTxt != ''">
+				<if test="requestMap.searchType == 'name'">
+					AND B.NAME		LIKE  '%' || #{requestMap.searchTxt} || '%'
+				</if>
+				<if test="requestMap.searchType == 'resno'">
+					--AND B.RESNO		LIKE  '%' || #{requestMap.searchTxt} || '%'
+					AND RESNO		LIKE  '%' || #{requestMap.searchTxt} || '%'
+				</if>
+			</if>
+		</if>
+	
+	<![CDATA[
+		ORDER BY B.NAME		
+		) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+	
+	</select>
+	
+	<select id="selectClassTutorInfoCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 해당 과목에 저장된 강사정보
+		SELECT 	
+				count(*)
+		                       
+		FROM 	TB_CLASSTUTOR A, TB_SUBJCLASS B, tb_member C, TB_TUTOR D, TB_GUBUN E 
+		WHERE 	A.GRCODE 	= B.GRCODE 
+		AND 	A.GRSEQ 	= B.GRSEQ 
+		AND 	A.SUBJ 		= B.SUBJ 
+		AND 	A.CLASSNO 	= B.CLASSNO 
+		AND 	A.TUSERNO 	= C.USERNO 
+		AND 	A.TUSERNO 	= D.USERNO 
+		AND 	D.GUBUN 	= E.GUBUN 
+		AND 	A.GRCODE 	= #{grcode}
+		AND 	A.GRSEQ 	= #{grseq}
+		AND 	A.SUBJ 		= #{subj}
+		AND 	A.CLASSNO 	= #{classno}
+	]]>
+	</select>
+	<select id="selectClassTutorInfo" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		-- 해당 과목에 저장된 강사정보
+		SELECT 	C.USERNO, 	SCP.DEC_B64('KEY1',C.RESNO) AS RESNO, 	C.NAME, 			A.TGUBUN,
+				A.CLASSNO,	B.CLASSNM,	A.GROUPFILE_NO,		A.RESOURCE_NO,
+				D.GUBUN,	E.GUBUNNM,	A.CAR_RESERVE_YN,	A.CLASSROOM_NO,
+		        
+		        A.GRCODE,	A.GRSEQ,	A.SUBJ
+		                       
+		FROM 	TB_CLASSTUTOR A, TB_SUBJCLASS B, tb_member C, TB_TUTOR D, TB_GUBUN E 
+		WHERE 	A.GRCODE 	= B.GRCODE 
+		AND 	A.GRSEQ 	= B.GRSEQ 
+		AND 	A.SUBJ 		= B.SUBJ 
+		AND 	A.CLASSNO 	= B.CLASSNO 
+		AND 	A.TUSERNO 	= C.USERNO 
+		AND 	A.TUSERNO 	= D.USERNO 
+		AND 	D.GUBUN 	= E.GUBUN 
+		AND 	A.GRCODE 	= #{requestMap.grcode}
+		AND 	A.GRSEQ 	= #{requestMap.grseq}
+		AND 	A.SUBJ 		= #{requestMap.subj}
+		AND 	A.CLASSNO 	= #{requestMap.classno}
+		ORDER BY 
+				A.GRCODE, A.GRSEQ, A.SUBJ, A.CLASSNO, C.NAME 
+	) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectClassRoom" resultType="DataMap">
+	<![CDATA[
+		-- 강의실 전체 리스트
+		SELECT 	CLASSROOM_NO, CLASSROOM_NAME 
+		FROM 	TB_CLASSROOM
+		ORDER BY
+				CLASSROOM_NAME
+	]]>
+	</select>
+	
+	<update id="updateClassTutor" parameterType="Map">
+	<![CDATA[
+		-- 강사지정 update
+		UPDATE	TB_CLASSTUTOR	SET 
+		        TGUBUN			=	#{s_tgubun}, 
+		        GROUPFILE_NO	=	#{s_groupfileNo}, 
+		        RESOURCE_NO 	=	#{s_resourceNo}, 
+		        CAR_RESERVE_YN 	=	#{s_carReserveYn}, 
+		        CLASSROOM_NO 	=	#{s_classroomNo} 
+		
+		WHERE 	GRCODE	=	#{grcode} 
+		AND 	GRSEQ 	=	#{grseq} 
+		AND 	SUBJ 	=	#{subj} 
+		AND 	TUSERNO =	#{s_tuserno} 
+		AND 	CLASSNO =	#{classno}
+	]]>
+	</update>
+	
+	<select id="checkClassTutor" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사지정 중복 체크
+		SELECT 	COUNT(GRCODE) RESCNT 
+		FROM	TB_CLASSTUTOR 
+		WHERE 	GRCODE	= 	#{grcode}
+		AND 	GRSEQ 	= 	#{grseq}
+		AND 	SUBJ 	= 	#{subj}
+		AND 	TUSERNO = 	#{tuserno}
+		AND 	CLASSNO =	#{classno}
+	]]>
+	</select>
+	
+	<update id="insertClassTutor" parameterType="Map">
+	<![CDATA[
+		-- 강사지정 insert
+		INSERT INTO TB_CLASSTUTOR
+		(
+			SUBJ, 	GRCODE, 		GRSEQ, 			CLASSNO, 		TUSERNO, 
+		    TGUBUN, GROUPFILE_NO, 	RESOURCE_NO, 	CAR_RESERVE_YN, CLASSROOM_NO, 
+		    LECEVALPOINT
+		)
+		VALUES
+		(
+			#{subj}, #{grcode}, #{grseq}, #{classno}, #{tuserno},
+		    #{tgubun}, #{groupfileNo}, #{resourceNo}, #{carReserveYn}, #{classroomNo},
+		    #{lecevalpoint}
+		)
+	]]>
+	</update>
+	
+	<update id="deleteClassTutor" parameterType="Map">
+	<![CDATA[
+		-- 강사지정 delete
+		DELETE 	FROM TB_CLASSTUTOR		
+		WHERE 	GRCODE	=	#{grcode} 
+		AND 	GRSEQ 	=	#{grseq} 
+		AND 	SUBJ 	=	#{subj} 
+		AND 	TUSERNO =	#{tuserno} 
+		AND 	CLASSNO =	#{classno}
+	]]>
+	</update>
+	
+	<select id="tutorInfoPopByBaseInfo" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 강사소개 팝업 : 강사기본정보
+		SELECT 	A.NAME, B.CNAME, SCP.DEC_B64('KEY1',A.RESNO) AS RESNO, 
+				( A.HOME_POST1 || '-' || A.HOME_POST2 ) AS HOME_POST,
+		        A.HOME_ADDR,	SCP.DEC_B64('KEY1',A.HOME_TEL) AS HOME_TEL,
+		        
+		        ( A.OFFICE_POST1 || '-' || A.OFFICE_POST2 ) AS OFFICE_POST,
+		        A.OFFICE_ADDR,	SCP.DEC_B64('KEY1',A.OFFICE_TEL) AS OFFICE_TEL,	B.FAX,
+		        
+		        SCP.DEC_B64('KEY1',A.HP) AS HP, A.EMAIL, C.LEVEL_NAME, D.GUBUNNM, B.JOB, B.TPOSITION,
+		        A.JIKWI, SCP.DEC_B64('KEY1',B.BANKNO) AS BANKNO, B.BANKNAME, TO_CHAR(A.INDATE, 'yyyy-mm-dd') INDATE, B.GROUPFILE_NO,
+		        A.NEWHOMEPOST, A.NEWADDR1, A.NEWADDR2
+		        
+		FROM 	tb_member A,TB_TUTOR B, TB_TUTOR_LEVEL C, TB_GUBUN D 
+		WHERE 	A.USERNO 	= 	#{value}
+		AND 	A.USERNO 	=	B.USERNO 
+		AND 	B.TLEVEL 	= 	C.TLEVEL(+) 
+		AND 	B.GUBUN 	= 	D.GUBUN(+) 
+		AND 	D.GRSUBJ(+)	=	'SU'
+	]]>
+	</select>
+	
+	<select id="tutorInfoPopByHistory" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 강사소개 팝업 : 경력사항
+		SELECT 	OCGUBUN, OC_NO, OCINFO
+		FROM 	TB_TUTOR_HISTORY 
+		WHERE 	USERNO = #{value}
+		ORDER BY 
+				OCGUBUN
+	]]>
+	</select>
+	
+	<select id="tutorInfoPopByClassTutor" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 강사소개 팝업 : 출강현황
+		SELECT	A.GRCODE, A.SUBJ,
+				MIN(SEARCHGRCODENM(A.GRCODE,A.GRSEQ)) AS GRCODENM,
+				MIN(SUBSTR(A.GRSEQ,0,4)) AS GRYEAR, A.TGUBUN,
+				MIN(SEARCHLECNM(A.GRCODE,A.GRSEQ,A.SUBJ)) AS SUBJNM,
+		        A.GRSEQ,
+				MIN(TUTOR_SCORE(A.GRCODE,A.GRSEQ,TUSERNO,A.SUBJ)) AS TRAT,
+				COUNT(STUDYTIME) 	AS STUDYTIME,
+				MIN(GROUPFILE_NO) 	AS GROUPFILE_NO
+				, (TO_CHAR(B.studydate, 'MM') || '월 ' || TO_CHAR(B.studydate, 'DD') || '일') AS studydate ---------------
+		FROM 	TB_CLASSTUTOR A,TB_TIMETABLE_TU B 
+		WHERE 	A.TUSERNO 	= #{value}
+		AND 	A.GRSEQ > '200900'
+		AND 	A.TUSERNO 	= B.USERNO 
+		AND 	A.GRSEQ 	= B.GRSEQ 
+		AND 	A.GRCODE 	= B.GRCODE 
+		AND 	A.SUBJ 		= B.SUBJ 
+		AND 	IS_SUBJCOMPLETE(A.GRCODE,A.GRSEQ,A.SUBJ) = 'Y' 
+		GROUP BY 
+				A.GRCODE,A.GRSEQ,A.SUBJ,TGUBUN, B.studydate -------------- 
+		ORDER BY 
+				A.TGUBUN, B.studydate ---------------
+	]]>
+	</select>
+	
+	<select id="tutorInfoPopByClassTutorNew" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 강사소개 팝업 : 출강현황
+		
+	                           SELECT
+ 		    GRCODE,
+ 		    TSUBJ AS SUBJ,
+ 		    GRCODENM,
+ 		    SUBSTR(GRSEQ,0,4) AS GRYEAR,
+ 		    TGUBUN,
+ 		    subjnm,
+             GRSEQ,  
+ 		    (ROUND((ROUND((CASE WHEN SUBJ_ANS_TOTAL > 0 THEN ROUND((SUBJ_ANS1 * 1 +  SUBJ_ANS2 * 2 + SUBJ_ANS3 * 3 + SUBJ_ANS4 * 4 + SUBJ_ANS5 * 5) / SUBJ_ANS_TOTAL * 20,1)  ELSE 0 END +
+ 		    CASE WHEN STIME_ANS_TOTAL > 0 THEN ROUND((STIME_ANS1 * 1 + STIME_ANS2 * 2 + STIME_ANS3 * 3 + STIME_ANS4 * 4 + STIME_ANS5 * 5) / STIME_ANS_TOTAL * 20,1) ELSE 0 END +
+ 		    CASE WHEN TUTOR_ANS_TOTAL > 0 THEN ROUND((TUTOR_ANS1 * 1 + TUTOR_ANS2 * 2 + TUTOR_ANS3 * 3 + TUTOR_ANS4 * 4 + TUTOR_ANS5 * 5) / TUTOR_ANS_TOTAL * 20,1) ELSE 0 END) / 3,1)/20),2)*20)  AS TOTAL, 		    
+ 		    ROUND((ROUND((CASE WHEN SUBJ_ANS_TOTAL > 0 THEN ROUND((SUBJ_ANS1 * 1 +  SUBJ_ANS2 * 2 + SUBJ_ANS3 * 3 + SUBJ_ANS4 * 4 + SUBJ_ANS5 * 5) / SUBJ_ANS_TOTAL * 20,1)  ELSE 0 END +
+ 		    CASE WHEN STIME_ANS_TOTAL > 0 THEN ROUND((STIME_ANS1 * 1 + STIME_ANS2 * 2 + STIME_ANS3 * 3 + STIME_ANS4 * 4 + STIME_ANS5 * 5) / STIME_ANS_TOTAL * 20,1) ELSE 0 END +
+ 		    CASE WHEN TUTOR_ANS_TOTAL > 0 THEN ROUND((TUTOR_ANS1 * 1 + TUTOR_ANS2 * 2 + TUTOR_ANS3 * 3 + TUTOR_ANS4 * 4 + TUTOR_ANS5 * 5) / TUTOR_ANS_TOTAL * 20,1) ELSE 0 END) / 3,1)/20),2)  AS TRAT, 		    
+ 		    STUDYTIME/3 studytime,
+             '' AS GROUPFILE_NO
+             , substr(studydate,5,2) || '월 ' || substr(studydate,7,2) || '일' AS studydate ---------------    
+ 		FROM
+ 		(
+ 		    SELECT
+ 		        GRCODE,
+ 		        TSUBJ,
+ 		        MIN(SEARCHGRCODENM(GRCODE,GRSEQ)) AS GRCODENM,
+ 		        GRSEQ,
+ 		        TGUBUN,
+ 		        searchlecnm(grcode,grseq, tsubj) as subjnm,  
+ 		        COUNT(STUDYTIME) 	AS STUDYTIME,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT1 ELSE 0 END) AS SUBJ_ANS1,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT2 ELSE 0 END) AS SUBJ_ANS2,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT3 ELSE 0 END) AS SUBJ_ANS3,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT4 ELSE 0 END) AS SUBJ_ANS4,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT5 ELSE 0 END) AS SUBJ_ANS5,                
+ 		        SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT1 + SUB_CNT2 ELSE 0 END) AS SUBJ_ANS11,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT3 ELSE 0 END) AS SUBJ_ANS22,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT4 + SUB_CNT5 ELSE 0 END) AS SUBJ_ANS33,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END) AS SUBJ_ANS_TOTAL,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT1 ELSE 0 END) AS STIME_ANS1,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT2 ELSE 0 END) AS STIME_ANS2,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT3 ELSE 0 END) AS STIME_ANS3,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT4 ELSE 0 END) AS STIME_ANS4,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT5 ELSE 0 END) AS STIME_ANS5,        
+ 		        SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT1 + SUB_CNT2 ELSE 0 END) AS STIME_ANS11,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT3 ELSE 0 END) AS STIME_ANS22,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT4 + SUB_CNT5 ELSE 0 END) AS STIME_ANS33,    
+ 		        SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END) AS STIME_ANS_TOTAL,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT1 ELSE 0 END) AS TUTOR_ANS1,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT2 ELSE 0 END) AS TUTOR_ANS2,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT3 ELSE 0 END) AS TUTOR_ANS3,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT4 ELSE 0 END) AS TUTOR_ANS4,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT5 ELSE 0 END) AS TUTOR_ANS5,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT1 + SUB_CNT2 ELSE 0 END) AS TUTOR_ANS11,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT3 ELSE 0 END) AS TUTOR_ANS22,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT4 + SUB_CNT5 ELSE 0 END) AS TUTOR_ANS33,
+ 		        SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END) AS TUTOR_ANS_TOTAL,
+ 		        CASE WHEN SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END) =0 THEN 0 ELSE ROUND(SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT1 + SUB_CNT2 ELSE 0 END) / SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END)*100,1) END AS SUBJ_ANS11_RAT,
+ 		        CASE WHEN SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END) =0 THEN 0 ELSE ROUND(SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT3 ELSE 0 END) / SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END)*100,1) END AS SUBJ_ANS22_RAT,
+ 		        CASE WHEN SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END) =0 THEN 0 ELSE ROUND(SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT4 + SUB_CNT5 ELSE 0 END) / SUM(CASE WHEN QUESTION_TYPE = 1 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END)*100,1) END AS SUBJ_ANS33_RAT,
+ 		        CASE WHEN SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END) =0 THEN 0 ELSE ROUND(SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT1 + SUB_CNT2 ELSE 0 END) / SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END)*100,1) END AS STIME_ANS11_RAT,
+ 		        CASE WHEN SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END) =0 THEN 0 ELSE ROUND(SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT3 ELSE 0 END) / SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END)*100,1) END AS STIME_ANS22_RAT,
+ 		        CASE WHEN SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END) =0 THEN 0 ELSE ROUND(SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT4 + SUB_CNT5 ELSE 0 END) / SUM(CASE WHEN QUESTION_TYPE = 2 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END)*100,1) END AS STIME_ANS33_RAT,        
+ 		        CASE WHEN SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END) =0 THEN 0 ELSE ROUND(SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT1 + SUB_CNT2 ELSE 0 END) / SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END)*100,1) END AS TUTOR_ANS11_RAT,
+ 		        CASE WHEN SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END) =0 THEN 0 ELSE ROUND(SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT3 ELSE 0 END) /SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END)*100,1) END AS TUTOR_ANS22_RAT,
+ 		        CASE WHEN SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END) =0 THEN 0 ELSE ROUND(SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT4 + SUB_CNT5 ELSE 0 END) / SUM(CASE WHEN QUESTION_TYPE = 0 THEN SUB_CNT1 + SUB_CNT2 + SUB_CNT3 + SUB_CNT4 + SUB_CNT5 ELSE 0 END)*100,1) END AS TUTOR_ANS33_RAT
+ 		        ,to_char(studydate,'YYYYMMDD') studydate
+ 		    FROM
+ 		    (
+ 		        SELECT
+ 		            C.GRCODE,
+ 		            A.TSUBJ,
+ 		            C.GRSEQ,
+ 		            E.TGUBUN,
+ 		            STUDYTIME,
+ 		            (select nvl(sum(decode(ans_no,1,1,0)),0) from tb_grinq_answer where question_no = a.question_no and title_no = a.title_no and set_no = a.set_no and ans_no !=0) AS sub_cnt1,
+ 		            (select nvl(sum(decode(ans_no,2,1,0)),0) from tb_grinq_answer where question_no = a.question_no and title_no = a.title_no and set_no = a.set_no and ans_no !=0) AS sub_cnt2,
+ 		            (select nvl(sum(decode(ans_no,3,1,0)),0) from tb_grinq_answer where question_no = a.question_no and title_no = a.title_no and set_no = a.set_no and ans_no !=0) AS sub_cnt3,
+ 		            (select nvl(sum(decode(ans_no,4,1,0)),0) from tb_grinq_answer where question_no = a.question_no and title_no = a.title_no and set_no = a.set_no and ans_no !=0) AS sub_cnt4,
+                     (select nvl(sum(decode(ans_no,5,1,0)),0) from tb_grinq_answer where question_no = a.question_no and title_no = a.title_no and set_no = a.set_no and ans_no !=0) AS sub_cnt5,
+                     (select count(*) as total from tb_grinq_answer where question_no = a.question_no and title_no = a.title_no and set_no = a.set_no and ans_no !=0) AS total,
+                     MOD(A.QUESTION_NO,3) AS QUESTION_TYPE
+                     , D.studydate 
+                 FROM 
+                     TB_GRINQ_QUESTION_SET A,TB_TUTOR B,TB_GRINQ_TTL C, TB_TIMETABLE_TU D, TB_CLASSTUTOR E
+                 WHERE 
+                     A.TUSERNO = #{value}
+                     AND C.GRSEQ > '200900'
+                     AND TSUBJ IS NOT NULL 
+                     AND A.TUSERNO IS NOT NULL
+                     AND A.TUSERNO = B.USERNO 
+                     AND A.TITLE_NO = C.TITLE_NO
+                     AND E.TUSERNO = A.TUSERNO
+                     AND E.GRCODE = C.GRCODE
+                     AND E.GRSEQ = C.GRSEQ
+                     AND E.SUBJ =  A.TSUBJ
+                     -- AND     A.TUSERNO     = E.TUSERNO 
+                     AND     D.GRSEQ     = E.GRSEQ 
+                     AND     D.GRCODE     = E.GRCODE 
+                     AND     D.userno         = E.tuserno            
+                 ORDER BY QUESTION_NO
+             ) A
+             GROUP BY GRCODE, TSUBJ, GRSEQ, TGUBUN, studydate
+         ) A
+         ORDER BY studydate 
+	]]>
+	</select>
+	
+</mapper>

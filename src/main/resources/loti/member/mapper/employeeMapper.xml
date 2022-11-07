@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.member.mapper.EmployeeMapper">
+
+	<sql id="selectMemberStatsListCommon">
+		FROM 
+			TB_MEMBERSTATS 
+		<if test="part != ''">
+			WHERE MEMBER_PART_TEAM = #{part} -- 부서별검색갯수는 7개로 정해져있으므로 수만큼 돌린다.
+		</if>
+		<if test="part == '' and name != ''">
+			WHERE USERNAME LIKE '%' || #{name} || '%' -- 부서검색이없이 직원을 검색할경우 
+		</if>
+		<if test="part != '' and name != ''">
+			AND USERNAME LIKE '%' || #{name} || '%' -- 부서명이 있고 직원명까지 같이 검색을 하는경우
+		</if>
+		<if test="part == '' and name == '' and content != ''">
+			WHERE CONTENT  LIKE '%' || #{content} || '%' -- 부서명, 직원명의 검색조건이없이 엄무팀을 찾을때
+		</if>
+		<if test="part != '' or name == '' and content != ''">
+			AND CONTENT  LIKE '%' || #{content} || '%' -- 전체 다검색할때
+		</if>
+		
+		ORDER BY MEMBER_JIK, USERNAME
+	</sql>
+	<select id="selectMemberStatsListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount"></include>
+		<include refid="selectMemberStatsListCommon"></include>
+	</select>
+	<select id="selectMemberStatsList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		-- EmployeeDAO.java
+		-- 직원관리 리스트
+		
+		SELECT 
+			SEQ, MEMBER_PART, MEMBER_PART_TEAM, 
+   			MEMBER_JIK, CONTENT, PHONE_NUMBER, 
+			FAX_NUMBER, USERNO, USERNAME
+		<include refid="selectMemberStatsListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>	
+	
+	<select id="selectMemberStatsRow" parameterType="Map" resultType="DataMap">
+		-- EmployeeDAO.java
+		-- 직원관리 로우데이터
+		
+		SELECT 
+			SEQ, MEMBER_PART, MEMBER_PART_TEAM, 
+   			MEMBER_JIK, CONTENT, PHONE_NUMBER, 
+			FAX_NUMBER, USERNO, USERNAME
+		FROM 
+			TB_MEMBERSTATS 
+		WHERE SEQ = #{seq}
+	</select>
+	
+	<update id="insertMemberStats" parameterType="Map">
+		-- EmployeeDAO.java
+		-- 직원관리 등록
+		INSERT INTO 
+				TB_MEMBERSTATS( SEQ, MEMBER_PART, MEMBER_PART_TEAM,  MEMBER_JIK, 
+							    CONTENT, PHONE_NUMBER, FAX_NUMBER, USERNO, USERNAME
+							  )
+				VALUES( (SELECT NVL(MAX(SEQ), 0)+1 AS SEQ FROM TB_MEMBERSTATS) , #{memberDept}, #{memberPartTame}
+								, #{memberJiknm}, #{content}, #{phoneNumber}, #{faxNumber}, #{userno}, #{name})
+	
+	</update>
+	
+	<update id="modifyMemberStats" parameterType="Map">
+		-- EmployeeDAO.java
+		-- 직원관리 수정
+		UPDATE TB_MEMBERSTATS SET 
+			MEMBER_PART = #{memberDept}, 
+			MEMBER_PART_TEAM = #{memberPartTame}, 
+			MEMBER_JIK =#{memberJiknm}, 
+			CONTENT = #{content}, 
+			PHONE_NUMBER = #{phoneNumber}, 
+			FAX_NUMBER = #{faxNumber},
+			USERNAME = #{name}
+		WHERE SEQ = #{seq}
+		
+	</update>
+	
+	<update id="deleteMemberStats" parameterType="Map">
+		-- EmployeeDAO.java
+		-- 직원관리 수정
+		DELETE FROM TB_MEMBERSTATS
+		WHERE SEQ = #{seq}
+		
+	</update>
+	
+</mapper>
+

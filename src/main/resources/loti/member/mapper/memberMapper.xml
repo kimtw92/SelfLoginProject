@@ -1,0 +1,838 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.member.mapper.MemberMapper">
+
+	<update id="ajaxCreateId2" parameterType="Map">
+	
+	<![CDATA[
+		--  멤버 정보
+		UPDATE
+			TB_MEMBER
+		SET USER_ID = #{userid}
+		WHERE 
+		    USER_ID IS NULL
+		    AND USERNO = #{userno}
+		    AND REPLACE(SCP.DEC_B64('KEY1',HP),'-','') = #{hp}
+		    AND BIRTHDATE = #{birthdate}
+	]]>
+</update>
+
+
+<select id="selectMemberListAuth5" parameterType="Map"  resultType="ut.lib.support.DataMap">
+<include refid="page.pageHead"></include>
+	<![CDATA[
+		--  계정관리 강사 리스트
+		--  auth == 5
+		SELECT A.USERNO AS USERNO,A.USER_ID AS USER_ID,	A.NAME AS NAME,		SCP.DEC_B64('KEY1',A.RESNO) AS RESNO,		A.DEPTSUB AS DEPTSUB,DEPT,
+			   SCP.DEC_B64('KEY1',A.OFFICE_TEL) AS OFFICE_TEL,SCP.DEC_B64('KEY1',A.HP) AS HP,			A.EMAIL AS EMAIL,	A.DEPTNM AS DEPTNM,
+				(SELECT JIKNM FROM TB_JIK WHERE JIK = A.JIK) AS JIKNM,
+				(SELECT COUNT(*) AS COUNT FROM TB_TUTOR B, tb_member A 
+				
+	]]>		
+		<if test="auth == 5">
+				WHERE B.USERNO = A.USERNO AND AUTHORITY= 5
+			
+				<if test="name != ''">
+				 AND B.NAME LIKE  '%'||#{name}||'%'
+				</if>			
+				<if test="resno !='' ">
+				 --AND A.RESNO LIKE '%'||#{resno}||'%'
+				 AND RESNO LIKE '%'||#{RESNO}||'%'
+				</if>
+				<if test="dept !='' ">
+				 AND A.dept LIKE '%'||#{dept}||'%'
+				</if>
+				<if test="userid !='' ">
+				 AND A.userid LIKE '%'||#{userid}||'%'
+				</if>
+				<if test="email !='' ">
+				 AND A.email LIKE '%'||#{email}||'%'
+				</if>
+			</if>
+		
+	
+	<![CDATA[			
+				) AS COUNT , A.LGFAILCNT AS LGFAILCNT
+		FROM TB_TUTOR B, tb_member A
+		
+	]]>
+		<if test="auth == 5">
+			WHERE B.USERNO = A.USERNO AND AUTHORITY= 5
+		
+			<if test="name != ''">
+			 AND B.NAME LIKE  '%'||#{name}||'%'
+			</if>			
+			<if test="resno !='' ">
+			 --AND A.RESNO LIKE '%'||#{resno}||'%'
+			 AND RESNO LIKE '%'||#{RESNO}||'%'
+			</if>
+			<if test="dept !='' ">
+			 AND A.dept LIKE '%'||#{dept}||'%'
+			</if>
+			<if test="userid !='' ">
+			 AND A.userid LIKE '%'||#{userid}||'%'
+			</if>
+			<if test="email !='' ">
+			 AND A.email LIKE '%'||#{email}||'%'
+			</if>
+		</if>
+	<include refid="page.pageFoot"></include>
+
+	
+</select>
+
+
+<select id="selectMemberListAuth5Count" parameterType="Map"  resultType="Integer">
+	<include refid="page.pageTotalCount"></include>
+	<![CDATA[
+		--  계정관리 강사 리스트
+		--  auth == 5
+		 FROM TB_TUTOR B, tb_member A
+		
+		]]>
+		<if test="auth == 5">	
+				WHERE B.USERNO = A.USERNO AND AUTHORITY= 5
+				<if test="name != ''">
+				 AND B.NAME LIKE  '%'||#{name}||'%'
+				</if>			
+				<if test="resno !='' ">
+				 --AND A.RESNO LIKE '%'||#{resno}||'%'
+				 AND RESNO LIKE '%'||#{RESNO}||'%'
+				</if>
+				<if test="dept !='' ">
+				 AND A.dept LIKE '%'||#{dept}||'%'
+				</if>
+				<if test="userid !='' ">
+				 AND A.userid LIKE '%'||#{userid}||'%'
+				</if>
+				<if test="email !='' ">
+				 AND A.email LIKE '%'||#{email}||'%'
+				</if>
+		</if>
+</select>
+
+
+<select id="selectMemberListAuth" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<include refid="page.pageHead"></include>
+	<![CDATA[
+		--  계정관리 일반회원 학적부 회원 리스트
+		--  auth == "" || auth == 10
+		
+			SELECT USERNO, USER_ID, NAME, RESNO, DEPTNM, DEPTSUB, SCP.DEC_B64('KEY1',A.OFFICE_TEL) AS OFFICE_TEL, SCP.DEC_B64('KEY1',HP) AS HP, EMAIL,DEPT, a.BIRTHDATE,
+			   (SELECT JIKNM FROM TB_JIK WHERE JIK = A.JIK) AS JIKNMFROM,
+			   (SELECT COUNT(*) AS COUNT FROM tb_member A 
+			   
+			]]>   
+			<choose>
+				<when test="auth == 10">
+				
+					WHERE (DELETE_YN IS NULL OR DELETE_YN = 'N') AND PWD IS NULL
+			
+					<if test="name != ''">
+						AND NAME LIKE '%'||#{name}||'%'
+					</if>
+					<if test="birthdate != ''">
+						AND birthdate LIKE '%'||#{birthdate}||'%'
+					</if>
+					<if test="dept != ''">
+						AND A.DEPT LIKE '%'||#{dept}||'%'
+					</if>
+					<if test="userid != ''">
+						 AND A.USER_ID LIKE '%'||#{userid}||'%'
+					</if>
+						<if test="email != ''">
+						  AND A.EMAIL LIKE '%'||#{email}||'%'
+					</if>		
+				</when>
+				<when test="auth == ''">
+				
+					WHERE 1=1
+					
+					<if test="name != ''">
+						AND NAME LIKE '%'||#{name}||'%'
+					</if>
+					<if test="birthdate != ''">
+						AND birthdate LIKE '%'||#{birthdate}||'%'
+					</if>
+					<if test="dept != ''">
+						AND A.DEPT LIKE '%'||#{dept}||'%'
+					</if>
+					<if test="userid != ''">
+						 AND A.USER_ID LIKE '%'||#{userid}||'%'
+					</if>
+					<if test="email != ''">
+						  AND A.EMAIL LIKE '%'||#{email}||'%'
+					</if>		
+				</when>
+		</choose>		
+			   
+			<![CDATA[	   
+			   
+			   ) AS COUNT , A.LGFAILCNT AS LGFAILCNT, DECODE(DELETE_YN, 'Y', '탈퇴','정상') DELETEYN
+			FROM   tb_member A
+		   
+			]]>   
+	   <choose>
+		<when test="auth == 10">
+			
+			WHERE (DELETE_YN IS NULL OR DELETE_YN = 'N') AND PWD IS NULL
+		
+			<if test="name != ''">
+				AND NAME LIKE '%'||#{name}||'%'
+			</if>
+			<if test="birthdate != ''">
+				AND birthdate LIKE '%'||#{birthdate}||'%'
+			</if>
+			<if test="dept != ''">
+				AND A.DEPT LIKE '%'||#{dept}||'%'
+			</if>
+			<if test="userid != ''">
+				 AND A.USER_ID LIKE '%'||#{userid}||'%'
+			</if>
+				<if test="email != ''">
+				  AND A.EMAIL LIKE '%'||#{email}||'%'
+			</if>		
+		</when>
+		<when test="auth == ''">
+		
+			WHERE 1=1
+			
+			<if test="name != ''">
+				AND NAME LIKE '%'||#{name}||'%'
+			</if>
+			<if test="birthdate != ''">
+				AND birthdate LIKE '%'||#{birthdate}||'%'
+			</if>
+			<if test="dept != ''">
+				AND A.DEPT LIKE '%'||#{dept}||'%'
+			</if>
+			<if test="userid != ''">
+				 AND A.USER_ID LIKE '%'||#{userid}||'%'
+			</if>
+			<if test="email != ''">
+				  AND A.EMAIL LIKE '%'||#{email}||'%'
+			</if>		
+		</when>
+		</choose>		
+		<include refid="page.pageFoot"></include>
+</select>
+
+<select id="selectDeptList"  resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		--  기관명 셀렉트박스 데이터 가져오기
+		SELECT 		DEPT, DEPTNM
+		FROM 		TB_DEPT 
+		WHERE		USE_YN = 'Y' 
+		ORDER BY 	DEPTNM
+
+	]]>
+</select>
+
+
+
+<select id="selectTotalMemberRow" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		--  전체 멤버수 카운터
+		SELECT COUNT(USERNO) AS MCNT 
+		FROM tb_member
+
+	]]>
+</select>
+
+<select id="selectIdRow" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		--  ID발급회원수 카운터
+		SELECT COUNT(USERNO) AS ID_CNT 
+		FROM tb_member 
+		WHERE USER_ID IS NOT NULL	
+
+	]]>
+</select>
+
+<select id="selectMemberListAuthCount" parameterType="Map"  resultType="Integer">
+	<include refid="page.pageTotalCount"></include>
+	<![CDATA[
+		--  계정관리 일반회원 학적부 회원 리스트
+		--  auth == "" || auth == 10		
+
+		FROM tb_member A 
+			   
+		]]>	   
+	   <choose>
+		<when test="auth == 10">
+			
+			WHERE (DELETE_YN IS NULL OR DELETE_YN = 'N') AND PWD IS NULL
+		
+			<if test="name != ''">
+				AND NAME LIKE '%'||#{name}||'%'
+			</if>
+			<if test="birthdate != ''">
+				AND birthdate LIKE '%'||#{birthdate}||'%'
+			</if>
+			<if test="dept != ''">
+				AND A.DEPT LIKE '%'||#{dept}||'%'
+			</if>
+			<if test="userid != ''">
+				 AND A.USER_ID LIKE '%'||#{userid}||'%'
+			</if>
+				<if test="email != ''">
+				  AND A.EMAIL LIKE '%'||#{email}||'%'
+			</if>		
+		</when>
+		<when test="auth != ''">
+		
+			WHERE 1=1
+			
+			<if test="name == ''">
+				AND NAME LIKE '%'||#{name}||'%'
+			</if>
+			<if test="birthdate != ''">
+				AND birthdate LIKE '%'||#{birthdate}||'%'
+			</if>
+			<if test="dept != ''">
+				AND A.DEPT LIKE '%'||#{dept}||'%'
+			</if>
+			<if test="userid != ''">
+				 AND A.USER_ID LIKE '%'||#{userid}||'%'
+			</if>
+			<if test="email != ''">
+				  AND A.EMAIL LIKE '%'||#{email}||'%'
+			</if>		
+		</when>
+		</choose>	
+			   
+	
+	
+</select>
+
+
+
+<select id="selectMemberInfoRow" parameterType="String"  resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		--  멤버 정보
+		SELECT 
+			SCP.DEC_B64('KEY1',A.RESNO) AS RESNO, A.USER_ID, A.NAME, A.DEPTNM, A.DEPT, A.DEPTSUB, A.PARTCD, A.JIK , A.JIKWI, SCP.DEC_B64('KEY1',A.HOME_TEL) AS HOME_TEL, a.BIRTHDATE,
+			SCP.DEC_B64('KEY1',A.OFFICE_TEL) AS OFFICE_TEL, SCP.DEC_B64('KEY1',A.HP) AS HP , A.EMAIL, A.HOME_POST1, A.HOME_POST2, A.HOME_ADDR, to_char(A.FIDATE, 'yyyy-mm-dd') FIDATE, to_char(A.UPSDATE, 'yyyy-mm-dd') UPSDATE,
+            ( SELECT JIKNM FROM TB_JIK WHERE TB_JIK.JIK = A.JIK ) AS JIKNM, A.MAILYN, A.PWD_QUS, A.PWD_ANS, A.SMS_YN, A.SCHOOL, to_char(A.LGLAST, 'yyyy-mm-dd HH24:MI:SS') LGLAST, to_char(A.INDATE, 'yyyy-mm-dd HH24:MI:SS') INDATE, to_char(A.DELETE_DATE, 'yyyy-mm-dd HH24:MI:SS') DELETE_DATE, A.NEWHOMEPOST1 , A.NEWHOMEPOST2, A.NEWADDR1, A.NEWADDR2
+		FROM 
+			TB_MEMBER A
+		WHERE 
+		    USERNO = #{userNo}		
+	]]>
+	</select>		
+
+
+
+<select id="selectLdapCodeList" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+   	   SELECT ldapcode as PARTCD, ldapname as PARTNM
+       FROM TB_LDAPCODE
+       WHERE USERYN = 'Y'  AND deptcode = #{dept}
+	]]>
+	</select>
+
+
+<select id="selectPartCodeList" parameterType="String" resultType="ut.lib.support.DataMap"> 
+	<![CDATA[
+		--  부서코드 셀렉트박스 리스트 ajax
+		
+   	SELECT PARTCD, PARTNM
+   	FROM TB_PART
+   	WHERE USE_YN = 'Y' AND DEPT = #{dept}
+	]]>
+</select>
+
+
+<select id="memberCheckID" parameterType="String" resultType="Integer">
+	<![CDATA[
+		--  멤버 정보
+		SELECT COUNT(*) CNT
+		FROM TB_MEMBER
+		WHERE USER_ID = #{user_id}
+	]]>
+	</select>
+
+
+<update id="modifyMember_userId" parameterType="Map">
+	<![CDATA[
+	-- 계정관리 사용자정보 변경
+	UPDATE TB_MEMBER SET LGFAILCNT = 0,
+	   NAME=#{name}, HOME_POST1=#{homePost1},HOME_POST2=#{homePost2}, 
+	   HOME_ADDR=#{homeAddr}, HOME_TEL=SCP.ENC_B64('KEY1',#{homeTel}), HP=SCP.ENC_B64('KEY1',#{hp}), OFFICE_TEL=SCP.ENC_B64('KEY1',#{officeTel}), 
+	   EMAIL=#{email}, JIKWI=#{jikwi}, DEPT=#{dept}, DEPTNM=#{deptnm}, DEPTSUB=#{partnm}, PARTCD = #{partcd}, 
+	   JIK=#{jik}, PWD = SCP.ENC_B64('KEY1',#{pwd}),
+	   FIDATE  = #{FIDATE},
+	   UPSDATE = #{UPSDATE},
+	   USER_ID = #{userId},
+	   PWD_QUS = #{pwd_qus},
+	   PWD_ANS = #{pwd_ans},
+       SCHOOL = #{school},
+       MAILYN = #{mailYN},
+       SMS_YN = #{smsYN},
+       LDAPCODE = #{ldapcode},
+       LDAPNAME = #{ldapname},
+       NEWHOMEPOST = #{newHomePost},
+       NEWADDR1 = #{newAddr1},
+       NEWADDR2 = #{newAddr2}       
+	WHERE USERNO = #{userno}
+	]]>
+	</update>
+	
+<update id="modifyMember2" parameterType="Map" >
+	<![CDATA[
+	-- 계정관리 사용자정보 변경
+	UPDATE TB_MEMBER SET 
+	   NAME=#{name}, HOME_POST1=#{homePost1},HOME_POST2=#{homePost2}, 
+	   HOME_ADDR=#{homeAddr}, HOME_TEL=SCP.ENC_B64('KEY1',#{homeTel}), HP=SCP.ENC_B64('KEY1',#{hp}), OFFICE_TEL=SCP.ENC_B64('KEY1',#{officeTel}), 
+	   EMAIL=#{email}, JIKWI=#{jikwi}, DEPT=#{dept}, DEPTNM=#{deptnm}, DEPTSUB=#{partnm}, PARTCD = #{partcd}, 
+	   JIK=#{jik}, PWD = SCP.ENC_B64('KEY1',#{pwd}),
+	   FIDATE  = #{FIDATE},
+	   UPSDATE = #{UPSDATE},
+	   USER_ID = #{userId},
+	   PWD_QUS = #{pwd_qus},
+	   PWD_ANS = #{pwd_ans},
+       SCHOOL = #{school},
+       MAILYN = #{mailYN},
+       SMS_YN = #{smsYN},
+       LDAPCODE = #{ldapcode},
+       LDAPNAME = #{ldapname},
+       NEWHOMEPOST = #{newHomePost},
+       NEWADDR1 = #{newAddr1},
+       NEWADDR2 = #{newAddr2}       
+	WHERE USERNO = #{userno}
+	]]>
+	</update>
+
+
+	<select id="selectStudyDocList" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+	
+		--  기관별조회
+	
+		SELECT 
+			GRR.RNAME,GRR.RRESNO,DP.DEPTNM RDEPTNM,GRR.RDEPTSUB,JK.JIKNM RJIKNM,GC.GRCODENM AS GRNM, 
+			(SELECT GRCODENIKNM FROM TB_GRSEQ WHERE GRCODE = GRR.GRCODE AND GRSEQ = GRR.GRSEQ) AS GRCODENM,
+			GRR.GRSEQ , TO_CHAR(GRR.STARTED,'yyyymmdd') STARTED, TO_CHAR(GRR.ENDDATE, 'yyyymmdd') ENDDATE, 
+			GRR.SEQNO,GRR.PACCEPT,DECODE(GRR.RGRAYN,'Y','수료','N','미수료','해당없음') RGRAYN , DECODE(TM.SEX,'F','여자','남자') SEX, TM.BIRTHDATE  BIRTHDATE
+		FROM 
+			TB_GRRESULT GRR, TB_DEPT DP, TB_JIK JK, TB_GRCODE GC, TB_MEMBER TM 
+		WHERE GRR.USERNO = TM.USERNO(+)
+			AND GRR.RDEPT=DP.DEPT(+) AND GRR.RJIK=JK.JIK(+) AND GRR.GRCODE=GC.GRCODE 
+			and grr.enddate between to_date(#{sDate},'yyyymmddhh24miss') and to_date(#{eDate},'yyyymmddhh24miss')
+	]]>
+			<if test="aDept != ''">
+			AND GRR.RDEPT = #{aDept}
+			</if>
+			<if test="name != ''">
+			AND GRR.RNAME like '%'||#{name}||'%'
+			</if>
+			<if test="aDept == 6289999">
+			AND TM.LDAPCODE = #{sess_ldapcode}
+			</if>
+	<![CDATA[
+			ORDER BY  GRR.RNAME, GRR.RRESNO, GRR.GRSEQ, GC.GRCODENM
+
+	]]>
+	</select>
+		
+    <select id="selectEducationalRow" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 학력조회쿼리
+		 SELECT GUBUN, GUBUNNM FROM TB_GUBUN WHERE GRSUBJ='SC'
+	]]>
+	</select>	
+	
+		
+	<update id="modifyStudyExec" parameterType="Map">
+		<![CDATA[
+			-- 개인별 학적부 자료 수정 실행
+		UPDATE TB_GRRESULT SET
+	        RSCHOOL = #{rschool} , RDEPT = #{rdept} , RDEPTSUB =#{rdeptsub}, RJIK =#{rjik},STARTED = TO_DATE(#{started}, 'yyyymmdd'), ENDDATE = TO_DATE(#{enddate}, 'yyyymmdd'), 
+	        PACCEPT = #{paccept} , SEQNO = #{seqno} , TOTNO = #{totno}, RGRAYN = #{rgrayn}, RNO = #{rno}, GRMAN = #{grman}, CONFIRMMAN = #{confirmman}  
+	    WHERE 
+	     	GRCODE = #{grcode} AND GRSEQ = #{grseq} AND USERNO = #{userno}
+		]]>
+		</update>
+	
+	<select id="selectGadminList" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+
+		SELECT * FROM TB_GADMIN WHERE GADMIN != '7'
+		
+		-- 특수권한 리스트
+	]]>
+	</select>
+	
+	<select id="selectManagerListCount" parameterType="Map" resultType="Integer">
+	<include refid="page.pageTotalCount"></include>
+	<![CDATA[
+		-- 특수권한자 리스트
+		
+		FROM 
+			TB_MANAGER A
+		WHERE 1=1
+			--A.GADMIN !='7'
+	]]>
+		 <if test="keyword !=''">
+		 	AND SEARCHNAME(A.USERNO) LIKE '%'||#{keyword}||'%'
+		 </if>
+		  <if test="selGadmin !=''">
+		 	AND A.GADMIN = #{selGadmin}
+		 </if>
+		 <if test="selDept !=''">
+		 	AND A.DEPT = #{selDept}
+		 </if>
+		 <if test="keyword !='' and selGadmin != ''">
+		 	AND SEARCHNAME(A.USERNO)  LIKE '%'||#{keyword}||'%'  AND A.GADMIN = #{selGadmin}
+		 </if>
+		ORDER BY A.GADMIN ASC
+
+	</select>
+
+	
+	<select id="selectManagerList" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<include refid="page.pageHead"></include>
+	<![CDATA[
+		-- 특수권한자 리스트
+		SELECT 
+			(SELECT NAME||'|'||SUBSTR(SCP.DEC_B64('KEY1',RESNO), 1,6)||'|'||DEPT||'|'||DEPTNM FROM tb_member WHERE USERNO = A.USERNO) AS MEM
+			, (SELECT GADMINNM FROM TB_GADMIN WHERE GADMIN = A.GADMIN) AS GADMINNM
+			, (SELECT (SELECT JIKNM FROM TB_JIK WHERE B.JIK = JIK) FROM tb_member B WHERE USERNO = A.USERNO) AS JIKNM
+			, GADMIN,(SELECT DEPTNM FROM TB_DEPT WHERE DEPT = A.DEPT) AS DEPTNM
+			, DEPT, USERNO, (SELECT PARTNM FROM TB_PART WHERE DEPT=A.DEPT AND PARTCD=A.PARTCD) AS PARTNM
+		FROM 
+			TB_MANAGER A
+		WHERE 1=1
+			--A.GADMIN !='7'
+		]]>	
+		
+		 <if test="keyword !=''">
+		 	AND SEARCHNAME(A.USERNO) LIKE '%'||#{keyword}||'%'
+		 </if>
+		  <if test="selGadmin !=''">
+		 	AND A.GADMIN = #{selGadmin}
+		 </if>
+		 <if test="selDept !=''">
+		 	AND A.DEPT = #{selDept}
+		 </if>
+		 <if test="keyword !='' and selGadmin != ''">
+		 	AND SEARCHNAME(A.USERNO)  LIKE '%'||#{keyword}||'%'  AND A.GADMIN = #{selGadmin}
+		 </if>
+		 
+		ORDER BY A.GADMIN ASC
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	
+	<select id="selectGadminRow"  resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		--  특수권한 SELECT 
+		--  특수권한 데이터 가져오기 (과정장,강사,교육생등은 제외)
+		SELECT * FROM TB_GADMIN WHERE GADMIN != '7' AND GADMIN != '8' AND GADMIN != '9'
+	]]>
+	</select>
+	
+	
+	<select id="selectAdminHistoryListCount" parameterType="Map" resultType="Integer">
+	<include refid="page.pageTotalCount"></include>
+	<![CDATA[
+		-- 특수권한자 이력현황 토탈페이지
+		
+    		
+		FROM 
+   			TB_GADMIN_HISTORY A 
+    ]]>   			
+    	 <choose>
+    	<when test='userno !="" and iDate == "" and cDate == ""'> 
+    		WHERE USERNO = #{userno}
+    	</when>
+    	<when test='userno !="" and (iDate != "" or cDate != "")'>
+    		WHERE USERNO = #{userno} AND CDATE BETWEEN TO_DATE(#{iDate},'YYYYMMDD') AND TO_DATE(#{cDate},'YYYYMMDD')    		
+    	</when>
+    	 	<when test='userno =="" and (iDate != "" or cDate !="")'>
+    
+    		WHERE CDATE BETWEEN TO_DATE(#{iDate},'YYYYMMDD') AND TO_DATE(#{cDate},'YYYYMMDD')    		
+    	</when>   
+    	</choose> 
+   		
+
+		ORDER BY  LDATE DESC 
+		
+	
+	</select>
+	
+	<select id="selectAdminHistoryList" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<include refid="page.pageHead"></include>
+	<![CDATA[
+		-- 특수권한자 이력현황
+		SELECT 
+    		NO,(SELECT NAME FROM tb_member WHERE USERNO = A.USERNO) AS NAME,(SELECT GADMINNM FROM TB_GADMIN WHERE GADMIN = A.GADMIN) AS GADMINNM,
+    		(SELECT (SELECT JIKNM FROM TB_JIK WHERE B.JIK = JIK) FROM tb_member B WHERE USERNO = A.USERNO) AS JIKNM,GADMIN,
+    		(SELECT DEPTNM FROM TB_DEPT WHERE DEPT = A.DEPT) AS DEPTNM,DEPT,(SELECT PARTNM FROM TB_PART WHERE DEPT = A.DEPT AND PARTCD=A.PARTCD ) AS PARTNM,
+    		PARTCD,TO_CHAR(IDATE, 'YYYY-MM-DD HH24:MI:SS') AS IDATE,TO_CHAR(CDATE, 'YYYY-MM-DD HH24:MI:SS') AS CDATE,
+    		(SELECT NAME FROM tb_member WHERE USERNO = A.LUSERNO) AS LNAME 
+		FROM 
+   			TB_GADMIN_HISTORY A 
+    ]]>   			
+    	 	<choose>
+    	<when test='userno !="" and iDate == "" and cDate == ""'> 
+    		WHERE USERNO = #{userno}
+    	</when>
+    	<when test='userno !="" and (iDate != "" or cDate != "")'>
+    		WHERE USERNO = #{userno} AND CDATE BETWEEN TO_DATE(#{iDate},'YYYYMMDD') AND TO_DATE(#{cDate},'YYYYMMDD')    		
+    	</when>
+    	 	<when test='userno =="" and (iDate != "" or cDate !="")'>
+    
+    		WHERE CDATE BETWEEN TO_DATE(#{iDate},'YYYYMMDD') AND TO_DATE(#{cDate},'YYYYMMDD')    		
+    	</when>   
+    	</choose>
+   		
+
+		ORDER BY  LDATE DESC 
+		<include refid="page.pageFoot"></include>
+	
+	</select>
+	
+	<select id="selectGadminCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		--  특수권한 COUNT		
+		SELECT COUNT(*) AS DUPCNT FROM TB_MANAGER WHERE USERNO = #{userno} AND GADMIN =  #{gadmin}
+	]]>
+
+	</select>
+			
+			
+	<select id="selectMemberList" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		--  멤버조회 
+		SELECT 
+  			  a.USERNO, SUBSTR(SCP.DEC_B64('KEY1',a.RESNO), 1,6) RESNO, a.NAME, a.DELETE_YN, a.MJIKNM, a.MJIKNM as mjiknm, a.DEPTSUB as deptsub, 
+    		  a.DEPTNM as deptnm, CASE WHEN b.USERNO IS NULL THEN '2' ELSE '3' END as TYPE 
+		FROM 
+    		tb_member a, TB_TUTOR b
+   		WHERE a.USERNO = b.USERNO (+) AND a.${type} LIKE  '%'||#{keyword}||'%'
+	]]>
+		
+		
+	</select>		
+	
+	
+	<update id="insertAdminExec" parameterType="Map" >
+	<![CDATA[
+		--  특수권한 인서트
+		INSERT INTO TB_MANAGER
+						(USERNO, GADMIN, DEPT, LUSERNO, PARTCD, LDATE)
+					VALUES
+						(#{userno}, #{gadmin}, #{dept}, #{sessNo}, #{partcd}, SYSDATE)
+				
+	]]>
+	</update>
+
+
+	<select id="selectGadminSaveCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		--  특수권한 잔여 권한체크 COUNT
+		SELECT COUNT(*) AS DUPCNT FROM TB_MANAGER WHERE USERNO = #{userno} AND GADMIN = #{gadmin}
+	]]>
+	</select>
+	
+	<delete id="deleteManager" parameterType="Map">
+	<![CDATA[
+		--  특수권한 삭제
+				DELETE FROM 
+					TB_MANAGER 
+				WHERE USERNO = #{userno} AND GADMIN = #{gadmin}
+	]]>
+	</delete>
+	
+	<update id="updateGadmin" parameterType="String">
+	<![CDATA[
+		--  특수권한 수정(프론트 삭제기능)
+		UPDATE tb_member SET AUTHORITY = '20' WHERE USERNO = #{userNo}
+	]]>
+	</update>
+	
+		<update id="updateDisabledGadmin" parameterType="Map">
+	<![CDATA[
+		--  특수권한 수정(프론트 삭제기능)
+		UPDATE TB_TUTOR SET DISABLED = 'Y', LUSERNO = #{sessNo}, LDATE = SYSDATE WHERE USERNO = #{userno}
+	]]>
+	</update>	
+	
+		<insert id="insertGadminHistroy" parameterType="Map">
+	<![CDATA[
+		--  특수권한 삭제시 TB_GADMIN_HISTORY에 데이터를 쌓아둬야 한다.
+		    INSERT INTO TB_GADMIN_HISTORY A
+                (NO,USERNO,GADMIN,IDATE,CDATE,DEPT,PARTCD,LUSERNO,LDATE)
+          		 VALUES((SELECT NVL(MAX(NO),0) + 1 FROM TB_GADMIN_HISTORY), #{userno}, #{gadmin}, (SELECT LDATE FROM TB_MANAGER WHERE USERNO = #{userno} AND GADMIN = #{gadmin} ), SYSDATE,#{dept}, #{partcd}, #{sessNo}, SYSDATE)
+	]]>
+	</insert>
+	
+	
+	<select id="selectSchoolRegRow"  parameterType="String" resultType="ut.lib.support.DataMap" >
+	<![CDATA[
+		-- 개인별 학적부 자료 수정
+		 SELECT 
+   			GRR.RRESNO, GRR.RSCHOOL,    GS.GRCODENIKNM, GS.GRCODE,      GS.GRSEQ, 
+    		GRR.USERNO, GRR.RNAME,      GRR.RDEPT,      GRR.RDEPTSUB,   JK.JIKNM RJIKNM ,
+    		GRR.GRSEQ , TO_CHAR(GRR.STARTED,'yyyymmdd') STARTED,        TO_CHAR(GRR.ENDDATE, 'yyyymmdd') ENDDATE,
+    		GRR.SEQNO,  GRR.PACCEPT,    GRR.RGRAYN,     DECODE(GRR.RGRAYN,'Y','수료','N','미수료','X','해당없음') TXT_RGRAYN, 
+    		GRR.RNO,    GRR.EDUNO,      GRR.SEQNO,      GRR.TOTNO,      GRR.GRMAN,      GRR.CONFIRMMAN,  GS.TDATE 
+		FROM 
+    		TB_GRRESULT GRR, TB_GRSEQ GS, TB_JIK JK 
+		WHERE 
+    		GRR.GRCODE=GS.GRCODE AND GRR.GRSEQ=GS.GRSEQ  AND GRR.RJIK=JK.JIK(+) 
+    		AND GRR.USERNO = #{userno} AND GRR.GRCODE= #{grcode} AND GRR.GRSEQ = #{linkGrseq}
+	]]>
+	</select>
+
+	<select id="selectCompleteListt" parameterType="Map" resultType="ut.lib.support.DataMap">
+		<![CDATA[
+		--  수료이력조회
+		SELECT  
+			 GS.GRCODENIKNM, GS.GRCODE, GS.GRSEQ, GRR.RRESNO, GRR.USERNO, GRR.RNAME, DP.DEPTNM RDEPTNM, GRR.RDEPTSUB,JK.JIKNM RJIKNM,GRR.GRSEQ , 
+	   	 	 TO_CHAR(GRR.STARTED,'yyyymmdd') STARTED, TO_CHAR(GRR.ENDDATE, 'yyyymmdd') ENDDATE , GRR.SEQNO,GRR.PACCEPT,DECODE(GRR.RGRAYN,'Y','수료','N','미수료','X') RGRAYN, GRR.RNO, GRR.EDUNO, GRR.SEQNO , 
+			 TO_CHAR(GS.STARTED, 'mm.dd') STARTED, TO_CHAR(GS.ENDDATE, 'mm.dd') ENDDATE, GS.TDATE  
+	    FROM 
+	    	 TB_GRRESULT GRR, TB_GRSEQ GS, TB_DEPT DP, TB_JIK JK 
+	    WHERE 
+	    	 GRR.GRCODE=GS.GRCODE AND GRR.GRSEQ=GS.GRSEQ AND GRR.RDEPT=DP.DEPT(+) AND GRR.RJIK=JK.JIK(+) AND GRR.USERNO = ${userno}
+	    	
+		]]>
+		<if test="sessClass=='3'">
+		AND GRR.RDEPT= #{dept} 
+		</if>
+		ORDER BY GS.GRCODE, GS.GRSEQ
+		</select>
+
+		<select id="selectSchoolRegList" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 학적조회쿼리
+		SELECT 
+				GRR.RNAME, GRR.RRESNO, GRR.RSCHOOL, GS.GRCODENIKNM, GS.GRCODE, GS.GRSEQ, GRR.USERNO, GRR.RNAME, DP.DEPTNM RDEPTNM, 
+				GRR.RDEPTSUB,JK.JIKNM RJIKNM,JK.JIK,GRR.GRSEQ , TO_CHAR(GRR.STARTED,'yyyymmdd') STARTED, 
+				TO_CHAR(GRR.ENDDATE, 'yyyymmdd') ENDDATE , GRR.SEQNO,GRR.PACCEPT, DECODE(GRR.RGRAYN,'Y','수료','N','미수료','X','해당없음') RGRAYN, GRR.RNO, GRR.EDUNO, 
+				GRR.SEQNO, GRR.TOTNO,GRR.GRMAN, GRR.CONFIRMMAN, TO_CHAR(GRR.STARTED, 'yyyy.mm.dd') STARTED, 		
+				TO_CHAR(GRR.ENDDATE, 'yyyy.mm.dd') ENDDATE, GS.TDATE  
+		FROM 
+				TB_GRRESULT GRR, TB_GRSEQ GS, TB_DEPT DP, TB_JIK JK 
+		WHERE 
+				GRR.GRCODE=GS.GRCODE AND GRR.GRSEQ=GS.GRSEQ AND GRR.RDEPT=DP.DEPT(+) AND GRR.RJIK=JK.JIK(+) AND GRR.USERNO=  #{userno}
+        ORDER BY GS.GRCODE, GS.GRSEQ
+	]]>
+	</select>
+		
+		
+		<select id="selectstudyPersonList" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+	--  개인별 조회
+	SELECT 
+		GRR.GRCODE, 	GRR.USERNO, 		GRR.RNAME, 		GRR.RRESNO, DP.DEPTNM RDEPTNM,
+		GRR.RDEPTSUB,	JK.JIKNM RJIKNM,	GC.GRCODENM,	GRR.GRSEQ , TO_CHAR(GRR.STARTED,'yyyymmdd') STARTED, 
+		TO_CHAR(GRR.ENDDATE, 'yyyymmdd') ENDDATE, 			GRR.SEQNO,	GRR.PACCEPT,DECODE(GRR.RGRAYN,'Y','수료','N','미수료','해당없음') RGRAYN 
+	FROM 
+		TB_GRRESULT GRR, TB_DEPT DP, TB_JIK JK, TB_GRCODE GC, TB_MEMBER TM
+	WHERE GRR.USERNO = TM.USERNO(+)
+		AND GRR.RDEPT=DP.DEPT(+) AND GRR.RJIK=JK.JIK(+) AND GRR.GRCODE=GC.GRCODE
+	
+	]]>
+	
+		 <if test="name!=''">
+		 AND GRR.RNAME LIKE '%'||#{name}||'%'		 
+			  <if test="sessClass=='3'">
+			 AND GRR.RDEPT= #{dept} 
+			 </if>
+			 <if test="sess_dept=='6289999'">
+				 AND TM.LDAPCODE = #{sess_ldapcode}
+			 </if>		 
+		 </if>
+		
+	ORDER BY GRR.RNAME, GRR.USERNO, GRR.GRSEQ, GRR.GRCODE
+	</select>	
+	
+	<select id="selectPointSearchPerson" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- MemberDAO.java
+		-- 가점입력 학생장 리스트
+		SELECT 
+			m.userno userno, SCP.DEC_B64('KEY1',m.resno) AS resno, m.name name, m.deptsub deptsub, m.mjiknm mjiknm, a.eduno eduno,
+			   (SELECT
+			   		nvl(mas_gubun, '') from tb_grstumas where grcode=#{grcode}  and grseq=#{grseq} and userno = m.userno ) stumas
+			    FROM
+			    	tb_member m, 
+			    		(SELECT
+			    			 * 
+			    		 FROM
+			    		 	tb_app_info 
+			    		 WHERE
+			    		 	grcode=#{grcode} and grseq =#{grseq} and grchk = 'Y' ) a
+			    WHERE
+			    	m.userno=a.userno  and (m.delete_yn IS NULL or m.delete_yn <> 'Y')
+			    	
+	]]>
+				<if test="search !=''">
+				and m.name like  '%'||#{search}||'%'	
+				</if>
+
+	</select>
+	
+	<select id="selectPointSearchPerson2" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- MemberDAO.java
+		-- 가점입력 학생장 리스트2
+		SELECT
+			userno, SCP.DEC_B64('KEY1',resno) AS RESNO, name
+		FROM
+			tb_member m  
+		WHERE
+			(delete_yn IS NULL or delete_yn <> 'Y') and userno in (select userno from TB_MANAGER where gadmin = 'A' )
+			
+	]]>
+	<if test="search !=''">
+				and m.name like  '%'||#{search}||'%'	
+				</if>
+	</select>
+	
+	<update id="updatePointPerson" parameterType="Map">
+	<![CDATA[
+		-- MemberDAO.java
+		-- 가점입력 학생장/부학생장 변경(선택)
+		Insert
+			into tb_grstumas(grcode, grseq, userno, mas_gubun) 
+		VALUES(#{commGrcode}, #{commGrseq}, #{userno}, #{stumas}) 
+	]]>
+	</update>
+	
+	<update id="deletePointPerson" parameterType="Map">
+		-- MemberDAO.java
+		-- 가점입력 학생장/부학생장 변경(취소)
+		DELETE
+		FROM
+			tb_grstumas 
+		WHERE
+			grcode =#{commGrcode} and grseq =#{commGrseq} and userno =#{userno} and mas_gubun =#{stumas}
+	</update>
+	
+	<update id="insertBreakDownExec" parameterType="Map">
+		-- 출강강사확인서, 교육확인서 내역 등록
+		INSERT INTO TB_BREAKDOWN(SEQ, USERNO, CONTENT, GUBUN, REGDATE)
+					VALUES((SELECT NVL(MAX(SEQ)+1, 0) FROM TB_BREAKDOWN), #{sessNo}, #{comments}, #{breakDownGubun}, SYSDATE)
+		
+	</update>	
+	
+	<update id="ajaxCreateId" parameterType="Map">
+	<![CDATA[
+		--  멤버 정보
+		UPDATE
+			TB_MEMBER
+		SET USER_ID = #{userid}
+		WHERE 
+		    USER_ID IS NULL
+		    AND USERNO = #{userno}
+	]]>
+	</update>
+	
+</mapper>
+

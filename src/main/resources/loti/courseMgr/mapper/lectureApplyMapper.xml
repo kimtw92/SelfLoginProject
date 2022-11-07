@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.LectureApplyMapper">
+
+	<select id="selectMemberBySimpleDataList" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 간단한 회원정보 리스트 추출
+		SELECT
+			USERNO, NAME, SCP.DEC_B64('KEY1',HP) as HP, DEPTNM,
+			EMAIL, 
+			(SELECT JIKNM FROM TB_JIK WHERE JIK = A.JIK) JIKNM
+		FROM tb_member A
+		WHERE 1=1
+			${value}
+	]]>
+	</select>
+	
+	<select id="selectMemberBySimpleDataList2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+        SELECT
+            a.USERNO, NAME, SCP.DEC_B64('KEY1',HP) as HP, DEPTNM,
+            EMAIL, 
+            (SELECT JIKNM FROM TB_JIK WHERE JIK = A.JIK) JIKNM, GRR.GRCODE GRCODE, GQ.GRCODENIKNM GRCODENIKNM
+        FROM tb_member A, TB_GRRESULT GRR, TB_GRSEQ GQ
+        WHERE 1=1
+             AND GRR.GRCODE = GQ.GRCODE
+             AND GRR.GRSEQ = GQ.GRSEQ   
+             and a.userno = grr.userno
+             AND GQ.F_CYBER = 'Y'
+             AND GRR.GRSEQ = #{grseq}             
+             ${where}
+        ORDER BY GRR.RDEPT, GRR.RNAME 	
+	]]>
+	</select>
+	
+	<update id="insertStuLecUserSpec" parameterType="Map">
+	<![CDATA[
+		-- 수강생 등록
+		INSERT INTO TB_STU_LEC
+			(GRCODE, GRSEQ, SUBJ,
+			 NAME, DEPT, JIK,
+			 USERNO, LUSERNO, LDATE) 
+		SELECT 
+			GRCODE, GRSEQ, SUBJ,
+			#{name}, #{dept}, #{jik}, 
+			#{userno}, #{luserno}, SYSDATE
+		FROM TB_SUBJSEQ 
+		WHERE 
+			GRCODE          = #{grcode}
+			AND GRSEQ       = #{grseq} 
+			AND LEC_TYPE	!= 'C'
+	]]>
+	</update>
+	
+	<update id="updateAppInfoGrChk" parameterType="Map">
+	<![CDATA[
+		-- 수강생의 승인/승인취소 처리.
+		UPDATE TB_APP_INFO SET 
+			GRCHK = #{grchk}, 
+			LUSERNO = #{luserno}
+		WHERE USERNO = #{userno} 
+			AND GRCODE = #{grcode} 
+			AND GRSEQ = #{grseq}
+	]]>
+	</update>
+
+	<select id="selectDeptList" resultType="DataMap">
+	<![CDATA[
+		-- 기관명 리스트
+		SELECT 
+			DEPT, DEPTNM, USE_YN,
+			DECODE(DEPT, '6280000', '시', REPLACE(DEPTNM, '인천광역시', '')) AS REPLACE_DEPTNM
+		FROM TB_DEPT 
+		ORDER BY DEPT
+	]]>
+	</select>
+	
+	<select id="selectGrseqFinishMember2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 이전기수 수료 인원 조회 - 수정후
+		SELECT DISTINCT(C.GRCODENIKNM) GRCODENIKNM, A.USERNO, A.RGRAYN
+		       , (SUBSTR(A.GRSEQ, 0, 4) || '년 ' || SUBSTR(A.GRSEQ, 5) || '기') AS grseq        
+		FROM TB_GRRESULT A,TB_JIK B, TB_GRSEQ C
+		        , ( SELECT started, grseq 
+		            FROM TB_GRSEQ 
+		            WHERE 1=1
+	]]>
+	<if test="grcode != null and grcode != ''">
+	<![CDATA[
+					AND grcode = #{grcode}
+	]]>
+	</if>
+	<![CDATA[
+		            AND grseq = #{grseq} ) D
+		WHERE A.RJIK = B.JIK
+		       AND A.GRCODE = C.GRCODE
+		       AND A.GRSEQ = C.GRSEQ
+		       AND A.ENDDATE < D.started
+		       AND A.grseq LIKE SUBSTR(#{grseq}, 0, 4) || '%'
+			   ${whereDeptStr}
+	]]>
+	</select>
+	
+	<select id="selectGrseqFinishMemberForCyber" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 이전기수 수료 인원 조회 (사이버)
+		SELECT 
+			DISTINCT(D.GRCODENM) GRCODENM, B.USERNO, B.RGRAYN, SUBSTR(A.GRSEQ,5) || '기' AS GRSEQ
+		FROM TB_APP_INFO A, TB_GRRESULT B, TB_GRSEQ C, TB_GRCODE D
+		WHERE 1=1
+			AND A.GRSEQ = #{grseq}
+			AND A.USERNO = B.USERNO
+			AND A.GRCODE = C.GRCODE
+			AND A.GRSEQ = C.GRSEQ
+			AND B.GRCODE = D.GRCODE
+			AND C.F_CYBER = 'Y'
+			AND B.ENDDATE > ADD_MONTHS (C.STARTED, -1)
+			${whereDeptStr}
+	]]>
+	</select>
+	
+	<select id="selectAppInfoByDeptList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기관별 조회/승인 (부서별) (수료정보 table TB_GRRESULT)
+		-- 2011.01.28 - 생년월일 추가
+		-- 2012년 02월 09일 원장님 지시사항으로 시군구 성명순으로 변경함
+		SELECT 
+			GRCODE, USERNO, NAME, 
+			TO_CHAR(APPDATE,'YYYY.MM.DD HH24:MI:SS') AS APPDATE, SEARCHJIKNM(JIK) AS JIKNM, JIK, 
+			TELNO, HPNO, DEPTCHK,
+			GRCHK, DEPT, SEARCHDEPTNM(DEPT) AS DEPTNM, 
+			DEPTSUB, EDUNO,
+			(SELECT DEPTSUB FROM tb_member WHERE USERNO=A.USERNO AND DEPT=A.DEPT) DEPTSUB2, 
+			(SELECT SUBSTR(SCP.DEC_B64('KEY1',RESNO), 1, 6) FROM tb_member WHERE USERNO=A.USERNO) RESNO,
+			(SELECT birthdate FROM tb_member WHERE USERNO=A.USERNO) birthdate  ,
+			(SELECT user_id FROM tb_member WHERE USERNO=A.USERNO) user_id
+			FROM TB_APP_INFO A 
+		WHERE 1=1
+			AND GRCODE = #{grcode} 
+			AND GRSEQ = #{grseq}
+			${whereDeptStr}
+		ORDER BY DECODE(DEPT,6280000,1,6280053,2,3490000,3,3500000,4,3510000,5,3520000,6,3530000,7,3540000,8,3550000,9,3560000,10,3570000,11,3580000,12,6289999,13,14), NAME
+		--ORDER BY DEPT, NAME
+	]]>
+	</select>
+	
+	<select id="selectAppInfoByDeptListForCyber2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기관별 조회/승인 (부서별) (수료정보 table TB_GRRESULT) - Cyber
+		SELECT 
+			C.GRCODENM, A.GRCODE, A.USERNO, A.NAME, 
+			TO_CHAR(A.APPDATE,'YYYY.MM.DD HH24:MI:SS') AS APPDATE, SEARCHJIKNM(A.JIK) AS JIKNM, A.JIK, 
+			A.TELNO, A.HPNO, A.DEPTCHK,
+			A.GRCHK, A.DEPT, SEARCHDEPTNM(A.DEPT) AS DEPTNM, 
+			D.DEPTSUB, A.EDUNO,
+			D.DEPTSUB DEPTSUB2, 
+			SUBSTR(SCP.DEC_B64('KEY1',D.RESNO), 1, 6) RESNO 
+		FROM TB_APP_INFO A, TB_GRSEQ B, TB_GRCODE C, TB_MEMBER D
+		WHERE A.USERNO = D.USERNO(+)
+			AND A.GRSEQ = #{grseq}
+            AND B.GRCODENIKNM LIKE 'e-' || '%'
+            AND A.GRCODE = B.GRCODE
+            AND A.GRSEQ = B.GRSEQ
+            AND A.GRCODE = C.GRCODE
+			${whereDeptStr}
+		ORDER BY DEPT, NAME
+	]]>
+	</select>
+	
+	<select id="selectAppInfoByDeptCntList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기수의 부서별 수강신청 인원수 
+		SELECT 
+			DEPT, COUNT(DEPT) AS CNT,
+            SUM(DECODE(DEPTCHK, 'Y', 1, 0)) DEPTCNT,
+            SUM(DECODE(GRCHK, 'Y', 1, 0)) GRCHK
+		FROM TB_APP_INFO 
+		WHERE GRCODE = #{grcode} AND GRSEQ = #{grseq}
+		GROUP BY DEPT
+	]]>
+	</select>
+	
+	<select id="selectAppInfoByDeptCntListForCyber" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기수의 부서별 수강신청 인원수 (사이버)
+		SELECT 
+			DEPT, COUNT(DEPT) AS CNT 
+		FROM TB_APP_INFO A, TB_GRSEQ B
+		WHERE 1=1
+			AND B.F_CYBER = 'Y' 
+			AND A.GRSEQ = #{grseq}
+			AND A.GRCODE = B.GRCODE
+			AND A.GRSEQ = B.GRSEQ
+			${whereStr}
+		GROUP BY DEPT
+	]]>
+	</select>
+	
+	<select id="selectAppInfoByGrChkList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수의 수강 인원 조회 (최종 승인자만)
+		-- 2012년 02월 09일 원장님 지시사항으로 시군구 성명순으로 변경함
+		SELECT 
+			GRCODE, USERNO, NAME 
+		FROM TB_APP_INFO 
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND GRCHK = 'Y' 
+		order by decode(DEPT,6280000,1,6280053,2,3490000,3,3500000,4,3510000,5,3520000,6,3530000,7,3540000,8,3550000,9,3560000,10,3570000,11,3580000,12,6289999,13,14), NAME
+		--ORDER BY DEPT, NAME
+	]]>
+	</select>
+	
+	<update id="updateAppInfoEduNo" parameterType="Map">
+	<![CDATA[
+		-- 수강생의 교번 부여
+		UPDATE TB_APP_INFO SET 
+			EDUNO = #{eduno},
+			LUSERNO = #{luserno} 
+		WHERE USERNO = #{userno}
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<select id="selectStuLecUserCnt" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 과정기수의 학생의 정보 숫자.
+		SELECT COUNT(*) AS CNT 
+		FROM TB_STU_LEC 
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND USERNO = #{userno}
+	]]>
+	</select>
+	
+	<update id="updateAppInfoGrChkAndEduNo" parameterType="Map">
+	<![CDATA[
+		-- 수강생의 승인/승인취소 및 교번 처리.
+	    UPDATE TB_APP_INFO SET
+	      EDUNO = #{eduno},
+	      GRCHK = #{grchk},
+	      LUSERNO = #{luserno}
+	    WHERE USERNO = #{userno}
+	      AND GRCODE = #{grcode} 
+	      AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<delete id="deleteSubjResultByUserno" parameterType="Map">
+	<![CDATA[
+		-- 과정기수의 수강생 과목 결과 정보 삭제.
+		DELETE FROM TB_SUBJRESULT 
+		WHERE USERNO = #{userno}
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+	</delete>
+	
+	<delete id="deleteStuLecByGrseq" parameterType="Map">
+	<![CDATA[
+		-- LectureApplyDAO.java
+		-- 과정기수의 속한 학생 정보 삭제.
+		DELETE FROM TB_STU_LEC 
+		WHERE USERNO = #{userno}
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+	</delete>
+	
+	<select id="selectAppInfoByGrChkMaxCnt" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT 
+			(MAX(NVL(EDUNO,0))+1) SEQNO 
+		FROM TB_APP_INFO 
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND GRCHK = 'Y' 
+	]]>
+	</select>
+	
+	<update id="updateAppInfoDeptChk" parameterType="Map">
+	<![CDATA[
+		-- 수강생의 승인/승인취소 처리.
+		UPDATE TB_APP_INFO SET 
+			DEPTCHK = #{deptchk}
+			,LDATE_O = SYSDATE
+			,LUSERNO_O = #{luserno}
+		WHERE USERNO = #{userno}
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<select id="selectMemberDeptSimpleRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 간략한 유저 정보 가져오기.
+		SELECT 
+			A.DEPT,   A.NAME,  A.USERNO, SCP.DEC_B64('KEY1',A.RESNO) AS RESNO, SCP.DEC_B64('KEY1',A.HP) as HP,
+			B.DEPTNM, DEPTSUB, PARTCD
+		FROM TB_MEMBER A, TB_DEPT B 
+		WHERE 1=1
+			AND A.DEPT   = B.DEPT 
+			AND A.USERNO = #{userNo}
+	]]>
+	</select>
+	
+	<select id="selectMemberFinishList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 수료이력 조회
+		SELECT 
+			A.GRCODE, A.USERNO, A.RDEPT,
+			A.RJIK, A.RNAME, A.PACCEPT, 
+			A.RNO, D.GRCODENIKNM,D.TDATE,
+			B.JIKNM, SEARCHDEPTNM(A.RDEPT) DEPTNM,
+			TO_CHAR(A.STARTED,'MM.DD') AS STARTED, TO_CHAR(A.ENDDATE,'MM.DD') AS ENDDATE,
+			SUBSTR(A.GRSEQ,0,4)||'년 '||SUBSTR(A.GRSEQ,-2)||'기수' AS GRSEQSTR,
+			DECODE(A.RGRAYN, 'Y' , '수료', '미수료') AS RGRAYN
+		FROM TB_GRRESULT A,TB_JIK B, TB_GRSEQ D 
+		WHERE A.RJIK = B.JIK AND A.GRCODE = D.GRCODE AND A.GRSEQ = D.GRSEQ 
+			AND A.USERNO = #{userNo}
+		ORDER BY A.GRSEQ
+	]]>
+	</select>
+	
+	<select id="selectAppInfoRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수강신청자 정보 상세 조회
+        SELECT 
+            GRCODE, GRSEQ, USERNO,
+            DEPT, SEARCHDEPTNM(DEPT) AS DEPTNM, TO_CHAR(APPDATE, 'YYYYMMDD') APPDATE,
+            NAME, SEARCHJIKNM(JIK) AS JIKNM, JIK, GRCHK, EDUNO, 
+            DEPTSUB, PARTCD, (SELECT DEPTSUB FROM tb_member WHERE USERNO = A.USERNO) AS MEMBER_DEPTSUB
+        FROM TB_APP_INFO A
+		WHERE  GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND USERNO = #{userno}
+	]]>
+	</select>
+	
+	<select id="selectDeptByUserYnList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 기관명 리스트
+		SELECT   
+			DEPT, DEPTNM
+		FROM TB_DEPT
+		WHERE USE_YN = #{useYn}
+		ORDER BY DEPT
+	]]>
+	</select>
+	
+	<select id="selectPartUseList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 부서 리스트
+		SELECT 
+			PARTCD, PARTNM 
+		FROM TB_PART 
+		WHERE DEPT = #{dept}
+			AND USE_YN = 'Y'
+	]]>
+	</select>
+	
+	<select id="selectLdapCodeList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 부서 리스트
+		SELECT 
+			LDAPCODE AS PARTCD, LDAPNAME AS PARTNM 
+		FROM TB_LDAPCODE  
+		WHERE DEPTCODE = #{dept}
+			AND USERYN = 'Y'
+	]]>
+	</select>
+	
+	<update id="setMemberDept2" parameterType="Map">
+	<![CDATA[
+		-- 회원테이블 부서정보 수정
+	    UPDATE TB_MEMBER SET
+	      DEPT    = #{dept},
+	      DEPTNM  = (select DEPTNM from tb_dept  where DEPT = #{dept}),
+	      PARTCD  = #{partcd},
+	      DEPTSUB = #{deptsub},
+	      JIK     = #{jik},
+	      HP      = SCP.ENC_B64('KEY1',#{hp}),
+	      LDAPCODE = #{partcd},
+	      LDAPNAME = #{partnm}
+	    WHERE USERNO = #{userno}
+	]]>
+	</update>
+	
+	<update id="updateGrrSultDeptAndPart" parameterType="Map">
+	<![CDATA[
+	    UPDATE TB_GRRESULT SET 
+	      RDEPT = #{dept}, 
+	      RDEPTSUB = #{deptsub}, 
+	      RJIK = #{jik}
+	    WHERE GRCODE = #{grcode} 
+	      AND GRSEQ = #{grseq} 
+	      AND USERNO = #{userno}
+	]]>
+	</update>
+	
+	<update id="updateAppInfoDeptAndPart" parameterType="Map">
+	<![CDATA[
+		-- 수강신청 기관 및 부서 정보수정.
+		-- 2010.08.23 변경 - 핸드폰 수정
+	    UPDATE TB_APP_INFO SET 
+	      DEPT = #{dept}, 
+	      PARTCD = #{partcd}, 
+	      DEPTSUB = #{deptsub}, 
+	      JIK = #{jik},
+	      HPNO = #{hp} 
+	    WHERE GRCODE = #{grcode} 
+	      AND GRSEQ = #{grseq} 
+	      AND USERNO = #{userno}
+	]]>
+	</update>
+	
+	<select id="selectAppInfoListCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 수강신청 승인현황
+		SELECT
+			COUNT(0) AS CNT
+		FROM TB_APP_INFO A, TB_DEPT B, TB_JIK C
+		WHERE 1=1
+			AND A.DEPT = B.DEPT(+) 
+			AND A.JIK = C.JIK(+) 
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+		ORDER BY A.DEPT ASC
+	]]>
+	</select>
+	
+	<select id="selectAppInfoList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 수강신청 승인현황
+						SELECT
+							A.USERNO, A.NAME, A.DEPTCHK, 
+							A.GRCHK, TO_CHAR(A.APPDATE,'YYYYMMDD') AS APPDATE, B.DEPTNM,
+							B.DEPT, C.JIKNM, A.TELNO, 
+							A.HPNO
+						FROM TB_APP_INFO A, TB_DEPT B, TB_JIK C
+						WHERE 1=1
+							AND A.DEPT = B.DEPT(+) 
+							AND A.JIK = C.JIK(+) 
+							AND A.GRCODE = #{grcode}
+							AND A.GRSEQ = #{grseq}
+						ORDER BY A.DEPT ASC
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectGrseqByCyberGrcodeList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기수에 속한 사이버 과정 가져오기 특정 과정 또는 리스트
+		SELECT
+			GRCODE, GRSEQ, GRCODENIKNM, USE_YN
+		FROM TB_GRSEQ
+		WHERE 1=1
+			AND F_CYBER = 'Y'
+			AND USE_YN = 'Y'
+			AND GRSEQ = #{grseq}
+			${whereStr}
+	]]>
+	</select>
+	
+	<select id="selectAppInfoBySessDeptList2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기관별 조회/승인 (부서별) (기관담당자)
+		SELECT 
+			A.GRCODE GRCODE, A.USERNO USERNO, A.NAME NAME, 
+			TO_CHAR(A.APPDATE,'YYYY/MM/DD') AS APPDATE, SEARCHJIKNM(A.JIK) AS JIKNM, A.JIK JIK, 
+			A.TELNO TELNO, A.HPNO HPNO, A.DEPTCHK DEPTCHK, A.EDUNO EDUNO,
+			A.GRCHK GRCHK, A.DEPT DEPT, SEARCHDEPTNM(A.DEPT) AS DEPTNM, 
+			B.DEPTSUB DEPTSUB,
+			SEARCHGRRESULTSEQ(A.GRCODE, A.USERNO) RESULTSEQ
+		FROM TB_APP_INFO A, TB_MEMBER B
+		WHERE 1=1
+		    AND A.USERNO = B.USERNO(+)
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			${whereDeptStr}
+		ORDER BY A.DEPT, A.NAME
+	]]>
+	</select>
+	
+	<select id="selectAppInfoBySessDeptList3Count" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 기관별 조회/승인 (부서별) (기관담당자)
+		SELECT 
+			COUNT(0) AS CNT
+		FROM TB_APP_INFO A , TB_MEMBER B
+		WHERE A.USERNO = B.USERNO(+)
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			${whereDeptStr}
+		ORDER BY a.DEPT, a.NAME
+	]]>
+	</select>
+	
+	<select id="selectAppInfoBySessDeptList3" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 기관별 조회/승인 (부서별) (기관담당자)
+						SELECT 
+							a.GRCODE GRCODE, a.USERNO USERNO, a.NAME NAME, 
+							TO_CHAR(a.APPDATE,'YYYY/MM/DD') AS APPDATE, SEARCHJIKNM(a.JIK) AS JIKNM, a.JIK JIK, 
+							a.TELNO TELNO, a.HPNO HPNO, a.DEPTCHK DEPTCHK, a.EDUNO EDUNO,
+							a.GRCHK GRCHK, a.DEPT DEPT, SEARCHDEPTNM(a.DEPT) AS DEPTNM, 
+							B.DEPTSUB DEPTSUB,
+							SEARCHGRRESULTSEQ(A.GRCODE, A.USERNO) RESULTSEQ
+							,C.IDKEY
+						FROM TB_APP_INFO A , TB_MEMBER B, TB_MEMBER_IDKEY C
+						WHERE A.USERNO = B.USERNO(+)
+							AND A.USERNO = C.USERNO(+)
+							AND A.GRCODE = #{grcode}
+							AND A.GRSEQ = #{grseq}
+							${whereDeptStr}
+						ORDER BY a.DEPT, a.NAME
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectDeptBySimpleRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 간단한 기관 정보 조회
+		SELECT 
+			DEPT, DEPTNM, USE_YN 
+		FROM TB_DEPT 
+		WHERE DEPT = #{dept}
+	]]>
+	</select>
+	
+	<update id="updateAppInfoDeptNChk" parameterType="Map">
+	<![CDATA[
+		-- 수강생의 승인/승인취소 처리.
+		UPDATE TB_APP_INFO SET 
+			DEPTCHK = #{deptchk}
+		WHERE DEPT = #{dept}
+		    AND DEPTCHK is null
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+			<if test="ldapcode != null and ldapcode != ''">
+			-- 기관담당자(외부)
+			AND USERNO IN (SELECT USERNO FROM TB_MEMBER WHERE LDAPCODE = #{ldapcode} AND DEPT = #{dept})
+			-- 기관담당자(외부)
+			</if>
+	</update>
+</mapper>

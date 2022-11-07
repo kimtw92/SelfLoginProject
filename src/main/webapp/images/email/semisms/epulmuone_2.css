@@ -1,0 +1,184 @@
+body,td,a,select,input,form,textarea	{ 
+font-family: "µ¸¿ò", "seoul"; font-size: 12px; color: #555555; line-height: 145%
+}
+a:hover { font-family: "µ¸¿ò", "seoul"; font-size: 12px; color : #333333; text-decoration: none}
+
+img		{ border:0;}
+border:0;
+}
+option	{ COLOR: #ff00000;}
+.space		{ LETTER-SPACING: -0.1em; WORD-SPACING: -0.1em; LINE-HEIGHT: 10.5pt}
+.ttpro		{ COLOR: #278300; LETTER-SPACING: -0.1em; WORD-SPACING: -0.1em; padding-left:5px;}
+.bpro		{ color: #FA8013;}
+.textbox	{ border:1px solid #919191;}
+.textbox2	{ border:1px solid #919191;}
+.textbox3	{ width:100px; border:1px solid #919191;}
+.textbox4	{ width:70px; border:1px solid #919191;}
+.textbox5	{ width:35px; border:1px solid #919191;}
+.textbox6	{ width:120px; border:1px solid #919191;}
+.textbox7	{ width:220px; border:1px solid #919191;}
+.textbox8	{ width:150px; border:1px solid #919191;}
+.textbox9	{ width:25px; border:1px solid #919191;}
+.textbox10	{ width:50px; border:1px solid #919191;}
+.textbox11	{ width:65px; border:1px solid #919191;}
+.boxhidden	{ width:100px; border:0px;}
+.board 		{ padding-left:10px; padding-right:15px}
+.board2		{ padding-left:10px;}
+.pad		{ padding:14px;}
+.lpad		{ padding-left:14px;}
+.pad2		{ padding-left:14px;padding-top:5px;padding-bottom:10px;}
+.pad3		{ padding-top:7px;}
+.stitle		{ color:#32B800; font-weight: bold;}
+.cus		{ color:#BC529A;}
+.eng		{ font-family:"Geneva, Arial, Helvetica, san-serif"; color:#D5D3D5;}
+.lo		{ color:#088A07;}
+.tt1_2		{ color:#0783B2; font-weight: bold;}
+.tt3_4		{ color:#D26932; font-weight: bold;}
+.tt5_6		{ color:#DBA103; font-weight: bold;}
+.tt7_8		{ color:#9B9E02; font-weight: bold;}
+.tt9_10		{ color:#00A300; font-weight: bold;}
+.tt11_12	{ color:#0591A9; font-weight: bold;}
+
+a.sms:link	{
+color:#555555;  text-decoration:none }
+a.sms:visited	{
+color:#555555; text-decoration:none }
+a.sms:active	{
+color:#F96710; text-decoration:none }
+a.sms:hover	{
+color:#F96710; text-decoration:none }
+
+
+
+.input1{
+	BACKGROUND-COLOR: #ffffff;
+	BORDER-BOTTOM: 1px solid B2C49E;
+	BORDER-LEFT: 1px solid B2C49E;
+	BORDER-RIGHT: 1px solid B2C49E;
+	BORDER-TOP: 1px solid B2C49E;
+	FONT-SIZE: 10pt
+
+}
+
+
+a.deps3:link	{
+color:#005C00;text-decoration:none }
+a.deps3:visited	{
+color:#005C00;text-decoration:none }
+a.deps3:active	{
+color:#005C00;text-decoration:none }
+a.deps3:hover	{
+color:#005C00;text-decoration:none }
+
+ A:link {
+FONT-FAMILY:µ¸¿ò
+color: #333333; 
+text-decoration:none
+} 
+
+ A:visited {
+FONT-FAMILY:µ¸¿ò;
+color:#6C6C6C;
+text-decoration:none 
+} 
+
+ A:hover {
+FONT-FAMILY:µ¸¿ò;
+color: #FF5B01;
+text-decoration:none
+} 
+
+ A:active {
+FONT-FAMILY:µ¸¿ò;
+color:#FF5B01;
+text-decoration:none 
+} 
+
+
+a.noline:link	{
+text-decoration:none }
+a.noline:visited	{
+text-decoration:none }
+a.noline:active	{
+text-decoration:none }
+a.noline:hover	{
+text-decoration:none }
+a.pro:link	{
+color:#333333;  text-decoration:none }
+a.pro:visited	{
+color:#555555; text-decoration:none }
+a.pro:active	{
+color:#666666; text-decoration:none }
+a.pro:hover	{
+color:#666666; text-decoration:none }
+
+
+.input1{
+        FONT-FAMILY:µ¸¿ò;
+	BACKGROUND-COLOR: #ffffff;
+	BORDER-BOTTOM: 1px solid B2C49E;
+	BORDER-LEFT: 1px solid B2C49E;
+	BORDER-RIGHT: 1px solid B2C49E;
+	BORDER-TOP: 1px solid B2C49E;
+	FONT-SIZE: 10pt
+
+}
+
+
+.input {
+        FONT-FAMILY:µ¸¿ò;
+	BACKGROUND-COLOR: #ffffff;
+	border-width:0px ;
+	BORDER-BOTTOM: 1px solid #BBBBBB;
+	BORDER-LEFT: #BBBBBB 1px solid;
+	BORDER-RIGHT: #BBBBBB 1px solid;
+	BORDER-TOP: #BBBBBB 1px solid;
+	FONT-SIZE: 9pt
+}
+
+.inputright{
+        FONT-FAMILY:µ¸¿ò;
+	BACKGROUND-COLOR: #ffffff;
+	border-width:0px ;
+	text-align:right;
+	BORDER-BOTTOM: 1px solid #BBBBBB;
+	BORDER-LEFT: #BBBBBB 1px solid;
+	BORDER-RIGHT: #BBBBBB 1px solid;
+	BORDER-TOP: #BBBBBB 1px solid;
+	FONT-SIZE: 9pt
+}
+
+.titlehidden {
+        FONT-FAMILY:µ¸¿ò;
+	BACKGROUND-COLOR: #ffffff;
+	border-width:0px ;
+	BORDER-BOTTOM: 1px solid #85A09B;
+	BORDER-LEFT: #85A09B 1px solid;
+	BORDER-RIGHT: #85A09B 1px solid;
+	BORDER-TOP: #85A09B 1px solid;
+	FONT-SIZE: 9pt
+}
+
+
+.inputcenter{
+	BACKGROUND-COLOR: transparent;
+	BORDER-BOTTOM: 0px solid black;
+	text-align:left;
+	BORDER-LEFT: black 0px solid;
+	BORDER-RIGHT: black 0px solid;
+	BORDER-TOP: black 0px solid;
+	FONT-SIZE: 8pt
+}
+
+.inputcenter1{
+    FONT- COLOR:#ffffff;                          
+	BACKGROUND-COLOR: transparent;
+	BORDER-BOTTOM: 0px solid ;
+	text-align:left;
+	BORDER-LEFT:  0px solid;
+	BORDER-RIGHT:  0px solid;
+	BORDER-TOP:  0px solid;
+	FONT-SIZE: 8pt
+}
+
+.sms_radio { Background-Color:#EFEFEF; Color:#EFEFEF}

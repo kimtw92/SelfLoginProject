@@ -1,0 +1,136 @@
+@charset "EUC-KR";
+
+html, body {width:100%; height:100%;}
+
+/* default definition */
+body {
+	font:12px 'µ¸¿ò',dotum,AppleGothic,sans-serif;
+	color:#444;
+	word-break:break-all;
+	margin:0;
+	padding:0;
+	scrollbar-face-color:#F2F2F2;
+	scrollbar-shadow-color:#DEDEDE;
+	scrollbar-highlight-color:#DEDEDE;
+	scrollbar-3dlight-color:#FFF;
+	scrollbar-darkshadow-color:#FFF;
+	scrollbar-track-color:#FFF;
+	scrollbar-arrow-color:#D2D2D2;
+	 background:none repeat-x left top;
+}
+body, textarea, select, input {font:12px 'µ¸¿ò',dotum,AppleGothic,sans-serif; color:#444;}
+div,p,h1,h2,h3,h4,dl,dt,dd,th,td,form {margin:0; padding:0;}
+table {border-collapse:collapse; border-spacing:0; word-break:break-all;}
+ul, li, ol {list-style-type:none; margin:0; padding:0;}
+hr {display:none;}
+img {border:0 none;}
+label {margin:0; padding:0; font-size:12px;}
+fieldset {margin:0; padding:0; border:0 none;}
+legend, caption {display:none;}
+
+/* link */
+a {outline:none;}
+a, a:link, a:visited {color:#444; text-decoration:none; cursor:pointer}
+a:hover, a:active {color:#444; cursor:pointer;}
+a.ac, a.ac:link, a.ac:visited {color:#444; text-decoration:underline; cursor:pointer}
+a.ac:hover, a.ac:active {color:#444; cursor:pointer; text-decoration:underline; }
+
+#header {position:relative; width:100%; height:347px; font-size:0; z-index:0;}
+#header div.header {position:relative; width:860px; height:100px; margin:0 auto; }
+#header div.toparea {position:absolute; left:-5px; width:990px; height:100px; padding:0 0 0 0 ;}
+
+h1 {float:left; width:151px; height:52px; margin:36px 0 0 21px ; background:url(../images/main/logo.jpg) no-repeat left top; font-size:0; text-indent:-9999px;}
+h1 a {display:block; height:52px;}
+
+#menu {float:right; width:771px;}
+
+#menu dl {float:right; width:368px; height:17px; margin:9px 0 10px 0 ; padding:0 0 0 0 ; background:url(../images/main/header_menu.gif) no-repeat left top;}
+#menu dl dd {float:left;}
+#menu dl dd a {float:left; text-indent:-9999px;}
+#menu dl dd a.font_basic {width:47px; height:17px; margin-right:4px;}
+#menu dl dd a.font_up {width:47px; height:17px; margin-right:4px;}
+#menu dl dd a.font_down {width:47px; height:17px; margin-right:9px;}
+#menu dl dd a.sitemap {width:43px; height:17px; margin-right:8px;}
+#menu dl dd a.english {width:36px; height:17px; margin-right:10px;}
+#menu dl dd a.cyberedu {width:110px; height:17px;}
+
+#menu ul.gnb {position:relative; clear:both; width:771px; height:64px;  background:url(../images/main/depth_1.jpg) no-repeat}
+#menu ul li, #menu ul li a {float:left;}
+#menu a {text-indent:-9999px;}
+#menu ul ul {position:absolute; top:40px; display:none;}
+#menu1_ {width:108px; height:36px; margin-right:16px; margin-left:30px;   background:url(../images/main/depth_1.jpg) no-repeat -29px top;}
+#menu2_ {width:109px; height:36px; margin-right:14px; background:url(../images/main/depth_1.jpg) no-repeat -153px top;}
+#menu3_ {width:105px; height:36px; margin-right:12px; background:url(../images/main/depth_1.jpg) no-repeat -275px top;}
+#menu4_ {width:108px; height:36px; margin-right:14px; background:url(../images/main/depth_1.jpg) no-repeat -390px top;}
+#menu5_ {width:107px; height:36px; margin-right:16px; background:url(../images/main/depth_1.jpg) no-repeat -510px top;}
+#menu6_ {width:111px; height:36px; background:url(../images/main/depth_1.jpg) no-repeat -630px top;}
+#menu1_:hover {width:108px; height:36px; background:url(../images/main/depth_1.jpg) no-repeat -29px -64px;}
+#menu2_:hover {width:109px; height:36px; background:url(../images/main/depth_1.jpg) no-repeat -153px -64px;}
+#menu3_:hover {width:105px; height:36px; background:url(../images/main/depth_1.jpg) no-repeat -275px -64px;}
+#menu4_:hover {width:108px; height:36px; background:url(../images/main/depth_1.jpg) no-repeat -390px -64px;}
+#menu5_:hover {width:107px; height:36px; background:url(../images/main/depth_1.jpg) no-repeat -510px -64px;}
+#menu6_:hover {width:111px; height:36px; background:url(../images/main/depth_1.jpg) no-repeat -630px -64px;}
+
+#sub2 { left:160px; width:460px; height:22px; margin:2px 0 0 0; background:url(../images/main/depth_2.gif) no-repeat -22px top;}
+	#sub2_1 {width:42px; height:22px; margin-right:22px; background:url(../images/main/depth_2.gif) no-repeat -19px top;}
+	#sub2_2 {width:64px; height:22px; margin-right:22px; background:url(../images/main/depth_2.gif) no-repeat -85px top;}
+	#sub2_3 {width:63px; height:22px; margin-right:22px; background:url(../images/main/depth_2.gif) no-repeat -172px top;}
+	#sub2_4 {width:43px; height:22px; margin-right:22px; background:url(../images/main/depth_2.gif) no-repeat -257px top;}
+	#sub2_5 {width:53px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -323px top;}
+	#sub2_6 {width:41px; height:22px; background:url(../images/main/depth_2.gif) no-repeat -397px top;}
+	#sub2_1:hover {width:42px; height:22px; margin-right:22px; background:url(../images/main/depth_2.gif) no-repeat -19px -110px;}
+	#sub2_2:hover {width:64px; height:22px; margin-right:22px; background:url(../images/main/depth_2.gif) no-repeat -85px -110px;}
+	#sub2_3:hover {width:63px; height:22px; margin-right:22px; background:url(../images/main/depth_2.gif) no-repeat -172px -110px;}
+	#sub2_4:hover {width:43px; height:22px; margin-right:22px; background:url(../images/main/depth_2.gif) no-repeat -257px -110px;}
+	#sub2_5:hover {width:53px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -323px -110px;}
+	#sub2_6:hover {width:41px; height:22px; background:url(../images/main/depth_2.gif) no-repeat -397px -110px;}
+
+#sub3 {left:280px; width:92px; height:22px; margin:2px 0 0 0; background:url(../images/main/depth_2.gif) no-repeat left -22px;}
+	#sub3_1 {width:92px; height:22px; background:url(../images/main/depth_2.gif) no-repeat -14px -22px;}
+	#sub3_1:hover {width:92px; height:22px; background:url(../images/main/depth_2.gif) no-repeat -14px -132px;}
+
+#sub4 {left:395px; width:240px; height:22px; margin:2px 0 0 0; background:url(../images/main/depth_2.gif) no-repeat -16px -44px;}
+	#sub4_1 {width:56px; height:22px; margin-right:22px; background:url(../images/main/depth_2.gif) no-repeat -19px -44px;}
+	#sub4_2 {width:54px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -94px -44px;}
+	#sub4_3 {width:38px; height:22px; background:url(../images/main/depth_2.gif) no-repeat -170px -44px;}
+	#sub4_1:hover {width:56px; height:22px; margin-right:22px; background:url(../images/main/depth_2.gif) no-repeat -19px -154px;}
+	#sub4_2:hover {width:54px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -94px -154px;}
+	#sub4_3:hover {width:38px; height:22px; background:url(../images/main/depth_2.gif) no-repeat -170px -154px;}
+
+#sub5 {left:112px; width:620px; height:22px; margin:2px 0 0 0; background:url(../images/main/depth_2.gif) no-repeat -16px -66px;}
+	#sub5_1 {width:74px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -16px -66px;}
+	#sub5_2 {width:64px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -113px -66px;}
+	#sub5_3 {width:32px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -200px -66px;}
+	#sub5_4 {width:79px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -254px -66px;}
+	#sub5_5 {width:46px; height:22px; margin-right:22px; background:url(../images/main/depth_2.gif) no-repeat -357px -66px;}
+	#sub5_6 {width:75px; height:22px; margin-right:22px; background:url(../images/main/depth_2.gif) no-repeat -425px -66px;}
+	#sub5_7 {width:54px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -522px -66px;}
+	#sub5_8 {width:32px; height:22px; background:url(../images/main/depth_2.gif) no-repeat -599px -66px;}
+	#sub5_1:hover {width:74px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -16px -176px;}
+	#sub5_2:hover {width:64px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -113px -176px;}
+	#sub5_3:hover {width:32px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -200px -176px;}
+	#sub5_4:hover {width:79px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -254px -176px;}
+	#sub5_5:hover {width:46px; height:22px; margin-right:22px; background:url(../images/main/depth_2.gif) no-repeat -357px -176px;}
+	#sub5_6:hover {width:75px; height:22px; margin-right:22px; background:url(../images/main/depth_2.gif) no-repeat -425px -176px;}
+	#sub5_7:hover {width:54px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -522px -176px;}
+	#sub5_8:hover {width:32px; height:22px; background:url(../images/main/depth_2.gif) no-repeat -599px -176px;}
+
+#sub6 {left:180px; width:580px; height:22px; margin:2px 0 0 0; background:url(../images/main/depth_2.gif) no-repeat -16px -88px;}
+	#sub6_1 {width:34px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -16px -88px;}
+	#sub6_2 {width:58px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -74px -88px;}
+	#sub6_3 {width:53px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -155px -88px;}
+	#sub6_4 {width:43px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -230px -88px;}
+	#sub6_5 {width:59px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -295px -88px;}
+	#sub6_6 {width:55px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -378px -88px;}
+	#sub6_7 {width:49px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -455px -88px;}
+	#sub6_8 {width:41px; height:22px; background:url(../images/main/depth_2.gif) no-repeat -528px -88px;}
+	#sub6_1:hover {width:34px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -16px -198px;}
+	#sub6_2:hover {width:58px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -74px -198px;}
+	#sub6_3:hover {width:53px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -155px -198px;}
+	#sub6_4:hover {width:43px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -230px -198px;}
+	#sub6_5:hover {width:59px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -295px -198px;}
+	#sub6_6:hover {width:55px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -378px -198px;}
+	#sub6_7:hover {width:49px; height:22px; margin-right:23px; background:url(../images/main/depth_2.gif) no-repeat -455px -198px;}
+	#sub6_8:hover {width:41px; height:22px; background:url(../images/main/depth_2.gif) no-repeat -528px -198px;}
+
+

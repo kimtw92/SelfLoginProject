@@ -1,0 +1,32 @@
+@charset	"utf-8";
+table	{font-size:12px;border-collapse:collapse;margin:0;padding:0;}
+
+/* bList01 */
+table.bList01	{
+	clear:both;
+	margin:0;
+	padding:0;
+	width:640px;
+	text-align:center;
+	border-top:2px solid #B6B6B6;
+	border-left:0;
+	border-right:0;
+}
+table.bList01 thead th		{padding:8px 0 5px 0;color:#797979;border-left:1px solid #B6B6B6;border-bottom:1px solid #B6B6B6;background:#F6F6F6;font-weight:bold;}
+table.bList01 thead th.bl0	{border-left:0px solid #B6B6B6;}
+table.bList01 tbody td		{height:25px;padding:5px;text-align:center;border-left:1px solid #D1D1D1;border-bottom:1px solid #D1D1D1;color:#686868;}
+table.bList01 tbody td.L	{text-align:left;}
+table.bList01 tbody td.bl0	{border-left:0px solid #B6B6B6;}
+table.bList01 tbody td.sbj	{text-align:left;padding-left:10px;}
+table.bList01 tbody td.left	{text-align:left;padding-left:10px;}
+
+/**/
+ul.txt01 {margin:0;padding:0 0 0 0}
+ul.txt01 li {padding-left:10px;padding:0 10px 0 0;margin:0 0 10px 0;}
+
+/*history*/
+p.hImg{width:190px;float:left;}
+p.hTxt{float:left;}
+dl.hisTxt	{padding:0;margin:0 0 10px 0;font-size:0;line-height:0;}
+dl.hisTxt dt{padding:0;margin:0;}
+dl.hisTxt dd{padding:0;margin:0;}

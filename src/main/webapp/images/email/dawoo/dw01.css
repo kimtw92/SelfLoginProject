@@ -1,0 +1,858 @@
+/****************/
+/*  기본 Style
+/****************/
+	body, td, input,textarea
+						{font-size:12px; font-family:굴림체,Verdana; color: #000000;
+						scrollbar-3dlight-color:B2B2B2;scrollbar-arrow-color:A7A7A7;scrollbar-base-color:CFCFCF;scrollbar-darkshadow-color:FFFFFF;
+	                    scrollbar-face-color:DFDFDF;scrollbar-highlight-color:FFFFF;scrollbar-shadow-color:B2B2B2;scrollbar-track-color: #FFFFFF;}
+	
+	img, fieldset		{border: none;}
+	select, input       {font-size:12px;margin-left:2px;}
+
+	.hand               {cursor:hand;}
+
+	/* 데이터 입력부분 TextBox관련 Style */
+	.iptL				{color: #575757; background-color:#FFFFFF; height:17px; border-top: 1px solid #E0DEDE; border-right: 1px solid #E0DEDE; border-bottom: 1px solid #E0DEDE; border-left: 1px solid #E0DEDE; text-align:left;padding-top:2px;}
+	.iptL02				{color: #252525; background-color:#E7E7E7; height:17px; border-top: 1px solid #6A6A6A; border-right: 1px solid #6A6A6A; border-bottom: 1px solid #6A6A6A; border-left: 1px solid #6A6A6A; text-align:left;padding-top:2px;}
+	.iptC				{color: #575757; background-color:#FFFFFF; height:17px; border-top: 1px solid #E0DEDE; border-right: 1px solid #E0DEDE; border-bottom: 1px solid #E0DEDE; border-left: 1px solid #E0DEDE; text-align:center;padding-top:2px;}
+	.iptR				{color: #575757; background-color:#FFFFFF; height:17px; border-top: 1px solid #E0DEDE; border-right: 1px solid #E0DEDE; border-bottom: 1px solid #E0DEDE; border-left: 1px solid #E0DEDE; text-align:right;padding-top:2px;}
+
+	/* 데이터 조회부분 TextBox관련 Style */
+	.ipt_hn  	 		{color: #5D5D5D; border:0; height:16px; background-color:#FFFFFF; text-align:left;   margin-right:2px; padding-top:2px;}
+	.ipt_hnC  	 		{color: #5D5D5D; border:0; height:16px; background-color:#FFFFFF; text-align:center; margin-right:2px; padding-top:2px;}
+	.ipt_hnR  	 		{color: #5D5D5D; border:0; height:16px; background-color:#FFFFFF; text-align:right;  margin-right:2px; padding-top:2px;}
+
+	.ipt_readL 	 		{color: #5D5D5D; border:1 solid #EDEDED; height:17px; background-color:#EDEDED; text-align:left;   padding-top:2px;}
+	.ipt_readC 	 		{color: #5D5D5D; border:1 solid #EDEDED; height:17px; background-color:#EDEDED; text-align:center; padding-top:2px;}
+	.ipt_readR 	 		{color: #5D5D5D; border:1 solid #EDEDED; height:17px; background-color:#EDEDED; text-align:right;  padding-top:2px;}
+
+	.ipt_transL	 		{color: #000000; border:1 solid #EEEEEE; height:17px; background-color:#FFFFFF; text-align:left;   padding-top:2px;}
+	.ipt_transC  		{color: #000000; border:1 solid #EEEEEE; height:17px; background-color:#FFFFFF; text-align:center; padding-top:2px;}
+	.ipt_transR	 		{color: #000000; border:1 solid #EEEEEE; height:17px; background-color:#FFFFFF; text-align:right;  padding-top:2px;}
+
+	/* Select Box 관련 Style */	
+	.slt     			{color: #454545; line-height: 125%;}
+
+	/* Textarea 관련 Style */	
+	.txtar   			{color: #454545; line-height: 125%; border: 1px solid #9C9C9C;}
+
+
+
+/*****************************/
+/* 소프트폰 버튼 관련Style -green
+/*****************************/ 
+    .left_bt_g          {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/top_menu_bt.gif);height:21px;width:21px;}
+    .left_bt_g_td          {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/top_menu.gif);height:29px; cursor:hand;text-align:center;}
+	.left_bt_g_click      {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/top_menu_click.gif);height:29px; }
+
+/*****************************/
+/* 소프트폰 버튼 관련Style -blue
+/*****************************/ 
+    .left_bt_b          {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/top_menu_bt.gif);height:21px;width:21px;}
+    .left_bt_b_td          {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/top_menu.gif);height:29px; cursor:hand;text-align:center;}
+	.left_bt_b_click      {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/top_menu_click.gif);height:29px; }
+
+
+
+/*****************************/
+/* 상단메뉴 버튼 관련Style 
+/*****************************/ 
+    .top_menu_bt          {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/top_menu_bt.gif);height:21px;width:21px;}
+    .top_menu_td          {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/top_menu.gif);height:29px; cursor:hand;text-align:center;}
+	.top_menu_click      {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/top_menu_click.gif);height:29px; }
+
+
+
+	a.menutop_bt_2num:link	  {background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_2num.gif);background-repeat:no-repeat;height:29px; width:98px;  padding:3 0 0 0;background-color:FFFFFF;color:000000;font-size:14px; font-family:돋움;cursor:hand;}
+	a.menutop_bt_2num:active	  {background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_2num.gif);background-repeat:no-repeat;height:29px; width:98px;  padding:3 0 0 0;background-color:FFFFFF;color:000000;font-size:14px; font-family:돋움;cursor:hand;}
+	a.menutop_bt_2num:visited	  {background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_2num.gif);background-repeat:no-repeat;height:29px; width:98px;  padding:3 0 0 0;background-color:FFFFFF;color:000000;font-size:14px; font-family:돋움;cursor:hand;}
+	a.menutop_bt_2num:hover	  {background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_2num_click.gif);background-repeat:no-repeat;height:29px; width:98px;  padding:3 0 0 0;background-color:FFFFFF;color:000000;font-size:14px; font-family:돋움;cursor:hand;}
+																                                                      
+																                                                      
+.top_bt_2num       {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_2num.gif);height:29px; width:90px;  padding:3 0 0 0;background-color:FFFFFF;color:000000;cursor:hand;}
+.top_bt_3num       {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_3num.gif);height:29px; width:108px;  padding:3 0 0 0;background-color:FFFFFF;color:000000;cursor:hand;}
+.top_bt_4num       {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_4num.gif);height:29px; width:120px;  padding:3 0 0 0;background-color:FFFFFF;color:000000;cursor:hand;}
+.top_bt_5num       {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_5num.gif);height:29px; width:132px;  padding:3 0 0 0;background-color:FFFFFF;color:000000;cursor:hand;}
+.top_bt_5num_kiho  {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_5num_kiho.gif);height:29px; width:139px;  padding:3 0 0 0;background-color:FFFFFF;color:000000;cursor:hand;}
+.top_bt_6num       {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_6num.gif);height:29px; width:144px;  padding:3 0 0 0;background-color:FFFFFF;color:000000;cursor:hand;}
+.top_bt_7num       {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_7num.gif);height:29px; width:156px;  padding:3 0 0 0;background-color:FFFFFF;color:000000;cursor:hand;}
+																                                                      
+
+/* 우편번호 버튼 */
+.bt_search     {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_search.gif);height:18px; width:58px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+
+
+/* 찾아보기 버튼 */
+.bt_search02     {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_search02.gif);height:18px; width:58px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;}
+
+
+/*조건검색 버튼 */
+.bt_search03     {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_search03.gif);height:18px; width:63px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;}
+
+
+/*저장 버튼 */
+.bt_03     {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_03.gif);height:18px; width:42px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;}
+
+
+/*검색 버튼 */
+.bt_04     {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_04.gif);height:18px; width:42px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;}
+
+
+/*첨부파일 버튼 */
+.bt_05     {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_05.gif);height:18px; width:58px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;}
+
+
+
+/*찾기 버튼-수금화면 */
+.bt_06_a     {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_06_a.gif);height:18px; width:45px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;}
+
+
+/*이전 버튼-수금화면 */
+.bt_04_a    {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_04_a.gif);height:18px; width:45px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;}
+
+/*다음 버튼-수금화면 */
+.bt_03_a     {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_03_a.gif);height:18px; width:45px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;}
+
+/*조회 버튼-수금화면 */
+.bt_02_a     {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_02_a.gif);height:18px; width:45px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;}
+
+/*초과금 버튼-수금화면 */
+.bt_g03_num_1_aa     {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_g03_num_1_aa.gif);height:18px; width:50px;  padding:2 0 0 20;   cursor:hand ; background-repeat:no-repeat;}
+
+/*테이블안 4글자 버튼-수금화면 */
+.bt_g04_num_1_aa     {border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_g04_num_1_aa.gif);height:18px; width:60px;  padding:2 0 0 20;   cursor:hand ; background-repeat:no-repeat;}
+
+
+
+/* 테이블 안에 버튼(수정/삭제/조회 등) 01 */
+
+.bt_G02_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_g02_num.gif);height:18px; width:45px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_G03_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_g03_num.gif);height:18px; width:53px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_G04_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_g04_num.gif);height:18px; width:62px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_G05_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_g05_num.gif);height:18px; width:75px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_G06_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_g06_num.gif);height:18px; width:91px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_G07_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_g07_num.gif);height:18px; width:101px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_G08_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_g08_num.gif);height:18px; width:112px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+																                                      
+																                                      
+.bt_B02_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_b02_num.gif);height:18px; width:45px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_B03_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_b03_num.gif);height:18px; width:53px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_B04_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_b04_num.gif);height:18px; width:62px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_B05_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_b05_num.gif);height:18px; width:75px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_B06_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_b06_num.gif);height:18px; width:91px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_B07_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_b07_num.gif);height:18px; width:101px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_B08_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_b08_num.gif);height:18px; width:112px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+																                                      
+																                                      
+																                                      
+.bt_R02_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_r02_num.gif);height:18px; width:45px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_R03_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_r03_num.gif);height:18px; width:53px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_R04_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_r04_num.gif);height:18px; width:62px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_R05_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_r05_num.gif);height:18px; width:75px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_R06_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_r06_num.gif);height:18px; width:91px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_R07_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_r07_num.gif);height:18px; width:101px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_R08_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_r08_num.gif);height:18px; width:112px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+																                                      
+																                                      
+																                                      
+.bt_P02_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_p02_num.gif);height:18px; width:45px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_P03_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_p03_num.gif);height:18px; width:53px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_P04_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_p04_num.gif);height:18px; width:62px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_P05_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_p05_num.gif);height:18px; width:75px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_P06_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_p06_num.gif);height:18px; width:91px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_P07_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_p07_num.gif);height:18px; width:101px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+.bt_P08_num 	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_p08_num.gif);height:18px; width:112px;  padding:2 0 0 20; background-color:#FFFFFF; color:#000000; cursor:hand ; background-repeat:no-repeat;} 
+																                                      
+
+
+
+
+
+
+/* 테이블 안에 버튼(팝업뜨게하는 버튼) */
+
+.bt_popup_G02_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_g02_num.gif);height:20px; width:45px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_G03_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_g03_num.gif);height:20px; width:51px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_G04_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_g04_num.gif);height:20px; width:63px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_G05_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_g05_num.gif);height:20px; width:75px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_G06_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_g06_num.gif);height:20px; width:84px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_G07_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_g07_num.gif);height:20px; width:99px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_G08_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_g08_num.gif);height:20px; width:109px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+																			                                                 
+																			                                                 
+.bt_popup_B02_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_b02_num.gif);height:20px; width:45px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_B03_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_b03_num.gif);height:20px; width:51px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_B04_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_b04_num.gif);height:20px; width:63px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_B05_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_b05_num.gif);height:20px; width:73px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_B06_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_b06_num.gif);height:20px; width:84px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_B07_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_b07_num.gif);height:20px; width:99px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_B08_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_b08_num.gif);height:20px; width:109px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+																			                                                 
+																			                                                 
+																			                                                 
+.bt_popup_R02_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_r02_num.gif);height:20px; width:45px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_R03_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_r03_num.gif);height:20px; width:51px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_R04_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_r04_num.gif);height:20px; width:63px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_R05_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_r05_num.gif);height:20px; width:73px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_R06_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_r06_num.gif);height:20px; width:84px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_R07_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_r07_num.gif);height:20px; width:99px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_R08_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_r08_num.gif);height:20px; width:109px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+                                                                                                                             
+																			                                                 
+.bt_popup_P02_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_p02_num.gif);height:20px; width:45px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_P03_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_p03_num.gif);height:20px; width:51px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_P04_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_p04_num.gif);height:20px; width:63px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_P05_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_p05_num.gif);height:20px; width:73px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_P06_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_p06_num.gif);height:20px; width:84px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_P07_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_p07_num.gif);height:20px; width:99px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+.bt_popup_P08_num  	{border:0;background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/bt_popup_p08_num.gif);height:20px; width:109px;  padding:4 0 0 18; background-color:#FFFFFF;  color:#4B5000 ; cursor:hand ; background-repeat:no-repeat;} 
+
+
+
+
+/*****************************/
+/*  메뉴 링크색상 관련 Style
+/*****************************/ 
+	/* 일반메뉴링크 및 활성화 글자 */
+	a					{cursor:hand;}
+
+	a:link			{color:#575757; text-decoration:none;}
+	a:active		{color:#575757; text-decoration:none;}
+	a:visited		{color:#575757; text-decoration:none;}
+	a:hover			{color:#000000; text-decoration:none;}
+
+
+	.font_color  	   		{color:#7E891C; text-align:center;text-decoration:none;font-weight:bold;}
+	.font_color_g  	   		{color:#4A6201; text-decoration:none;}
+
+	.bt_Gfont01  	   		{color:#303301; text-decoration:none;}
+    a.bt_Gfont01:link   		{color:#303301; text-decoration:none;}
+	a.bt_Gfont01:active		{color:#303301; text-decoration:none;}
+	a.bt_Gfont01:visited		{color:#303301; text-decoration:none;}
+	a.bt_Gfont01:hover		{color:#ffffff; text-decoration:none;}
+
+
+	.bt_Bfont01  	   		{color:#002048; text-decoration:none;}
+    a.bt_Bfont01:link   		{color:#002048; text-decoration:none;}
+	a.bt_Bfont01:active		{color:#002048; text-decoration:none;}
+	a.bt_Bfont01:visited		{color:#002048; text-decoration:none;}
+	a.bt_Bfont01:hover		{color:#ffffff; text-decoration:none;}
+
+
+
+	.bt_Rfont01  	   		{color:#611310; text-decoration:none;}
+    a.bt_Rfont01:link   		{color:#611310; text-decoration:none;}
+	a.bt_Rfont01:active		{color:#611310; text-decoration:none;}
+	a.bt_Rfont01:visited		{color:#611310; text-decoration:none;}
+	a.bt_Rfont01:hover		{color:#ffffff; text-decoration:none;}
+
+
+    .bt_popup_Gfont01                {color:#4B5000; text-decoration:none;}
+    a.bt_popup_Gfont01:link   	{color:#4B5000; text-decoration:none;}
+	a.bt_popup_Gfont01:active	{color:#4B5000; text-decoration:none;}
+	a.bt_popup_Gfont01:visited	{color:#4B5000; text-decoration:none;}
+	a.bt_popup_Gfont01:hover		{color:#D0DA96; text-decoration:none;}
+
+
+	.top   		{color:#000000; text-decoration:none;padding:0 0 0 5 ;}
+    a.top:link   		{color:#000000; text-decoration:none;padding:0 0 0 5 ;}
+	a.top:active		{color:#000000; text-decoration:none;padding:0 0 0 5 ;}
+	a.top:visited		{color:#000000; text-decoration:none;padding:0 0 0 5 ;}
+	a.top:hover		{color:#ffffff; text-decoration:none;padding:0 0 0 5 ;}
+   
+   
+   .menu01
+	a.menu01:link		{color:#FFFFFF;  padding:4 0 0 0 ;}
+	a.menu01:active		{color:#FFFFFF;  padding:4 0 0 0;}
+	a.menu01:visited	{color:#FFFFFF;  padding:4 0 0 0 ;}
+	a.menu01:hover		{color:#FFFFFF;  padding:4 0 0 0 ;font-weight:bold;}
+
+	/* 게시판 링크 활성화 글자 */
+	.page
+	a.page:link			{color:#000000; text-decoration:none;}
+	a.page:active		{color:#000000; text-decoration:none; font-weight:bold; font-size:12pt;}
+	a.page:visited		{color:#000000; text-decoration:none; font-weight:bold; font-size:12pt;}
+	a.page:hover		{color:#000000; text-decoration:none;}
+
+	/* 거래 링크 및 활성화 글자 */
+	.trans
+	a.trans:link		{color:#006799; text-decoration:underline;font-weight:bold;}
+	a.trans:active		{color:#006799; text-decoration:underline;}
+	a.trans:visited		{color:#006799; text-decoration:underline;font-weight:bold;}
+	a.trans:hover		{color:#006799; text-decoration:underline;}
+
+
+	/* HI TOOL 링크 및 활성화 글자 */
+	a.hitool:link		{color:#006799; text-decoration:none;}
+	a.hitool:active		{color:#006799; text-decoration:none;}
+	a.hitool:visited	{color:#006799; text-decoration:none;}
+	a.hitool:hover		{color:#006799; text-decoration:none;}
+
+
+
+
+
+/***************/
+/*  tab 탭메뉴
+/***************/
+	.1tab             {color:#FFFFFF;padding:2 4 0 4;height:21;cursor:hand;font-weight:bold;	                   
+	                   border-top:0 solid #6480C1;border-left:0 dashed #000000;border-right:0 solid #6480C1;border-bottom:0 solid #6480C1;}
+	.top_btn          {margin:0 5 0 0;cursor:hand;}
+	.tab_select       {background:#264D85;color:#FFFFFF;}
+	                   
+	.2tab             {color:#000000;padding:3 4 0 4;height:23;background-color:#E6F5FF;cursor:hand;font-weight:normal;
+	                   border-top:1 solid #AAD3EF;border-left:0 solid #AAD3EF;border-right:1 solid #AAD3EF;border-bottom:0 solid #AAD3EF;}
+	.2tab_border      {background-color:#AAD3EF;border-left:1 solid #AAD3EF;}
+
+	.tab_title        {color:#FFFFFF;padding:1 4 0 4;height:21;background-color:#87ABFF;font-weight:bold;margin:5 0 0 5;
+	                   border-top:0 solid #6480C1;border-left:0 solid #6480C1;border-right:0 solid #6480C1;border-bottom:0 solid #6480C1;}
+
+	a.btn09:link	  {background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/topbtn09.gif);background-repeat:no-repeat;}
+	a.btn09:active	  {background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/topbtn09.gif);background-repeat:no-repeat;}
+	a.btn09:visited	  {background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/topbtn09.gif);background-repeat:no-repeat;}
+	a.btn09:hover	  {background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/o_topbtn09.gif);background-repeat:no-repeat;}
+
+
+	a.top_bt:link	  {background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_3num.gif);background-repeat:no-repeat;}
+	a.top_bt:active	  {background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_3num.gif);background-repeat:no-repeat;}
+	a.top_bt:visited	  {background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_3num.gif);background-repeat:no-repeat;}
+	a.top_bt:hover	  {background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/menu_1tab_3num_click.gif);background-repeat:no-repeat;}
+
+/************/
+/*  로그인
+/************/	
+	.title{padding-top:4px;padding-left:8px;background-color:#E6E6E6;height:23px;font-weight:bold;}
+    .input_deco{height:20px;width:100px;font-family:verdana;background-color:FFFFE5;border:1 solid #AAAAAA;}
+
+/****************************/
+/*  폰트 및 버튼 관련 Style
+/****************************/
+	/* 버튼스타일 */
+	.button			    {margin-left:2px; margin-right:2px;cursor:hand;}
+	.button_alpah       {filter:Alpha(Opacity=40),gray; margin-left:2px; margin-right:2px;}
+	.button_gray        {filter:gray; margin-left:2px; margin-right:2px;cursor:hand;}
+
+	/* Enable 버튼스타일 */
+	.button_01			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_01.gif);height:19px; width:19px;  padding:3 0 0 0;background-color:FFFFFF;color:FFFFFF;cursor:hand;font-weight:bold;}         
+	.button_02			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_02.gif);height:19px; width:45px;  padding:3 0 0 5;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_03			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_03.gif);height:19px; width:58px;  padding:3 0 0 5;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_04			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_04.gif);height:19px; width:70px;  padding:3 0 0 5;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_05			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_05.gif);height:19px; width:80px;  padding:3 0 0 8;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_06			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_06.gif);height:19px; width:90px;  padding:3 0 0 8;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_07			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_07.gif);height:19px; width:105px; padding:3 0 0 8;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_08			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_08.gif);height:19px; width:118px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_09			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_09.gif);height:19px; width:128px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_10			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_10.gif);height:19px; width:140px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_11			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_11.gif);height:19px; width:155px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_12			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_12.gif);height:19px; width:170px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_13			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_13.gif);height:19px; width:180px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_14			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_14.gif);height:19px; width:190px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_15			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_15.gif);height:19px; width:200px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_16			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_16.gif);height:19px; width:210px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_17			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_17.gif);height:19px; width:220px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+	.button_18			{border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_18.gif);height:19px; width:230px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                          
+
+
+     /*violet  버튼 */
+	.btn_01	  	        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_01.gif);height:19px; width:19px;  padding:3 0 0 0;background-color:FFFFFF;color:FFFFFF;cursor:hand;font-weight:bold;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     	
+	.btn_02		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_02.gif);height:19px; width:45px;  padding:3 0 0 5;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_03		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_03.gif);height:19px; width:58px;  padding:3 0 0 5;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_04		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_04.gif);height:19px; width:70px;  padding:3 0 0 5;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_05		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_05.gif);height:19px; width:80px;  padding:3 0 0 8;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_06		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_06.gif);height:19px; width:90px;  padding:3 0 0 8;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_07		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_07.gif);height:19px; width:105px; padding:3 0 0 8;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_08		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_08.gif);height:19px; width:118px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_09		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_09.gif);height:19px; width:128px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_10		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_10.gif);height:19px; width:140px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_11		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_11.gif);height:19px; width:155px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_12		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_12.gif);height:19px; width:170px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_13		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_13.gif);height:19px; width:180px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_14		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_14.gif);height:19px; width:190px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_15		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_15.gif);height:19px; width:200px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_16		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_16.gif);height:19px; width:210px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_17		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_17.gif);height:19px; width:220px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+	.btn_18		        {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_18.gif);height:19px; width:230px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      	
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+  						                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+     /*hi-service  버튼 */                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+    .btn_hi_01	  	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_01.gif);height:19px; width:19px;  padding:3 0 0 0;background-color:FFFFFF;color:FFFFFF;cursor:hand;font-weight:bold;}                                                                                                                                                                                                                                                                                                                                                                                
+    .btn_hi_02		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_02.gif);height:19px; width:45px;  padding:3 0 0 5;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_03		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_03.gif);height:19px; width:58px;  padding:3 0 0 5;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_04		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_04.gif);height:19px; width:70px;  padding:3 0 0 5;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_05		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_05.gif);height:19px; width:80px;  padding:3 0 0 8;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_06		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_06.gif);height:19px; width:90px;  padding:3 0 0 8;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_07		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_07.gif);height:19px; width:105px; padding:3 0 0 8;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_08		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_08.gif);height:19px; width:118px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_09		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_09.gif);height:19px; width:128px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_10		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_10.gif);height:19px; width:140px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_11		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_11.gif);height:19px; width:155px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_12		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_12.gif);height:19px; width:170px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_13		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_13.gif);height:19px; width:180px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_14		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_14.gif);height:19px; width:190px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_15		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_15.gif);height:19px; width:200px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_16		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_16.gif);height:19px; width:210px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_17		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_17.gif);height:19px; width:220px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+    .btn_hi_18		    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/btn_hi_18.gif);height:19px; width:230px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;cursor:hand;}                                                                                                                                                                                                                                                                                                                                                                                                 
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+	/* Disable 버튼스타일 */
+	.button_01_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_01_alp.gif);height:19px; width:19px;  padding:3 0 0 0;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);font-weight:bold;}
+	.button_02_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_02_alp.gif);height:19px; width:45px;  padding:3 0 0 5;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_03_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_03_alp.gif);height:19px; width:58px;  padding:3 0 0 5;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_04_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_04_alp.gif);height:19px; width:70px;  padding:3 0 0 5;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_05_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_05_alp.gif);height:19px; width:80px;  padding:3 0 0 8;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_06_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_06_alp.gif);height:19px; width:90px;  padding:3 0 0 8;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_07_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_07_alp.gif);height:19px; width:105px; padding:3 0 0 8;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_08_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_08_alp.gif);height:19px; width:118px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_09_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_09_alp.gif);height:19px; width:128px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_10_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_10_alp.gif);height:19px; width:140px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_11_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_11_alp.gif);height:19px; width:155px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_12_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_12_alp.gif);height:19px; width:170px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_13_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_13_alp.gif);height:19px; width:180px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_14_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_14_alp.gif);height:19px; width:190px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_15_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_15_alp.gif);height:19px; width:200px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_16_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_16_alp.gif);height:19px; width:210px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_17_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_17_alp.gif);height:19px; width:220px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+	.button_17_alp	    {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/button_18_alp.gif);height:19px; width:230px; padding:3 0 0 9;background-color:FFFFFF;color:FFFFFF;filter:Alpha(Opacity=50);}
+
+	/* 타이틀  폰트부분 */
+	.subT				{font-weight:bold; color:#2165B5; padding-left:23px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/subt.gif); background-repeat:no-repeat; height:20px;}
+	.subTT				{font-weight:bold; color:#157946; padding-left:16px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/subtt.gif); background-repeat:no-repeat; height:18px;}
+	.subTTT				{font-weight:bold; color:#17428E; padding-left:16px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/subttt.gif); background-repeat:no-repeat; height:18px;}
+	.smT				{font-weight:bold; color:#555555;}
+
+    /* 카테고리별 타이틀  폰트부분 */
+	.T_main             {font-weight:bold; color:#000000; padding-left:21px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/t_main.gif);  background-repeat:no-repeat; height:23px; letter-spacing:0px; font-size:14px;}
+	.TT_main            {font-weight:bold; color:#666666; padding-left:20px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/tt_main.gif); background-repeat:no-repeat; height:18px;}
+
+	.T_us				{font-weight:bold; color:#000000; padding-left:21px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/t_us.gif);    background-repeat:no-repeat; height:23px;letter-spacing:0px; font-size:14px; font-family:돋움;}
+	.TT_us				{font-weight:bold; color:#000000; padding-left:18px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/tt_us.gif);   background-repeat:no-repeat; height:18px;}
+	.TTT_us             {font-weight:bold; color:#595959; padding:3 3 0 13;  background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/ttt_us.gif);  background-repeat:no-repeat; height:18px;}
+	.TTTT_us			{font-weight:bold; color:#000000; padding-left:21px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/t_us.gif);    background-repeat:no-repeat; height:23px;letter-spacing:0px; font-size:14px; font-family:돋움; border:0px;}
+
+	.T_wc               {font-weight:bold; color:#000000; padding-left:21px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/t_wc.gif);    background-repeat:no-repeat; height:23px; font-size:14px; font-family:돋움;}
+	.TT_wc              {font-weight:bold; color:#000000; padding-left:20px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/tt_wc.gif);   background-repeat:no-repeat; height:18px;}
+	.TTT_wc             {font-weight:bold; color:#595959; padding:3 3 0 13;  background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/ttt_wc.gif);  background-repeat:no-repeat; height:18px;}
+
+	.T_an               {font-weight:bold; color:#000000; padding-left:21px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/t_an.gif);    background-repeat:no-repeat; height:23px; font-size:14px; font-family:돋움;}
+	.TT_an              {font-weight:bold; color:#666666; padding-left:20px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/tt_an.gif);   background-repeat:no-repeat; height:18px;}
+	.TTT_an             {font-weight:bold; color:#595959; padding:3 3 0 13;  background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/ttt_an.gif);  background-repeat:no-repeat; height:18px;}
+
+	.T_hi               {font-weight:bold; color:#000000; padding-left:21px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/t_hi.gif);    background-repeat:no-repeat; height:23px;font-size:14px; font-family:돋움;}
+	.TT_hi              {font-weight:bold; color:#666666; padding-left:20px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/tt_hi.gif);   background-repeat:no-repeat; height:18px;}
+	.TTT_hi             {font-weight:bold; color:#595959; padding:3 3 0 13;  background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/ttt_hi.gif);  background-repeat:no-repeat; height:18px;}
+
+	.T_cm               {font-weight:bold; color:#000000; padding-left:21px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/t_cm.gif);    background-repeat:no-repeat; height:23px; font-size:14px; font-family:돋움;}
+	.TT_cm              {font-weight:bold; color:#666666; padding-left:20px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/tt_cm.gif);   background-repeat:no-repeat; height:18px;}
+	.TTT_cm             {font-weight:bold; color:#595959; padding:3 3 0 13;  background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/ttt_cm.gif);  background-repeat:no-repeat; height:18px;}
+
+	.T_tm               {font-weight:bold; color:#3D3D3D; padding-left:21px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/t_tm.gif);    background-repeat:no-repeat; height:23px; font-size:14px; font-family:돋움;}
+	.TT_tm              {font-weight:bold; color:#666666; padding-left:20px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/tt_tm.gif);   background-repeat:no-repeat; height:18px;}
+	.TTT_tm             {font-weight:bold; color:#595959; padding:3 3 0 13;  background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/ttt_tm.gif);  background-repeat:no-repeat; height:18px;}
+
+	.T_pop              {font-weight:bold; color:#FFFFFF; padding-left:32px; padding-top:8px; background-repeat:no-repeat; height:23px; font-size:14px; font-family:돋움,verdana; 
+						 filter:dropshadow(color=#000000, offx=1, offy=1, positive=1);}
+	.TT_pop             {font-weight:bold; color:#666666; padding-left:20px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/tt_tm.gif);   background-repeat:no-repeat; height:18px;}
+	.TTT_pop            {font-weight:bold; color:#595959; padding:3 3 0 13;  background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/ttt_us.gif);  background-repeat:no-repeat; height:18px;}
+
+	.T_input            {font-weight:bold; color:#000000; padding-left:21px; padding-top:3px; background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/t_us.gif); background-repeat:no-repeat; height:23px;letter-spacing:0px; border:0; font-size:14px;}
+	.TTT_iqy            {font-weight:bold; color:#BF7707; padding:3 3 0 13;  background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/ttt_iqy.gif);  background-repeat:no-repeat; height:18px;}
+
+/****************************/
+/*  거래화면 테이블 Style
+/***************************/	
+	/* 테두리 색상 : 하나의 테이블을 더 만들어 td에 적용함으로써 border 효과를 낼 수 있음 */
+	.border_dashed	    {border:1px #CCCCCC solid; background:#EEEEEE;padding: 3 5 2 5;}
+	.border_page	    {border:1px #CCCCCC solid; background:#EEEEEE;padding: 3 7 3 7;}
+	.border_all	        {border:1px #E1E1E1 solid; background:#EEEEEE;padding: 1 2 1 5;}
+	.border_select		{border:1px #CCCCCC outset;background:#FFFFFF;padding: 1 1 1 1;}
+	.border_inquiry		{border:5px #DDDDDD solid; background-color:#FFFFFF;padding: 5 7 5 7;}
+
+	.BorderIn			{background-color:#ABB6BF;border:1 solid;}
+	.BorderOut			{background-color:#CCCCCC;border:1 solid;}
+	.cm_border			{border:1px #C8DD88 dashed;}
+
+	/* 테이블 내부 -- th:헤드라인항목 */
+	.th001C				{background-color:#EFEFEF;color:#454545; text-align:center;padding: 2 0 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.th001L				{background-color:#EFEFEF;color:#454545; text-align:left  ;padding: 2 0 1 2;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.th001R				{background-color:#EFEFEF;color:#454545; text-align:right ;padding: 2 2 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+
+	.th002C				{background-color:#F7F7F7;color:#202020;text-align:center;padding: 2 0 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.th002L				{background-color:#F7F7F7;color:#202020;text-align:left;  padding: 2 0 1 2;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.th002R				{background-color:#F7F7F7;color:#202020;text-align:right; padding: 2 2 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+
+	.th003C				{background-color:#E4F2FF;color:#0F1F67; text-align:center;padding: 2 0 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.th003L				{background-color:#E4F2FF;color:#0F1F67; text-align:left;  padding: 2 0 1 2;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.th003R				{background-color:#E4F2FF;color:#0F1F67; text-align:right; padding: 2 2 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+
+	/* 카테고리별 테이블 색상 >> border:테두리 색상, th:헤드라인항목 */
+	.main_border		{background-color:#CDCDA0;border:1 solid;border-color:#CDCDA0;}
+	.main_thC		    {background-color:#E6E6B9;color:#000000; text-align:center; padding: 2 0 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.main_thL		    {background-color:#E6E6B9;color:#000000; text-align:left;   padding: 2 0 1 2;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.main_thR		    {background-color:#E6E6B9;color:#000000; text-align:right;  padding: 2 2 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+
+	.us_border			{background-color:#B6D799;border:1 solid;border-color:#B6D799;}
+	.us_title			{background-color:#C6E3AE;border-color:#B6D799;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;color:#27440E;text-align:center;font-weight:bold;}
+	.us_thC		        {background-color:#E2F4D3;color:#000000; text-align:center; padding: 2 0 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.us_thL		        {background-color:#E2F4D3;color:#000000; text-align:left;   padding: 2 0 1 2;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.us_thR		        {background-color:#E2F4D3;color:#000000; text-align:right;  padding: 2 2 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	
+	.wc_border			{background-color:#ADC3DA;border:1 solid;border-color:#ADC3DA;}
+	.wc_title			{background-color:#BCD1E7;border-color:#B6D799;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;color:#000000;text-align:center;font-weight:bold;}
+	.wc_thC		        {background-color:#DDEAF8;color:#000000;text-align:center; padding: 2 0 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.wc_thL		        {background-color:#DDEAF8;color:#000000;text-align:left;   padding: 2 0 1 2;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.wc_thR		        {background-color:#DDEAF8;color:#000000;text-align:right;  padding: 2 2 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+
+	.an_border			{background-color:#F9D0D0;border:1 solid;border-color:#F9D0D0;}
+	.an_thC		        {background-color:#FFF2F2;color:#000000;text-align:center;padding: 2 0 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.an_thL		        {background-color:#FFF2F2;color:#000000;text-align:left;  padding: 2 0 1 2;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.an_thR		        {background-color:#FFF2F2;color:#000000;text-align:right; padding: 2 2 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+
+	.hi_border			{background-color:#AAD0C0;border:1 solid;border-color:#AAD0C0;}
+	.hi_thC		        {background-color:#DAECE5;color:#000000;text-align:center;padding: 2 0 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.hi_thL		        {background-color:#DAECE5;color:#000000;text-align:left;  padding: 2 0 1 2;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.hi_thR		        {background-color:#DAECE5;color:#000000;text-align:right; padding: 2 2 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+
+	.cm_border			{background-color:#C8CCEF;border:1 solid;border-color:#C8CCEF;}
+	.cm_thC		        {background-color:#E5E7F7;color:#000000;text-align:center;padding: 2 0 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.cm_thL		        {background-color:#E5E7F7;color:#000000;text-align:left;  padding: 2 0 1 2;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.cm_thR		        {background-color:#E5E7F7;color:#000000;text-align:right; padding: 2 2 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+
+    .tm_border			{background-color:#DFE1AE;border:1 solid;border-color:#DFE1AE;}
+	.tm_thC		        {background-color:#F8F9E4;color:#000000;text-align:center;padding: 2 0 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.tm_thL		        {background-color:#F8F9E4;color:#000000;text-align:left;  padding: 2 0 1 2;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+	.tm_thR		        {background-color:#F8F9E4;color:#000000;text-align:right; padding: 2 2 1 0;border-top:1 solid FFFFFF;border-left:1 solid FFFFFF;}
+
+    .search_border		{background-color:#CCCCCC;border:1 solid #CCCCCC;}
+	.search_thC		    {background-color:#EEEEEE;color:#000000;text-align:center; padding: 2 0 1 0; border-left:1 solid FFFFFF;border-top:1 solid FFFFFF;}
+	.search_thL		    {background-color:#EEEEEE;color:#000000;text-align:left;   padding: 2 0 1 5;border-left:1 solid FFFFFF;border-top:1 solid FFFFFF;}
+	.search_thR		    {background-color:#EEEEEE;color:#000000;text-align:right;  padding: 2 5 1 0; border-left:1 solid FFFFFF;border-top:1 solid FFFFFF;}
+
+
+
+
+
+        /* 테이블 외부 타이틀 빽이미지 */
+
+
+         .table_border	    {border:1px #ffffff solid; background:#ffffff;padding: 0 0 0 0;color:#575757}
+
+         .bt_table	    {border:0px #ffffff solid; height:20px; width:825px; background:#ffffff}
+         
+
+         .table_title_B01		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_b01.gif); height:27px; width:125px; border:0 ;padding: 1 0 1 0;}
+         .table_title_G01		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_g01.gif); height:27px; width:125px; border:0 ;padding: 1 0 1 0;}
+         .table_title_R01		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_r01.gif); height:27px; width:125px; border:0 ;padding: 1 0 1 0;}
+         .table_title_P01		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_p01.gif); height:27px; width:125px; border:0 ;padding: 1 0 1 0;}
+    															                                                                
+         .table_title_B02		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_b02.gif); height:27px; width:700px; border:0 ;padding: 6 0 1 0;font-size:13px; font-family:굴림체,Verdana; color: #FFFFFF;font-weight:bold;}
+         .table_title_G02		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_g02.gif); height:27px; width:700px; border:0 ;padding: 6 0 1 0;font-size:13px; font-family:굴림체,Verdana; color: #FFFFFF;font-weight:bold;}
+         .table_title_R02		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_r02.gif); height:27px; width:700px; border:0 ;padding: 6 0 1 0;font-size:13px; font-family:굴림체,Verdana; color: #FFFFFF;font-weight:bold;}
+         .table_title_P02		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_p02.gif); height:27px; width:700px; border:0 ;padding: 6 0 1 0;font-size:13px; font-family:굴림체,Verdana; color: #FFFFFF;font-weight:bold;}
+																                                                                
+																                                                                
+																                                                                
+     /* 테이블 외부 타이틀 빽이미지 (825px) */                                                                
+																                                                                
+         .table_title_B_825		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_b03.gif); height:27px; width:825px; border:0 ;text-align:center;padding: 5 0 0 0;font-size:13px; font-family:굴림체,Verdana; color: #001437;font-weight:bold;}
+         .table_title_G_825		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_g03.gif); height:27px; width:825px; border:0 ;text-align:center;padding: 5 0 0 0;font-size:13px; font-family:굴림체,Verdana; color: #212400;font-weight:bold;}
+         .table_title_R_825		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_r03.gif); height:27px; width:825px; border:0 ;text-align:center;padding: 5 0 0 0;font-size:13px; font-family:굴림체,Verdana; color: #2E0010;font-weight:bold;}
+         .table_title_P_825		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_p03.gif); height:27px; width:825px; border:0 ;text-align:center;padding: 5 0 0 0;font-size:13px; font-family:굴림체,Verdana; color: #001437;font-weight:bold;}
+																                                                                
+																                                                                
+     /* 테이블 외부 타이틀 빽이미지 (1002px) */                                                                
+																                                                                
+         .table_title_B_1002		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/table_title_b_1002.gif); height:27px; width:1002px; border:0 ;text-align:center;padding: 5 0 0 0;font-size:13px; font-family:굴림체,Verdana; color: #001437;font-weight:bold;}
+         .table_title_G_1002		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/table_title_g_1002.gif); height:27px; width:1002px; border:0 ;text-align:center;padding: 5 0 0 0;font-size:13px; font-family:굴림체,Verdana; color: #212400;font-weight:bold;}
+         .table_title_R_1002		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/table_title_r_1002.gif); height:27px; width:1002px; border:0 ;text-align:center;padding: 5 0 0 0;font-size:13px; font-family:굴림체,Verdana; color: #2E0010;font-weight:bold;}
+         .table_title_P_1002		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/table_title_p_1002.gif); height:27px; width:1002px; border:0 ;text-align:center;padding: 5 0 0 0;font-size:13px; font-family:굴림체,Verdana; color: #001437;font-weight:bold;}
+																                                                                
+ 																                                                                
+    /* 테이블 외부 타이틀 폰트만 */				                                                                
+																                                                                
+         .table_popup_title_B02		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/table_popup_title_b.gif); height:31px; border:0 ;text-align:center;font-size:13px; font-family:굴림체,Verdana; color: #001437;font-weight:bold;}
+         .table_popup_title_G02	{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/table_popup_title_g.gif); height:31px; border:0 ;text-align:center;font-size:13px; font-family:굴림체,Verdana; color: #212400;font-weight:bold;}
+         .table_popup_title_R02		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/table_popup_title_r.gif); height:31px; border:0 ;text-align:center;font-size:13px; font-family:굴림체,Verdana; color: #2E0010;font-weight:bold;}
+         .table_popup_title_P02		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/table_popup_title_p.gif); height:31px; border:0 ;text-align:center;font-size:13px; font-family:굴림체,Verdana; color: #001437;font-weight:bold;}
+																                                                                
+
+
+	/* 조회성 테이블 타이틀 및 리스트 TD  (그레이 TD)  */
+        .board_table_01 { background-color:#F0F0F0;height:18px;color:#333333;text-align:center; padding: 2 0 1 0;border-top:1 solid E8E8E8;border-left:1 solid E8E8E8; }
+        .board_tableR_01 { background-color:#F0F0F0;height:18px;color:#0333333;text-align:right; padding: 2 0 1 0;border-top:1 solid E8E8E8;border-left:1 solid E8E8E8; }
+        .board_tableL_01 { background-color:#F0F0F0;height:18px;color:#333333;text-align:left; padding: 2 0 1 0;border-top:1 solid E8E8E8;border-left:1 solid E8E8E8; }
+        .border_01 { background-color:#CBCBCB;border:1 solid;border-color:#CBCBCB; }
+
+
+       /* 조회성 테이블 타이틀 및 리스트 TD  (그린 TD)  */
+        .board_table { background-color:#BCCA6D;height:18px;color:#333333;text-align:center; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+        .board_tableR { background-color:#F0F0F0;height:18px;color:#0333333;text-align:right; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+        .board_tableL { background-color:#F0F0F0;height:18px;color:#333333;text-align:left; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+        .border { background-color:#E7EAC6;border:1 solid;border-color:#FFFFFF; }
+
+
+	   /* 조회성 테이블 타이틀 및 리스트 TD  (블루 TD)  */
+        .board_table_blue { background-color:#BCCA6D;height:18px;color:#333333;text-align:center; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+        .board_tableR_blue { background-color:#F0F0F0;height:18px;color:#0333333;text-align:right; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+        .board_tableL_blue { background-color:#F0F0F0;height:18px;color:#333333;text-align:left; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+        .border_blue { background-color:#9DAAB8;border:1 solid;border-color:#FFFFFF; }
+
+
+	   /* 조회성 테이블 타이틀 및 리스트 TD  (레드 TD)  */
+        .board_table_red { background-color:#BCCA6D;height:18px;color:#333333;text-align:center; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+        .board_tableR_red { background-color:#F0F0F0;height:18px;color:#0333333;text-align:right; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+        .board_tableL_red { background-color:#F0F0F0;height:18px;color:#333333;text-align:left; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+        .border_red { background-color:#EBE3E1;border:1 solid;border-color:#FFFFFF; }
+
+
+        /* 조회성 테이블 타이틀 TD  (G/B/R/P   TD-빽이미지)  */
+        .board_tableG { background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/board_tableg.gif);height:18px;color:#333333;text-align:center; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+        .board_tableB { background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/board_tableb.gif);height:18px;color:#333333;text-align:center; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }       
+        .board_tableR { background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/board_tabler.gif);height:18px;color:#333333;text-align:center; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+        .board_tableP { background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/board_tablep.gif);height:18px;color:#333333;text-align:center; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+														                                                      
+														                                                      
+														                                                      
+              /* 조회성 테이블 타이틀 TD  (G/b/r/p   td-빽이미지_큰사이즈)  */  
+        .board_tableG_02 { background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/board_tableg_02.gif);height:18px;color:#333333;text-align:center; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+        .board_tableB_02 { background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/board_tableb_02.gif);height:18px;color:#333333;text-align:center; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }       
+        .board_tableR_02 { background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/board_tabler_02.gif);height:18px;color:#333333;text-align:center; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+        .board_tableP_02 { background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/board_tablep_02.gif);height:18px;color:#333333;text-align:center; padding: 2 0 1 0;border-top:1 solid F3F5E4;border-left:1 solid F3F5E4; }
+														                                                      
+
+
+
+      /* 조회성 테이블 TD  */
+	.td_W_C				{background-color:#FFFFFF;color:#3C3C3C;height:18px;text-align:center;}
+	.td_W_L				{background-color:#FFFFFF;color:#3C3C3C;height:18px;text-align:left;  }
+	.td_W_R				{background-color:#FFFFFF;color:#3C3C3C;height:18px;text-align:right; }
+
+    .td_R_C				{background-color:#FDFCFB;color:#3C3C3C;height:18px;text-align:center; }
+	.td_R_L				{background-color:#F8EFE8;color:#3C3C3C;height:18px;text-align:left;   }
+	.td_R_R				{background-color:#F8EFE8;color:#3C3C3C;height:18px;text-align:right;  }
+
+    .td_B_C				{background-color:#F3F8FD;color:#3C3C3C;height:18px;text-align:center; }
+	.td_B_L				{background-color:#F3F8FD;color:#3C3C3C;height:18px;text-align:left;   }
+	.td_B_R				{background-color:#F3F8FD;color:#3C3C3C;height:18px;text-align:right;  }
+
+
+    .td_G_C				{background-color:#F9FCEF;color:#3C3C3C;height:18px;text-align:center; }
+	.td_G_L				{background-color:#F9FCEF;color:#3C3C3C;height:18px;text-align:left;   }
+	.td_G_R				{background-color:#F9FCEF;color:#3C3C3C;height:18px;text-align:right;  }
+
+
+    .td_P_C				{background-color:#E8F5F4;color:#3C3C3C;height:18px;text-align:center; }
+	.td_P_L				{background-color:#E8F5F4;color:#3C3C3C;height:18px;text-align:left;   }
+	.td_P_R				{background-color:#E8F5F4;color:#3C3C3C;height:18px;text-align:right;  }
+
+
+      /* 조회성 테이블 폰트만  */
+	.td_W_C_font				{background-color:#FFFFFF;color:#3C3C3C;text-align:center; padding: 1 0 1 0;}
+	.td_W_C_font02				{background-color:#EEEEEE;color:#3C3C3C;text-align:center; padding: 1 0 1 0;}
+	.td_W_C_font03				{background-color:#ffffff;color:#212400;text-align:center; padding: 1 0 1 0;}
+	.td_W_L_font				{background-color:#FFFFFF;color:#3C3C3C;text-align:left;   padding: 1 0 1 2;}
+	.td_W_R_font				{background-color:#FFFFFF;color:#3C3C3C;text-align:right;  padding: 1 2 1 0;}
+
+    .td_R_C_font				{background-color:#F8EFE8;color:#3C3C3C;text-align:center; padding: 1 0 1 0;}
+	.td_R_L_font				{background-color:#F8EFE8;color:#3C3C3C;text-align:left;   padding: 1 0 1 2;}
+	.td_R_R_font				{background-color:#F8EFE8;color:#3C3C3C;text-align:right;  padding: 1 2 1 0;}
+
+    .td_B_C_font				{background-color:#E7F0F8;color:#3C3C3C;text-align:center; padding: 1 0 1 0;}
+	.td_B_L_font				{background-color:#E7F0F8;color:#3C3C3C;text-align:left;   padding: 1 0 1 2;}
+	.td_B_R_font				{background-color:#E7F0F8;color:#3C3C3C;text-align:right;  padding: 1 2 1 0;}
+
+
+    .td_G_C_font				{background-color:#F7F7E9;color:#3C3C3C;text-align:center; padding: 1 0 1 0;}
+	.td_G_L_font				{background-color:#F7F7E9;color:#3C3C3C;text-align:left;   padding: 1 0 1 2;}
+	.td_G_R_font				{background-color:#F7F7E9;color:#3C3C3C;text-align:right;  padding: 1 2 1 0;}
+
+
+    .td_P_C_font				{background-color:#E8F5F4;color:#3C3C3C;text-align:center; padding: 1 0 1 0;}
+	.td_P_L_font				{background-color:#E8F5F4;color:#3C3C3C;text-align:left;   padding: 1 0 1 2;}
+	.td_P_R_font				{background-color:#E8F5F4;color:#3C3C3C;text-align:right;  padding: 1 2 1 0;}
+
+
+
+
+
+
+
+         .table_title      {background-color:#E9E9E9;border:1 solid;border-color:#D1D1D1A;height:21px}
+         .table_list       {border:1px #D1D1D1 solid; background:#ffffff;padding: 0 0 0 0;text-align:center;height:19px}
+         .table_list_td    {background:#F8EFE8;padding: 0 0 0 0;text-align:center;height:19px}
+
+
+
+
+		/* 리스트성 조회 TD  */
+
+.td_grayC	{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/td_gray.gif); height:19px; border:1 solid; border-color:#DEDEDE; padding:2 0 0 0;padding:color:#FFFFFF;text-align:center}
+.td_grayL	{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/td_gray.gif); height:19px; border:1 solid; border-color:#DEDEDE; padding:2 5 0 0;padding:color:#FFFFFF;text-align:left}
+.td_grayR	{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/td_gray.gif); height:19px; border:1 solid; border-color:#DEDEDE; padding:2 5 0 0;padding:color:#FFFFFF;text-align:right}
+
+
+
+
+	/* 테이블 내부 -- td:데이타 항목 */
+
+	.td_arrow_B		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/arrow_b.gif); height:19px; border:1 solid; border-color:#BFBFBF; padding:2 0 0 18;color:#575757}
+	.td_arrow_G		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/arrow_g.gif); height:19px; border:1 solid; border-color:#BFBFBF; padding:2 0 0 18;padding:color:#575757}
+	.td_arrow_R		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/arrow_r.gif); height:19px; border:1 solid; border-color:#BFBFBF; padding:2 0 0 18;padding:color:#575757}
+    .td_arrow_p		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/arrow_p.gif); height:19px; border:1 solid; border-color:#BFBFBF; padding:2 0 0 18;padding:color:#575757}
+														                                             
+	.td_arrow_02_B		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/arrow_02_b.gif); height:19px; border:1 solid; border-color:#BFBFBF; padding:2 0 0 18;color:#575757}
+	.td_arrow_02_G		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/arrow_02_g.gif); height:19px; border:1 solid; border-color:#BFBFBF; padding:2 0 0 18;padding:color:#575757}
+	.td_arrow_02_R		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/arrow_02_r.gif); height:19px; border:1 solid; border-color:#BFBFBF; padding:2 0 0 18;padding:color:#575757}
+    .td_arrow_02_P		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/arrow_02_p.gif); height:19px; border:1 solid; border-color:#BFBFBF; padding:2 0 0 18;padding:color:#575757}
+														                                             
+														                                             
+    .td_title_gray		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_gray.gif); height:19px; border:1 solid; border-color:#BFBFBF; padding:2 0 0 18;padding:color:#575757}
+    .td_title_gray02	{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_gray02.gif); border:1 solid; border-color:#BFBFBF; color:#575757}
+														                                             
+														                                             
+	 .td_title_gray		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_gray.gif); height:19px; border:1 solid; border-color:#BFBFBF; padding:2 0 0 18;padding:color:#575757}
+    .td_title_grayC	{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_gray.gif); height:19px; border:1 solid; border-color:#BFBFBF; padding:2 0 0 0;padding:color:#575757;text-align:center}
+    .td_title_gray02	{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_gray02.gif); border:1 solid; border-color:#BFBFBF; color:#575757}													                                             
+														                                             
+    .td_star		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_star.gif); height:19px; border:1 solid; border-color:#BFBFBF; padding:2 0 0 18;padding:color:#575757}
+    .td_star_02		{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/title_star_02.gif); height:19px; border:1 solid; border-color:#BFBFBF; padding:2 0 0 18;padding:color:#575757}
+														                                             
+	
+	
+	.td_listC		{background-color:#f4f3f3;text-align:center; height:19px;border:0 solid; border-color:#ECECEC;color:#575757}
+	.td_listL		{background-color:#f4f3f3;text-align:left; height:19px;  border:0 solid; padding:0 0 0 1 ; border-color:#ECECEC;color:#575757}
+    .td_listL_3px		{background-color:#f4f3f3;text-align:left; height:19px;  border:0 solid; padding:0 0 0 3 ; border-color:#ECECEC;color:#575757}
+    .td_list_formL		{background-color:#f4f3f3;text-align:left; height:19px;  border:0 solid; padding:0 0 0 0 ; border-color:#ECECEC;color:#575757}
+	.td_listR		{background-color:#f4f3f3;text-align:right; height:19px; border:0 solid; padding:0 0 0 1 ;border-color:#ECECEC;color:#575757}
+														                                             
+														                                             
+    .td_1px                 {background-color:#ffffff; height:1px; border:0}      
+														                                             
+														                                             
+	/* 테이블 하단 라인 (825px)  */			                                             
+        .ha_tdB_825			{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/ha_tdb.gif); height:3px; width:825px ; border:0 }
+        .ha_tdG_825			{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/ha_tdg.gif); height:3px; width:825px ; border:0 }
+        .ha_tdR_825			{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/ha_tdr.gif); height:3px; width:825px ; border:0 }
+        .ha_tdP_825			{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/ha_tdp.gif); height:3px; width:825px ; border:0 }
+														                                             
+														                                             
+	/* 테이블 하단 라인 (1002px)  */		                                             
+        .ha_tdB_1002			{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/ha_tdb.gif); height:3px; width:1002px ; border:0 }
+        .ha_tdG_1002			{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/ha_tdg.gif); height:3px; width:1002px ; border:0 }
+        .ha_tdR_1002			{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/ha_tdr.gif); height:3px; width:1002px ; border:0 }
+        .ha_tdP_1002			{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/ha_tdp.gif); height:3px; width:1002px ; border:0 }
+       													                                             
+
+   /* 테이블 하단 라인 (800px)  */	
+        .ha_tdG_800			{background-image:url(http://192.168.0.2:9090/weom/jsp/images/dawoo/ha_tdg.gif); height:3px; width:800px ; border:0 }
+
+
+
+
+
+
+	.td300C				{text-align:center; padding: 1 0 1 0;}	
+	.td300L				{text-align:left;   padding: 1 0 1 2;}
+	.td300R				{text-align:right;  padding: 1 2 1 0;}
+
+	.td400C				{text-align:center; background-color:#FFE8FF; padding: 1 0 1 0; color:#000000; font-weight:bold;}	
+	.td400L				{text-align:left;   background-color:#FFE8FF; padding: 1 0 1 2; color:#000000; font-weight:bold;}
+	.td400R				{text-align:right;  background-color:#FFE8FF; padding: 1 2 1 0; color:#000000; font-weight:bold;}
+
+	.bch500C			{text-align:center; background-color:#E1F0FF; padding: 1 0 1 0; }	
+	.bch500L			{text-align:left;   background-color:#E1F0FF; padding: 1 0 1 2; }
+	.bch500R			{text-align:right;  background-color:#E1F0FF; padding: 1 2 1 0; }
+
+	.hq600C				{text-align:center; background-color:#C7E7FF; padding: 1 0 1 0; font-weight:bold; }	
+	.hq600L				{text-align:left;   background-color:#C7E7FF; padding: 1 0 1 2; font-weight:bold; }
+	.hq600R				{text-align:right;  background-color:#C7E7FF; padding: 1 2 1 0; font-weight:bold; }
+
+	.tot700C			{text-align:center; background-color:#BCBCF3; padding: 1 0 2 0; font-weight:bold; }	
+	.tot700L			{text-align:left;   background-color:#BCBCF3; padding: 1 0 1 2; font-weight:bold; }
+	.tot700R			{text-align:right;  background-color:#BCBCF3; padding: 1 2 1 0; font-weight:bold; }
+
+
+	/* 긴급 테이블 내부 -- td:데이타 항목 */
+	.urgent_td			{background-color:#EFEFFF;text-align:center; padding: 2 0 0 0;}	
+
+/******************/
+/*  홈 관련 Style
+/******************/
+    .home_border		{background-color:#CCCCCC; border:1 solid #CCCCCC;}
+	.home_thC		    {background-color:#EEEEEE; color:#000000; text-align:center; padding: 4 0 1 0; border-left:1 solid FFFFFF; border-top:1 solid FFFFFF;}
+	.home_thL		    {background-color:#EEEEEE; color:#000000; text-align:left;   padding: 4 0 1 5; border-left:1 solid FFFFFF; border-top:1 solid FFFFFF;}
+	.home_thR		    {background-color:#EEEEEE; color:#000000; text-align:right;  padding: 4 5 1 0; border-left:1 solid FFFFFF; border-top:1 solid FFFFFF;}
+
+    .home_border1		{background-color:#FFFFFF; border-right:2 solid ;border-left:1 solid ;border-top:1 solid ;border-bottom:2 solid; border-color:#CCCCCC;}
+	.home_th1C		    {background-color:#DAEBFF; border:1 solid; border-color:#A0C7F3; color:#000000; text-align:center; padding: 4 0 1 0;}
+	.home_th1L		    {background-color:#DAEBFF; border:1 solid; border-color:#CDCAEE; color:#000000; text-align:left;   padding: 4 0 1 15;}
+	.home_th1R		    {background-color:#DAEBFF; border:1 solid; border-color:#CDCAEE; color:#000000; text-align:right;  padding: 4 7 1 0;}
+
+/*******************************/
+/*  테이블안 스크롤 관련 Style
+/*******************************/
+	.scroll				{border:#FFFFFF; border-style: solid; border-top-width: 0px; border-right-width: 0px; border-bottom-width: 0px; border-left-width: 0px; color: #000000; overflow:auto; padding: 0 0 0 0;}
+	.popup				{font-size: 12px; border:#FFFFFF; border-style: solid; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; color: #000000; overflow:auto; padding: 0 0 0 0;}
+
+/**********************/
+/*  popup 관련 Style
+/**********************/
+	.popup_us			{height:40px;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/popup_us.gif);}
+	.popup_tm			{height:40px;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/popup_tm.gif);}
+	.popup_hi			{height:40px;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/popup_hi.gif);}
+	.popup_cm			{height:40px;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/popup_cm.gif);}
+	.popup_an			{height:40px;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/popup_an.gif);}
+	.popup_wc			{height:40px;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/popup_wc.gif);}
+
+	/*
+	.popup_bottom		{background-color:#DBDBDB;height:31;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/popup_bottom.gif);
+						 background-position:right;background-repeat:no-repeat;}
+	*/
+	.popup_bottom		{background-color:#FFFFFF;height:31;background-position:right;background-repeat:no-repeat;}
+
+/*******************/
+/*  FAX 관련 Style
+/*******************/
+	.fax_bg				{background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/common/fax_mainframe_bg.gif); background-position:right bottom; 
+						background-repeat:no-repeat;}
+
+/**************************************************************/
+/*	<TR> 관련 CLASS-mouseover, mouseout, mouse_click 시 css임.
+/**************************************************************/
+	.tr1				{background-color:#F7F6B8; cursor: hand;}	/* cursor : hand <TR> */
+	.tr2				{background-color:#FFFFFF;}					/* 일반 tr <TR> */
+	.tr3				{background-color:#F7F6B8; cursor:arrow;}	/* cursor : arrow <TR> */
+
+/****************************************************************/
+/*	<TR> 관련 CLASS-mouseover, mouseout, mouse_click 시 css임.
+/****************************************************************/
+	.tr1_long			{background-color:#E1FF9F; cursor: hand;}	/* cursor : hand <TR> */
+	.tr2_long			{background-color:#FFFFFF;}					/* 일반 tr <TR> */
+	.tr3_long			{background-color:#FFFD68; cursor:arrow;}	/* cursor : arrow 
+
+
+<TR> */ /*******************/ /* 보상 탭 Style /*******************/ 
+.bos01 {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/host/btn/bos.gif); height:22px; width:200px; padding:3 0 0 0;background-color:FFFFFF;color:FFFFFF;cursor:hand;} 
+.bos01_alp {border:0;background-image:url(.http://192.168.0.2:9090/weom/jsp/images/dawoo/.http://192.168.0.2:9090/weom/jsp/images/dawoo/images/host/btn/bos_alp.gif);height:22px; width:200px; padding:3 0 0 0;background-color:FFFFFF;color:FFFFFF;} /*******************/ 
+
+
+
+/* 상담원 조회/연결 화면 /*******************/ 
+.title_border {background:#B7BFFF;border:0 solid #B7BFFF;} 
+.title_00 {height:30;color:#000000;background:#B7BFFF;padding:2 0 0 5;text-align:left;font-weight:bold;border:1 solid #FFFFFF;font-family:돋움체,verdana;font-size:14px;} 
+.title_01 {height:30;color:#FFFFFF;background:#94A1FF;padding:2 0 0 5;text-align:left;font-weight:bold;border:1 solid #FFFFFF;font-family:verdana;font-size:14px;} 
+.title_td {background:#FFFFFF;padding:1 1 1 1;} 
+.title_td01 {padding:5 0 0 0;text-align:center;color:#0C165C;height:70;cursor:hand;font-family:verdana;font-weight:bold;border:0 solid #CCCCCC;font-size:12px;}
+.title_td02 {background:#FFD75F;padding:5 0 0 0;text-align:center;color:#000000;height:70;cursor:hand;font-family:verdana;font-weight:bold;font-size:12px;} 
+
+
+
+/*******************************************************************/ /* /* 영문/한글 /* /*******************************************************************/	
+
+  .kor {ime-mode:active;color: #575757; background-color:#D9D9D9; height:17px; border-top: 1px solid #B1B1B1; border-right: 1px solid #B1B1B1; border-bottom: 1px solid #B1B1B1; border-left: 1px solid #B1B1B1; text-align:left;padding-top:2px;} 
+
+
+/* or */ 
+
+  .eng {ime-mode:disabled;color: #575757; background-color:#D9D9D9; height:17px;  border-top: 1px solid #B1B1B1; border-right: 1px solid #B1B1B1; border-bottom: 1px solid #B1B1B1; border-left: 1px solid #B1B1B1; text-align:left;padding-top:2px;} 
+
+/* or */

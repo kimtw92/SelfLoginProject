@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="loti.homeFront.mapper.SupportMapper">
+
+	<select id="memberView" resultType="DataMap" parameterType="String">
+	<![CDATA[
+		SELECT 	
+					USER_ID
+					, NAME
+					, EMAIL
+					, SCP.DEC_B64('KEY1',HOME_TEL) AS HOME_TEL
+					, SCP.DEC_B64('KEY1',OFFICE_TEL) AS OFFICE_TEL
+					, SCP.DEC_B64('KEY1',HP) AS HP
+					, HOME_POST1
+					, HOME_POST2
+					, HOME_ADDR
+					, SCP.DEC_B64('KEY1',RESNO) AS RESNO
+					, USERNO
+					, to_char(UPSDATE, 'yyyymmdd') UPSDATE
+					, JIK
+					,  MJIKNM JIKNM
+					, DEPT
+					, DEPTSUB
+					, MJIKNM
+					, DEPTNM 	
+					, SEX 	
+		FROM 	tb_member
+		WHERE 	USER_ID = #{value, jdbcType=VARCHAR}
+	]]>
+	</select>
+	
+	<select id="boardListCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		SELECT count(*)
+		FROM ${TABLE_NAME}
+		WHERE title != '삭제된 글입니다'		
+        ${SEARCH_STRING}
+        ORDER BY STEP DESC
+	]]>
+	</select>
+	
+	<select id="boardList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		SELECT SEQ, TOP_RANK, WUSERNO, USERNAME, PASSWD, EMAIL, to_char(REGDATE, 'yyyy-mm-dd') REGDATE, TITLE, STEP, 
+		DEPTH, VISIT, GROUPFILE_NO, REMOTE_IP
+		FROM ${TABLE_NAME}
+		WHERE title != '삭제된 글입니다'		
+        ${SEARCH_STRING}
+        ORDER BY DECODE(STEP, '356', 1), STEP DESC
+    ) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<insert id="insertBbsBoard" parameterType="Map">
+		INSERT INTO TB_BOARD_${boardId}
+			(SEQ, 
+			 WUSERNO, 
+			 USERNAME, 
+			 PASSWD, 
+			 EMAIL, 
+			 REGDATE, 
+			 TITLE, 
+			 STEP, 
+			 <if test="boardId == 'EPILOGUE'">
+			 GRCODE,
+			 GRSEQ,
+			 GRCODENIKNM,
+			 </if>
+			 DEPTH, 
+			 VISIT, 
+			 GROUPFILE_NO, 
+			 REMOTE_IP, 
+			 CONTENT, 
+			 PHONE, 
+			 POST1, 
+			 POST2, 
+			 ADDR
+			 ) 
+		VALUES
+			(
+			
+				#{seq}
+				, #{wuserno}
+				, #{username}
+				, #{passwd, jdbcType=VARCHAR}
+				, #{email, jdbcType=VARCHAR}
+				, SYSDATE
+				, #{title} 
+			
+				<if test="qu== 'insertBbsBoardForm'">
+					, #{step, jdbcType=INTEGER}
+				</if>
+				<if test="qu!= 'insertBbsBoardForm'">
+					, #{step, jdbcType=DOUBLE}
+				</if>
+				
+				<if test="boardId == 'EPILOGUE'">
+					, #{pGrcode, jdbcType=VARCHAR}
+					, #{pGrseq, jdbcType=VARCHAR}
+					, #{pGrcodeNiknm, jdbcType=VARCHAR}
+				</if>
+			
+				, #{depth}
+				, #{visit}
+				, #{groupfileNo}
+				, #{ip}
+				, #{namoContent}
+				, #{homeTel}
+				, #{homePost1, jdbcType=VARCHAR}
+				, #{homePost2, jdbcType=VARCHAR}
+				, #{homeAddr, jdbcType=VARCHAR}
+			)
+			
+			
+	</insert>
+	
+	<select id="selectResNoCnt" parameterType="String" resultType="Integer">
+	<![CDATA[
+		-- 회원가입유무
+		SELECT 
+			count(*)
+		FROM TB_MEMBER
+		WHERE SCP.DEC_B64('KEY1',resno) = #{value}
+		AND (delete_yn is null or delete_yn = 'N')
+
+	]]>
+	</select>
+	
+	<select id="selectFaqListCount" parameterType="String" resultType="Integer">
+	<![CDATA[
+		-- 교육관련 FAQ리스트
+		SELECT 
+            count(*)
+        FROM 
+            TB_FAQ
+        ${value}
+        ORDER BY USE_YN DESC,REGDATE DESC
+	]]>
+	</select>
+	<select id="selectFaqList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 교육관련 FAQ리스트
+	SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		SELECT 
+            FNO,    CODE_ID, QUESTION,            USE_YN, REGDATE ,
+            VISIT, TO_CHAR(REGDATE,'YYYY-MM-DD'), SEARCHCODENM('C', 'F01', CODE_ID) AS CODE_NAME
+        FROM 
+            TB_FAQ
+        ${where}
+        ORDER BY USE_YN DESC,REGDATE DESC
+    ) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectSubCodeFaqList" resultType="DataMap">
+	<![CDATA[
+		-- FAQ서브코드리스트
+        SELECT 
+            MINOR_CODE  ,SCODE_NAME 
+        FROM 
+            TB_SUBCODE 
+        WHERE 
+            CD_GUBUN='C' AND MAJOR_CODE='F01'
+        ORDER BY MINOR_CODE
+ 	]]>
+	</select>
+	
+	<resultMap type="DataMap" id="clobDataMap">
+		<result property="HTML_CONTENTS"  column="HTML_CONTENTS" javaType="String" jdbcType="CLOB" typeHandler="org.apache.ibatis.type.ClobTypeHandler"></result>
+	</resultMap>
+	
+	<select id="selectFaqViewRow" parameterType="String" resultMap="clobDataMap">
+	<![CDATA[
+		-- 교육관련 FAQ 상세 페이지
+		SELECT 
+			FNO, CODE_ID, SEARCHCODENM('C', 'F01', CODE_ID) AS CODE_NAME, QUESTION, 
+			CONTENT AS HTML_CONTENTS, VISIT, TO_CHAR(REGDATE,'YYYY-MM-DD') REGDATE, USE_YN
+		FROM 
+			TB_FAQ
+		WHERE 
+			FNO = #{value}
+	]]>
+	</select>
+	
+	<select id="selectFaqFnoRow" resultType="Integer">
+	<![CDATA[	
+	-- FAQ Max Fno
+		SELECT NVL(MAX(FNO),0)+1 FROM TB_FAQ
+	]]>
+	</select>
+	
+	<update id="modifyFaqFno" parameterType="Integer">
+	<![CDATA[
+	-- FAQ 뷰페이지 카운터수 늘리기	
+		UPDATE 
+			TB_FAQ
+		SET
+			VISIT = VISIT + 1
+		WHERE 
+			FNO = #{value}
+	]]>
+	</update>
+	
+	<select id="getOpenCourseListCount" parameterType="String" resultType="Integer">
+	<![CDATA[	
+		select count(*)
+		from tb_subj 
+		where subjtype='Y' and openedugubun='Y' and use_yn='Y'
+		 ${value}
+		order by ldate desc	
+	]]>
+	</select>
+	<select id="getOpenCourseList" parameterType="Map" resultType="DataMap">
+	<![CDATA[	
+		SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+			select subj, subjnm 
+			from tb_subj 
+			where subjtype='Y' and openedugubun='Y' and use_yn='Y'
+			 ${value}
+			order by ldate desc	
+		) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="getOpenCourseView" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT
+		        k.subj as subj, k.subjnm as subjnm, k.lcms_width as lcms_width, k.lcms_height as lcms_height, k.menuyn as menuyn, 
+		        k.menunum as menunum,k.lcms_progress as lcms_progress, kk.dates as dates, kk.dates_nm as dates_nm, 
+		        kk.org_id as org_id, kk.ct_id as ct_id, kk.ct_seq as ct_seq, kk.org_dir as org_dir, kk.org_dir_name as org_dir_name
+		FROM TB_SUBJ k, 
+		    (SELECT
+		     a.subj, a.dates, a.sample,
+		     c.item_title dates_nm,
+		     b.org_id, b.ct_id, b.ct_seq, b.org_dir, b.org_dir_name
+		    FROM v_subjweek a, LCMS_ORGANIZATION b, LCMS_ITEM C
+		    WHERE c.org_id = b.org_id
+		        AND  A.org_DIR = b.org_DIR
+		        AND  B.org_DIR = C.org_DIR
+		        AND a.subj = #{value}
+		        AND a.item_id = c.item_id) kk
+		WHERE k.subj=kk.subj AND k.subj = #{value}
+		group by         k.subj , k.subjnm , k.lcms_width, k.lcms_height , k.menuyn, 
+		        k.menunum ,k.lcms_progress , kk.dates , kk.dates_nm , 
+		        kk.org_id, kk.ct_id, kk.ct_seq , kk.org_dir , kk.org_dir_name
+		ORDER BY kk.dates	
+	]]>
+	</select>	
+	
+	<select id="countExistResno" parameterType="String" resultType="Integer">
+	<![CDATA[
+	
+		-- 주민등록번호를 가지고 회원의 가입 여부를 판단한다.
+		-- 실명인증시 사용
+		
+		SELECT 
+			count(*)
+		FROM TB_MEMBER
+		WHERE SCP.DEC_B64('KEY1',resno) = #{value}
+		AND (delete_yn is null or delete_yn = 'N')
+	]]>
+	</select>
+	
+	<select id="countExistDupinfo" parameterType="String" resultType="Integer">
+	<![CDATA[
+	
+		-- i-Pin 중복코드를 가지고 회원의 가입 여부를 판단한다.
+		-- 실명인증시나 i-Pin 인증시 둘다 사용.
+		
+		SELECT 
+			count(*)
+		FROM TB_MEMBER
+		WHERE dupinfo = #{value}
+		AND (delete_yn is null or delete_yn = 'N')
+	]]>
+	</select>
+	
+	<select id="countExistVirtualno" parameterType="String" resultType="Integer">
+	<![CDATA[
+	
+		-- i-Pin 개인식별번호(코드)를 가지고 회원의 가입 여부를 판단한다.
+		-- i-Pin 인증시  사용.
+		
+		SELECT 
+			count(*)
+		FROM TB_MEMBER
+		WHERE virtualno = #{value}
+		AND (delete_yn is null or delete_yn = 'N')
+	]]>
+	</select>
+	
+	<select id="selectMyGrCodeNmList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT 
+            a.grcode as grcode,
+            a.grseq, 
+            a.userno,             
+            b.grcodeniknm, 
+            substr(a.grseq,0,4)||'년 '||substr(a.grseq,-2)||'기' as grseqnm 
+        FROM TB_app_info a, TB_GRSEQ b 
+        WHERE a.grcode=b.grcode 
+        AND a.grseq=b.grseq 
+        AND a.userno= #{userno}
+        and a.grseq = (to_char(sysdate, 'yyyymm') - 1)
+        order by a.grseq desc 
+	]]>
+	</select>
+	
+	<insert id="insertBbsBoardPerson" parameterType="Map">
+		INSERT INTO TB_BOARD_PERSON
+			(SEQ, 
+			 USERNAME, 
+			 REGDATE, 
+			 TITLE, 
+			 REMOTE_IP, 
+			 CONTENT, 
+			 PHONE
+			 ) 
+		VALUES
+			(
+			
+				#{seq}
+				, #{username}
+				, SYSDATE
+				, #{title} 
+				, #{ip}
+				, #{namoContent}
+				, #{phone}
+			)
+			
+			
+	</insert>
+	
+	<select id="boardPersonListCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		SELECT count(*)
+		FROM TB_BOARD_PERSON
+		WHERE username = #{username}
+		and phone = #{phone}	
+	]]>
+	</select>
+	
+	<select id="boardPersonList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		SELECT SEQ, USERNAME, to_char(REGDATE, 'yyyy-mm-dd') REGDATE, TITLE, 
+		REMOTE_IP, PHONE
+		FROM TB_BOARD_PERSON
+		WHERE username = #{username}
+		and phone = #{phone}	
+        ORDER BY seq DESC
+    ) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<insert id="popupEctInsert" parameterType="Map">
+		 INSERT INTO TB_POPUP_ETC 
+			   (ETC_NO,
+		        Q_1,
+		        Q_1_1,
+		        Q_2,
+		        Q_3,
+		        Q_4,
+		        Q_5,
+		        Q_6_1,
+		        Q_6_2,
+		        Q_6_3,
+		        Q_7_1,
+		        Q_7_2,
+		        Q_7_3,
+		        Q_8_1,
+		        Q_8_2,
+		        Q_8_3,
+		        Q_9_1,
+		        Q_9_2,
+		        Q_9_3,
+		        Q_10,
+		        CDATE)
+		 VALUES( ( SELECT NVL(MAX(ETC_NO),
+		                  0) + 1
+		             FROM TB_POPUP_ETC),
+		        #{q_1},
+		        #{q_1_1},
+		        #{q_2},
+		        #{q_3},
+		        #{q_4},
+		        #{q_5},
+		        #{q_6_1},
+		        #{q_6_2},
+		        #{q_6_3},
+		        #{q_7_1},
+		        #{q_7_2},
+		        #{q_7_3},
+		        #{q_8_1},
+		        #{q_8_2},
+		        #{q_8_3},
+		        #{q_9_1},
+		        #{q_9_2},
+		        #{q_9_3},
+		        #{q_10},
+		        SYSDATE)
+	</insert>
+</mapper>

@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.StuEnterMapper">
+
+	<select id="selectMemberSimpleByResnoRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 간략한 유저 정보 가져오기. (주민등록검색 및 로그인 등급에 따라.)
+		SELECT 
+			SCP.DEC_B64('KEY1',RESNO) AS RESNO, USERNO, NAME,
+			SEARCHDEPTNM(DEPT) AS DEPTNM, DECODE(SEARCHJIKNM(JIK),'', MJIKNM, SEARCHJIKNM(JIK)) AS  JIKNM, DEPTSUB AS DEPTSUB,
+			JIK,DEPT, SCP.DEC_B64('KEY1',HOME_TEL) AS HOME_TEL, EMAIL 
+		FROM tb_member 
+		WHERE 1=1
+			AND RESNO LIKE '%'||#{resno}||'%'
+			${whereStr}
+	]]>
+	</select>
+	
+	<select id="selectMemberSimpleByUseridRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 간략한 유저 정보 가져오기. (userid 및 로그인 등급에 따라.)
+		SELECT 
+			USER_ID AS USERID, USERNO, NAME,
+			SEARCHDEPTNM(DEPT) AS DEPTNM, DECODE(SEARCHJIKNM(JIK),'', MJIKNM, SEARCHJIKNM(JIK)) AS  JIKNM, DEPTSUB AS DEPTSUB,
+			JIK, DEPT, SCP.DEC_B64('KEY1',HOME_TEL) AS HOME_TEL, EMAIL 
+		FROM tb_member 
+		WHERE 1=1
+			AND USER_ID LIKE '%'||#{userid}||'%'
+			${whereStr}
+	]]>
+	</select>
+	
+	<select id="selectMemberSimpleByNameRowAndUserid" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 간략한 유저 정보 가져오기. (이름검색 및 로그인 등급에 따라.)
+		-- 기존의 주민등록번호를 가져오는 로직에서 userid를 가져오는 로직으로 변경됨.
+		SELECT 
+			USER_ID AS USERID, USERNO, NAME,
+			SEARCHDEPTNM(DEPT) AS DEPTNM, DECODE(SEARCHJIKNM(JIK),'', MJIKNM, SEARCHJIKNM(JIK)) AS  JIKNM, DEPTSUB AS DEPTSUB,
+			JIK, DEPT, SCP.DEC_B64('KEY1',HOME_TEL) AS HOME_TEL, EMAIL 
+		FROM tb_member 
+		WHERE 1=1
+			AND NAME LIKE '%'||#{name}||'%'
+			${whereStr}
+	]]>
+	</select>
+	
+	<select id="selectGrseqEapplyedChk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 수강신청 기간 확인.
+		SELECT 
+			COUNT(1) CNT
+		FROM TB_GRSEQ
+		WHERE 
+			EAPPLYED > SYSDATE 
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectGrseqEndsentChk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 1차 승인기간 확인
+		SELECT 
+			COUNT(1) CNT 
+		FROM TB_GRSEQ 
+		WHERE ENDSENT < TO_CHAR(SYSDATE,'YYYY-MM-DD') 
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="updateMemberSimple2" parameterType="Map">
+	<![CDATA[
+		-- 회원정보 수정.
+		UPDATE tb_member SET 
+			NAME = #{name},
+			HOME_TEL = SCP.ENC_B64('KEY1',#{homeTel}),
+			EMAIL = #{email}, 
+			JIK = #{jik}, 
+			DEPTSUB = #{deptsub},
+			DEPT = #{dept}, 
+			DEPTNM = #{deptnm},
+			LDAPCODE = #{PART_DATA},
+			LDAPNAME = #{ldapname} 
+		WHERE 
+			USERNO = #{userno}
+	]]>
+	</select>
+	
+	<select id="selectMemberResnoChk" parameterType="String" resultType="int">
+	<![CDATA[
+		-- 회원 주민등록 번호로 중복 확인.
+		SELECT 
+			COUNT(USERNO) AS CNT 
+		FROM tb_member
+		WHERE SCP.DEC_B64('KEY1',RESNO) = #{resno}
+	]]>
+	</select>
+	
+	<select id="selectMemberMaxUserNo" resultType="String">
+	<![CDATA[
+		-- 회원 정보추가시 추가될 userno 추출.
+		SELECT 
+			'A'||TO_CHAR(LPAD(NVL(MAX(SUBSTR(USERNO,2,12))+1, 1), 12, '0')) AS USERNO 
+		FROM tb_member 
+		WHERE USERNO LIKE 'A%'
+	]]>
+	</select>
+	
+	<insert id="insertMemberSimple" parameterType="Map">
+	<![CDATA[
+		-- 2011.01.28
+		-- 관리자 수강신청페이지 > 교육생직접입력 - 회원 정보 등록.
+		INSERT INTO tb_member
+			(
+				USERNO, NAME, USER_ID,
+			 	DEPT, DEPTNM, JIK,
+			 	DEPTSUB, HOME_TEL, EMAIL,
+			 	AUTHORITY, PWD, regtype
+			 ) 
+		VALUES
+			(
+				#{userno}, #{name}, #{userid},
+			 	#{dept}, #{deptnm}, #{jik}, 
+			 	#{deptsub}, SCP.ENC_B64('KEY1',#{homeTel}), #{email},
+			 	'20', SCP.ENC_B64('KEY1',#{pwd}), '3'
+			 )
+	]]>
+	</insert>
+	
+	<select id="selectAppInfoMemberChk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 수강신청 했는지 확인.
+		SELECT 
+			COUNT(1) AS CNT 
+		FROM TB_APP_INFO 
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND USERNO = #{userno}
+	]]>
+	</select>
+	
+	<update id="updateAppInfoDirect" parameterType="Map">
+	<![CDATA[
+		-- 수강 신청 정보 수정.
+		UPDATE TB_APP_INFO SET 
+			${updateStr}
+			DINSERT = 'Y',
+			DEPT = #{dept}
+		WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND USERNO = #{userno}
+	]]>
+	</update>
+	
+	<insert id="insertAppInfoDirect" parameterType="Map">
+	<![CDATA[
+		-- 수강 신청 등록
+		INSERT INTO TB_APP_INFO
+			(GRCODE, GRSEQ, USERNO,
+			 APPDATE, DEPTCHK, GRCHK,
+			 DEPT, NAME, TELNO,
+			 JIK, LUSERNO, LDATE,
+			 DINSERT) 
+		VALUES
+			(#{grcode}, #{grseq}, #{userno},
+			 SYSDATE, #{deptchk}, #{grchk}, 
+			 #{dept}, #{name}, #{telno}, 
+			 #{jik}, #{luserno}, SYSDATE,
+			 'Y')
+	]]>
+	</insert>
+	
+	<select id="selectAppInfoBySessAndDeptList2Count" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 교육생(입교자) 리스트 - 부서기관 where
+		-- 2011.02.11 - searchage(a.resno) 사용중지
+		SELECT COUNT(0) AS CNT
+		FROM tb_member A, 
+	(SELECT USERNO,EDUNO,DEPT,JIK, DEPTSUB 
+	 FROM TB_APP_INFO 
+	 WHERE GRCHK = 'Y'
+		AND GRCODE = #{grcode}
+		AND GRSEQ = #{grseq} ) B, TB_MEMBER C
+		WHERE  A.USERNO = B.USERNO
+		AND A.USERNO = C.USERNO(+)
+			${whereStr}
+		ORDER BY B.EDUNO
+		--ORDER BY B.DEPT, A.NAME ASC
+	]]>
+	</select>
+	
+	<select id="selectAppInfoBySessAndDeptList2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 교육생(입교자) 리스트 - 부서기관 where
+						-- 2011.02.11 - searchage(a.resno) 사용중지
+						SELECT
+					A.USERNO, A.NAME, SEARCHDEPTNM(a.DEPT) AS DEPTNM, 
+					SEARCHJIKNM(a.JIK) AS  JIKNM,
+					 a.DEPTSUB, 
+					DECODE(DECODE(A.SEX,'F', '여', 'M', '남'), '', DECODE(SUBSTR(SCP.DEC_B64('KEY1',A.RESNO),7,1), '1', '남', '2', '여'), DECODE(A.SEX, 'F', '여', 'M', '남')) AS SEX,
+					SCP.DEC_B64('KEY1',A.HP) AS HP, A.USER_ID, A.EMAIL, 
+					SEARCHAGEBIRTHDATE(A.BIRTHDATE) AS AGE, B.EDUNO AS EDUNO
+						FROM tb_member A, 
+					(SELECT USERNO,EDUNO,DEPT,JIK, DEPTSUB 
+					 FROM TB_APP_INFO 
+					 WHERE GRCHK = 'Y'
+						AND GRCODE = #{grcode}
+						AND GRSEQ = #{grseq} ) B, TB_MEMBER C
+						WHERE  A.USERNO = B.USERNO
+						AND A.USERNO = C.USERNO(+)
+							${whereStr}
+						ORDER BY B.EDUNO
+						--ORDER BY B.DEPT, A.NAME ASC
+		               ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectAppInfoBySessAndDeptList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 교육생(입교자) 리스트 - 부서기관 where
+		-- 2011.02.11 - searchage(a.resno) 사용중지
+		SELECT
+	A.USERNO, A.NAME, SEARCHDEPTNM(a.DEPT) AS DEPTNM, 
+	SEARCHJIKNM(a.JIK) AS  JIKNM,
+	 a.DEPTSUB, 
+	DECODE(DECODE(A.SEX,'F', '여', 'M', '남'), '', DECODE(SUBSTR(SCP.DEC_B64('KEY1',A.RESNO),7,1), '1', '남', '2', '여'), DECODE(A.SEX, 'F', '여', 'M', '남')) AS SEX,
+	SCP.DEC_B64('KEY1',A.HP) AS HP, A.USER_ID, A.EMAIL, 
+	SEARCHAGEBIRTHDATE(A.BIRTHDATE) AS AGE, B.EDUNO AS EDUNO
+		FROM tb_member A, 
+	(SELECT USERNO,EDUNO,DEPT,JIK, DEPTSUB 
+	 FROM TB_APP_INFO 
+	 WHERE GRCHK = 'Y'
+		AND GRCODE = #{grcode}
+		AND GRSEQ = #{grseq} ) B, TB_MEMBER C
+		WHERE  A.USERNO = B.USERNO AND A.USERNO = C.USERNO(+)
+			${whereStr}
+		ORDER BY B.EDUNO
+		--ORDER BY B.DEPT, A.NAME ASC
+	]]>
+	</select>
+	
+	<update id="updateAppInfoByDeptAndJik" parameterType="Map">
+	<![CDATA[
+		-- 수강신청 기관 및 부서 정보수정.
+		UPDATE TB_APP_INFO SET 
+			DEPT = #{dept},
+			DEPTSUB = #{deptsub},
+			JIK = #{jik}
+		WHERE GRCODE = #{grcode} 
+			AND GRSEQ = #{grseq} 
+			AND USERNO = #{userno}
+	]]>
+	</update>
+	
+	<update id="updateMemberByDept" parameterType="Map">
+	<![CDATA[
+		-- 회원정보 수정 (직급, 기관, 소속)
+		UPDATE tb_member SET 
+			JIK = #{jik},
+			DEPTSUB = #{deptsub},
+			DEPT = #{dept}
+		WHERE 
+			USERNO = #{userno}
+	]]>
+	</update>
+	
+	<select id="selectDeptByAppInfoList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수강생의 기관 리스트 
+		SELECT    
+			COUNT (*) AS DEPTSUM_CNT, B.DEPT, B.DEPTNM,
+			DECODE(B.DEPT, '6280000', '0', B.DEPT) DEPT_ORD
+		FROM     TB_APP_INFO A, TB_DEPT B
+		WHERE A.GRCHK = 'Y'
+			 AND A.GRCODE = #{grcode}
+			 AND A.GRSEQ = #{grseq}
+			 AND A.DEPT = B.DEPT(+)
+			 AND B.USE_YN = 'Y'
+		GROUP BY B.DEPT, B.DEPTNM
+		ORDER BY DEPT_ORD
+	]]>
+	</select>
+	
+	<select id="selectDeptDogsCrossList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기관/계급명 CROSS 통계
+		SELECT   
+				${sumStr}
+				'총계' AS CODENM, '0' AS DOGS
+		FROM
+		(
+			SELECT  
+					${decodeDeptStr}
+					C.DEPT
+			FROM
+			(
+				SELECT    COUNT(A.GRCODE) COUNT_SUM, 
+						B.DEPT,     B.DEPTNM
+				FROM     TB_APP_INFO A, TB_DEPT B                                
+				WHERE       A.GRCHK     = 'Y'
+					AND     A.GRCODE     = #{grcode}
+					AND     A.GRSEQ     = #{grseq}
+					AND     A.DEPT         = B.DEPT(+)
+					AND     B.USE_YN     = 'Y'
+				GROUP BY
+						B.DEPT,     B.DEPTNM
+			) C
+		) D
+		UNION ALL
+		SELECT  
+				${sumStr}
+				C.CODENM, C.DOGS
+		FROM
+		(
+			SELECT    
+					${decodeDogsStr}
+					A.CODENM, A.DOGS
+			FROM
+			(
+  				select DOGS, CODENM, DEPT, COUNT (USERNO) COUNT_USER
+                 from (
+                  SELECT
+                        GRCODE, GRSEQ , decode(B.DOGS,'028','019','029','019','027','018','026','017','025','016',B.DOGS) DOGS , B.CODE, 1 count_usr, decode((SELECT CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'dogs' AND CODE = B.DOGS), '기능10급','9급','기능9급','9급','기능8급','8급','기능7급','7급','기능6급','6급',nvl((SELECT CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'dogs' AND CODE = B.DOGS),'기타')) AS CODENM, USERNO, c.dept
+                   FROM TB_APP_INFO A, TB_JIK B, TB_DEPT C
+                   WHERE A.JIK = B.JIK(+)
+                        AND NVL(TRIM(B.JIKR), 'ETC') <> 'ETC'
+                       AND A.GRCODE = #{grcode}
+                       AND A.GRSEQ = #{grseq}
+                       AND A.GRCHK = 'Y'
+                        AND A.DEPT = c.DEPT(+)
+                        AND C.USE_YN     = 'Y'
+                 )
+                 GROUP BY DOGS, CODENM, DEPT, USERNO
+                 ORDER BY DOGS
+			) A
+		) C
+		GROUP BY C.DOGS, C.CODENM
+		ORDER BY DOGS
+	]]>
+	</select>
+	
+	<select id="selectJikrByAppInfoList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수강생의 직렬 리스트 
+		SELECT   C.CODE, C.CODENM, COUNT (*) COUNT_USER
+		FROM TB_APP_INFO A, TB_JIK B, TB_JIKGUBUN C
+		WHERE A.JIK = B.JIK(+)
+			 AND B.JIKR = C.CODE(+)
+			 AND C.JIKGUBUN = 'jikr'
+			 AND A.GRCODE = #{grcode}
+			 AND A.GRSEQ = #{grseq}
+			 AND A.GRCHK = 'Y'
+		GROUP BY C.CODE, C.CODENM
+		ORDER BY C.CODE
+	]]>
+	</select>
+	
+	<select id="selectJikrDogsCrossList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 직렬/계급명 CROSS 통계
+		SELECT   
+				${sumStr}
+				'총계' AS CODENM, '0' AS DOGS
+		FROM
+		(
+			SELECT  
+					${decodeJikrStr}
+					A.CODE
+			FROM
+			(
+                     SELECT   B.CODE, B.CODENM, COUNT (*) COUNT_USER
+                     FROM TB_APP_INFO A, TB_JIK B, TB_DEPT C
+                     WHERE A.JIK = B.JIK(+)
+                          AND NVL(TRIM(B.JIKR), 'ETC') <> 'ETC'
+                          AND A.GRCODE = #{grcode}
+                          AND A.GRSEQ = #{grseq}
+                          AND A.GRCHK = 'Y'
+						  AND A.DEPT = c.DEPT(+)
+                          AND C.USE_YN     = 'Y'
+                     GROUP BY B.CODE, B.CODENM
+                     
+                     UNION ALL
+         
+                     SELECT   'ETC' AS CODE, '기타' AS CODENM, COUNT (*) COUNT_USER
+                     FROM TB_APP_INFO A, TB_JIK B, TB_DEPT C
+                     WHERE A.JIK = B.JIK(+)
+                          AND NVL(TRIM(B.JIKR), 'ETC') = 'ETC'
+                          AND A.GRCODE = #{grcode}
+                          AND A.GRSEQ = #{grseq}
+                          AND A.GRCHK = 'Y'
+						  AND A.DEPT = c.DEPT(+)
+                          AND C.USE_YN     = 'Y'
+                     GROUP BY B.CODE, B.CODENM
+			) A
+		) D
+		UNION ALL
+		SELECT  
+				${sumStr}
+				C.CODENM, C.DOGS
+		FROM
+		(
+			SELECT    
+					${decodeJikrStr}
+					A.CODENM, A.DOGS
+			FROM
+			(
+			
+                  SELECT DOGS, CODE, COUNT (USERNO) COUNT_USER, CODENM
+                  from (
+                  SELECT
+                       GRCODE, GRSEQ , decode(B.DOGS,'028','019','029','019','027','018','026','017','025','016',B.DOGS) DOGS , B.CODE, 1 count_usr, decode((SELECT CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'dogs' AND CODE = B.DOGS), '기능10급','9급','기능9급','9급','기능8급','8급','기능7급','7급','기능6급','6급',nvl((SELECT CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'dogs' AND CODE = B.DOGS),'기타')) AS CODENM, USERNO
+                  FROM TB_APP_INFO A, TB_JIK B, TB_DEPT C
+                  WHERE A.JIK = B.JIK(+)
+                       AND NVL(TRIM(B.JIKR), 'ETC') <> 'ETC'
+                      AND A.GRCODE = #{grcode}
+                      AND A.GRSEQ = #{grseq}
+                      AND A.GRCHK = 'Y'
+                       AND A.DEPT = c.DEPT(+)
+                       AND C.USE_YN     = 'Y'
+                  )     
+                  GROUP BY GRCODE, GRSEQ, DOGS, CODE, CODENM                   
+                 
+                 UNION ALL
+                 
+                 SELECT
+                     B.DOGS, NVL(B.CODE, 'ETC') CODE, COUNT (USERNO) COUNT_USER,
+                     (SELECT CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'dogs' AND CODE = B.DOGS) AS CODENM
+                 FROM TB_APP_INFO A, TB_JIK B, TB_DEPT C
+                 WHERE A.JIK = B.JIK(+)
+                      AND NVL(TRIM(B.JIKR), 'ETC') = 'ETC'
+                      AND A.GRCODE = #{grcode}
+                      AND A.GRSEQ = #{grseq}
+                      AND A.GRCHK = 'Y'
+					  AND A.DEPT = c.DEPT(+)
+                      AND C.USE_YN     = 'Y'
+                 GROUP BY A.GRCODE, A.GRSEQ, B.DOGS, B.CODE, B.CODENM
+
+			) A
+		) C
+		GROUP BY C.DOGS, C.CODENM
+		ORDER BY DOGS
+	]]>
+	</select>
+	
+	<select id="selectAppMemberUpsdateList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수강신청 회원의 수강일 이후 임용일의 경과일 및 임용일 (신규채용자 과정에서 사용.)
+		SELECT 
+			A.USERNO, A.NAME, C.STARTED - B.UPSDATE AS UPSDATE_CNT, B.UPSDATE
+		FROM TB_APP_INFO A, tb_member B, TB_GRSEQ C
+		WHERE A.GRCHK = 'Y'
+		   AND A.GRCODE = #{grcode}
+		   AND A.GRSEQ = #{grseq}
+		   AND A.USERNO = B.USERNO
+		   AND C.GRCODE = A.GRCODE
+		   AND C.GRSEQ = A.GRSEQ
+	]]>
+	</select>
+	
+	<select id="selectAppInfoUpsdateRowBySysdate" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수강신청자 재직기간별 경과일.
+		SELECT 
+			ROUND((SUM(TO_CHAR(SYSDATE,'YYYY')-SUBSTR(NVL(TO_CHAR(B.UPSDATE,'YYYY'),TO_CHAR(SYSDATE,'YYYY')-1),1,4)+1))/COUNT(*),0) AVG_YEAR,
+			COUNT(*) SUM,
+			SUM(DECODE(TO_CHAR(SYSDATE,'YYYY')-TO_CHAR(B.UPSDATE,'YYYY')+1,'1',1,'2',1,0)) Y2,
+			SUM(DECODE(TO_CHAR(SYSDATE,'YYYY')-TO_CHAR(B.UPSDATE,'YYYY')+1,'3',1,0)) Y3,
+			SUM(DECODE(TO_CHAR(SYSDATE,'YYYY')-TO_CHAR(B.UPSDATE,'YYYY')+1,'4',1,0)) Y4,
+			SUM(DECODE(TO_CHAR(SYSDATE,'YYYY')-TO_CHAR(B.UPSDATE,'YYYY')+1,'5',1,0)) Y5, 
+			SUM(DECODE(TO_CHAR(SYSDATE,'YYYY')-TO_CHAR(B.UPSDATE,'YYYY')+1,'6',1,0)) Y6,
+			SUM(DECODE(TO_CHAR(SYSDATE,'YYYY')-TO_CHAR(B.UPSDATE,'YYYY')+1,'7',1,0)) Y7,
+			SUM(DECODE(TO_CHAR(SYSDATE,'YYYY')-TO_CHAR(B.UPSDATE,'YYYY')+1,'8',1,0)) Y8, 
+			SUM(DECODE(TO_CHAR(SYSDATE,'YYYY')-TO_CHAR(B.UPSDATE,'YYYY')+1,'9',1,0)) Y9,
+			SUM( DECODE(SIGN(TO_CHAR(SYSDATE,'YYYY')-TO_CHAR(B.UPSDATE,'YYYY')-8),-1,0,0,0,1,1) ) Y10  
+		FROM TB_APP_INFO A, tb_member B 
+		WHERE A.GRCHK = 'Y' 
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND  A.USERNO = B.USERNO
+	]]>
+	</select>
+	
+	<select id="selectAppInfoStatisticsByAgeRowBirthdate" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수강신청자 성별,연령별 정보 (새로 만듬)
+		SELECT
+			ROUND(SUM(TO_CHAR(SYSDATE, 'YYYY')-(substr(B.BIRTHDATE, 0, 4) )+1)/COUNT(*), 0) AVG_AGE, 										-- 평균 
+			COUNT(*) T,																														-- 총계 
+			SUM (DECODE (B.SEX, 'M', 1, 'F', 0, 0)) TM,																						-- 남성 
+			SUM (DECODE (B.SEX, 'F', 1, 'M', 0, 0)) TF,																						-- 여성
+			SUM(DECODE(B.SEX, 'M', DECODE(SIGN(SEARCHAGEBIRTHDATE(B.BIRTHDATE)-25), -1, 1, 0, 1, 1, 0), 'F', 0, 0)) M1,						-- 남성(25이하) 
+			SUM(DECODE(B.SEX, 'M', DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '26', 1, '27', 1, '28', 1, '29', 1, '30', 1, 0), 'F', 0, 0)) M2,	-- 남성(26~30)
+			SUM(DECODE(B.SEX, 'M', DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '31', 1, '32', 1, '33', 1, '34', 1, '35', 1, 0), 'F', 0, 0)) M3,	-- 남성(31~35)
+			SUM(DECODE(B.SEX, 'M', DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '36', 1, '37', 1, '38', 1, '39', 1, '40', 1, 0), 'F', 0, 0)) M4,	-- 남성(36~40)
+			SUM(DECODE(B.SEX, 'M', DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '41', 1, '42', 1, '43', 1, '44', 1, '45', 1, 0), 'F', 0, 0)) M5,	-- 남성(41~45)
+			SUM(DECODE(B.SEX, 'M', DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '46', 1, '47', 1, '48', 1, '49', 1, '50', 1, 0), 'F', 0, 0)) M6,	-- 남성(46~50)
+			SUM(DECODE(B.SEX, 'M', DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '51', 1, '52', 1, '53', 1, '54', 1, '55', 1, 0), 'F', 0, 0)) M7,	-- 남성(51~55)
+			SUM(DECODE(B.SEX, 'M', DECODE(SIGN(SEARCHAGEBIRTHDATE(B.BIRTHDATE)-56), -1, 0, 0, 1, 1, 1), 'F', 0, 0)) M8,						-- 남성(56이상)
+			SUM(DECODE(B.SEX, 'M', 0, 'F', DECODE(SIGN(SEARCHAGEBIRTHDATE(B.BIRTHDATE)-25), -1, 1, 0, 1, 1, 0), 0)) F1,						-- 여성(25이하)
+			SUM(DECODE(B.SEX, 'M', 0, 'F', DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '26', 1, '27', 1, '28', 1, '29', 1, '30', 1, 0), 0)) F2,	-- 여성(26~30) 
+			SUM(DECODE(B.SEX, 'M', 0, 'F', DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '31', 1, '32', 1, '33', 1, '34', 1, '35', 1, 0), 0)) F3,	-- 여성(31~35) 
+			SUM(DECODE(B.SEX, 'M', 0, 'F', DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '36', 1, '37', 1, '38', 1, '39', 1, '40', 1, 0), 0)) F4,	-- 여성(36~40) 
+			SUM(DECODE(B.SEX, 'M', 0, 'F', DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '41', 1, '42', 1, '43', 1, '44', 1, '45', 1, 0), 0)) F5,	-- 여성(41~45) 
+			SUM(DECODE(B.SEX, 'M', 0, 'F', DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '46', 1, '47', 1, '48', 1, '49', 1, '50', 1, 0), 0)) F6,	-- 여성(46~50) 
+			SUM(DECODE(B.SEX, 'M', 0, 'F', DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '51', 1, '52', 1, '53', 1, '54', 1, '55', 1, 0), 0)) F7,	-- 여성(51~55) 
+			SUM(DECODE(B.SEX, 'M', 0, 'F', DECODE(SIGN(SEARCHAGEBIRTHDATE(B.BIRTHDATE)-56), -1, 0, 0, 1, 1, 1), 0)) F8,						-- 여성(56이상) 
+			SUM(DECODE(SIGN(SEARCHAGEBIRTHDATE(B.BIRTHDATE)-25), -1, 1, 0, 1, 1, 0)) T1,													-- 총계(25이하) 
+			SUM(DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '26', 1, '27', 1, '28', 1, '29', 1, '30', 1, 0)) T2,								-- 총계(26~30) 
+			SUM(DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '31', 1, '32', 1, '33', 1, '34', 1, '35', 1, 0)) T3,								-- 총계(31~35) 
+			SUM(DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '36', 1, '37', 1, '38', 1, '39', 1, '40', 1, 0)) T4,								-- 총계(36~40) 
+			SUM(DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '41', 1, '42', 1, '43', 1, '44', 1, '45', 1, 0)) T5,								-- 총계(41~45) 
+			SUM(DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '46', 1, '47', 1, '48', 1, '49', 1, '50', 1, 0)) T6,								-- 총계(46~50) 
+			SUM(DECODE(SEARCHAGEBIRTHDATE(B.BIRTHDATE), '51', 1, '52', 1, '53', 1, '54', 1, '55', 1, 0)) T7,								-- 총계(51~55) 
+			SUM(DECODE(SIGN(SEARCHAGEBIRTHDATE(B.BIRTHDATE)-56), -1, 0, 0, 1, 1, 1)) T8														-- 총계(56이상)
+		FROM TB_APP_INFO A, tb_member B
+		WHERE A.GRCHK   = 'Y'
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.USERNO  = B.USERNO
+	]]>
+	</select>
+	
+	<select id="selectAppInfoStatisticsBySchoolList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수강신청자 학력별 리스트
+		SELECT   
+			NVL(B.SCHOOL, '07') SCHOOL, COUNT(1) SCH_CNT
+		FROM TB_APP_INFO A, tb_member B
+		WHERE A.GRCHK = 'Y' 
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.USERNO = B.USERNO
+		GROUP BY B.SCHOOL
+	]]>
+	</select>
+	
+	<select id="selectAppInfoStatisticsByAddrList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수강신청자 거주지별 리스트
+		SELECT 
+			B.HOME_ADDR
+		FROM TB_APP_INFO A, tb_member B
+		WHERE A.GRCHK       = 'Y'
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.USERNO    = B.USERNO
+	]]>
+	</select>
+	
+	<select id="selectSubjSeqEndDateChkByCyber" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 사이버교육이 종료 여부
+		SELECT 
+			COUNT(1) AS CNT
+		FROM TB_SUBJ A,TB_SUBJSEQ B 
+		WHERE B.GRCODE = #{grcode}
+			AND B.GRSEQ = #{grseq}
+			AND B.SUBJ = A.SUBJ 
+			AND A.SUBJTYPE = 'Y' 
+			AND TO_CHAR(B.ENDDATE, 'YYYYMMDD') >= TO_CHAR(SYSDATE, 'YYYYMMDD')
+	]]>
+	</select>
+	
+	<select id="selectAppInfoByMemberList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 집합 교육 입과 대상자 리스트
+		SELECT 
+			SCP.DEC_B64('KEY1',B.RESNO) AS RESNO, A.GRCODE, A.GRSEQ, 
+			A.USERNO, A.NAME, A.GRCHK,
+			DECODE(SEARCHJIKNM(A.JIK), '', B.MJIKNM, SEARCHJIKNM(A.JIK)) AS  JIKNM,
+			SEARCHDEPTNM(A.DEPT)||'<br>('||B.DEPTSUB||')' AS DEPTNM,
+			SEARCHCYBERCHK(A.GRCODE,A.GRSEQ,A.USERNO) AS PROGRESS,
+			SEARCHCYBERINFO(A.GRCODE,A.GRSEQ,A.USERNO) AS CYBER_SUBJ,
+			STARTEXAM_YN, SCP.DEC_B64('KEY1',B.HP) AS HP
+			,B.USER_ID
+		FROM TB_APP_INFO A, tb_member B  
+		WHERE A.USERNO = B.USERNO 
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			AND A.GRCHK = #{grchk}
+			AND A.GRCHK IS NOT NULL 
+		ORDER BY A.DEPT, A.NAME
+	]]>
+	</select>
+	
+	<update id="updateAppInfoGrChkAndStartExam" parameterType="Map">
+	<![CDATA[
+		-- 수강생의 승인/승인취소 및 선발고사 여부
+		UPDATE TB_APP_INFO SET 
+			GRCHK = #{grchk},
+			STARTEXAM_YN = #{startexamYn}
+		WHERE USERNO = #{userno} 
+			AND GRCODE = #{grcode} 
+			AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<select id="stuMemberListCount" parameterType="Map" resultType="int">
+	<![CDATA[	
+		-- 교육중인 수강생 조회
+ 		SELECT
+ 			COUNT(0) AS CNT
+ 		FROM tb_member A, 
+ 			(SELECT USERNO, GRCODE, GRSEQ, DEPT
+ 			 FROM TB_APP_INFO 
+ 			 WHERE GRCHK = 'Y'
+ 			) B,
+ 			TB_GRSEQ C, TB_GRCODE D
+ 		WHERE  A.USERNO = B.USERNO
+ 			AND B.GRCODE = C.GRCODE
+            AND B.GRSEQ = C.GRSEQ
+            AND D.GRCODE = B. GRCODE
+            AND TO_CHAR(C.STARTED, 'YYYYMMDD') BETWEEN #{date1} AND #{date2}
+            ${whereStr}
+ 		ORDER BY B.DEPT, A.NAME ASC
+	]]>
+	</select>
+	
+	<select id="stuMemberList" parameterType="Map" resultType="DataMap">
+	<![CDATA[	
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 교육중인 수강생 조회
+				 		SELECT
+				 			A.USERNO, A.NAME, SEARCHDEPTNM(A.DEPT) AS DEPTNM, SCP.DEC_B64('KEY1',A.HOME_TEL) AS HOME_TEL,			
+				 			SCP.DEC_B64('KEY1',A.HP) AS HP, A.USER_ID, D.GRCODENM
+				            , B.GRCODE, B.GRSEQ, C.STARTED, C.ENDDATE
+				 		FROM tb_member A, 
+				 			(SELECT USERNO, GRCODE, GRSEQ, DEPT
+				 			 FROM TB_APP_INFO 
+				 			 WHERE GRCHK = 'Y'
+				 			) B,
+				 			TB_GRSEQ C, TB_GRCODE D
+				 		WHERE  A.USERNO = B.USERNO
+				 			AND B.GRCODE = C.GRCODE
+				            AND B.GRSEQ = C.GRSEQ
+				            AND D.GRCODE = B. GRCODE
+				            AND TO_CHAR(C.STARTED, 'YYYYMMDD') BETWEEN #{date1} AND #{date2}
+				            ${whereStr}
+				 		ORDER BY B.DEPT, A.NAME ASC
+				 	   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+</mapper>

@@ -1,0 +1,36 @@
+@charset "utf-8";
+/* CSS Document */
+
+html, body {width:100%; height:100%;}
+body {margin:0px; padding:0px; display:block;}
+body {font-size:12px;color:#555555;font-family:'돋움',dotum,Helvetica,sans-serif;line-height:17px;letter-spacing: -0.5px;}
+table, div { border-collapse:collapse; }
+div {display:block;}
+select, textarea { border:1px solid #B7B6B6; background:#FFF; vertical-align:middle; }
+strong, b { font-weight:bold; }
+form, ul, ol, dl, table, div, h1, h2, h3, h4, h5 { margin:0; padding:0; }
+img, fieldset, button { border:0; padding:0px;}
+input{ vertical-align:middle; }
+select, input, li img { vertical-align:middle; }
+ul, li, ol { list-style-type : none; }
+ul, ol, li {list-style: none; margin:0px; padding:0px;}
+
+
+.wrap {margin:0 auto; width:600px;border-top:2px solid #1f67d5}
+
+.title {color:#1f67d5; font-weight:bold; font-size:16px; text-align: center; padding:20px;}
+
+
+.con {border-top:1px solid #1f67d5; padding:30px 0 0 0;}
+.con ul li {height:30px;}
+
+.con ul .ra {margin:0 0 30px 0;}
+.con ul .text_a {height:160px;}
+.con ul .text_a textarea {width:600px; height:120px;}
+.box {border:1px solid #999999; padding:5px; font-size:14px; font-weight:bold;}
+
+.btn2 {clear:both; margin:0 auto; width:200px; vertical-align:middle; text-align: center;}
+.btn2 ul .b1 {float:left;}
+.btn2 ul .b2 {float:right;}
+
+

@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.baseCodeMgr.mapper.GrannaeMapper">
+
+	<select id="selectGrAnnaeList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		--  교육계획 리스트.
+		SELECT A.GRCODE
+		     , A.GRCODENM
+		     , C.SCODE_NAME
+		     , B.MCODE_NAME
+		     , NVL(D.EXIST_YN,0) AS  EXIST_YN
+          FROM TB_GRCODE A
+             , TB_MAINCODE B
+             , TB_SUBCODE C
+             , (SELECT COUNT(0) EXIST_YN, GRCODE FROM TB_GRANNAE WHERE 1=1 AND YEAR = #{year} GROUP BY GRCODE) D
+         WHERE 1=1
+           AND A.USE_YN = 'Y'
+           AND B.CD_GUBUN = 'G'
+           AND B.USE_YN = 'Y'
+           AND B.MAJOR_CODE = A.GRTYPE
+           AND C.CD_GUBUN = 'G'
+           AND C.MAJOR_CODE = A.GRTYPE
+           AND C.MINOR_CODE = A.GRSUBCD
+           AND D.GRCODE(+) = A.GRCODE
+         ORDER BY A.GRTYPE, A.GRSUBCD, A.GRCODENM
+	]]>
+	</select>
+	
+	<select id="selectGrannaeRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  교육계획 상세정보.
+		SELECT GRCODE
+		     , YEAR
+		     , GOAL
+		     , TARGET
+		     , INWON
+		     , GIGAN
+		     , SIGANGE
+		     , SIBUNYA
+		     , SISOGE
+		     , SICOMMON
+		     , SIJUNMUN
+		     , SIETC
+		     , RATEGANGE
+		     , RATEBUNYA
+		     , RATESOGE
+		     , RATECOMMON
+		     , RATEJUNMUN
+		     , RATEETC
+		     , YUNYOUNG
+		     , TIME
+		  FROM TB_GRANNAE
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND YEAR = #{year}
+	]]>
+	</select>
+	
+	<select id="selectGrannae2List" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  교육계획 상세정보 (소양/직무/행정)
+		SELECT GRCODE
+		     , YEAR
+		     , ANNAE_GUBUN
+		     , ANNAE_SEQ
+		     , ANNAE_TITLE
+		     , TITLE1_SUB1
+		     , TITLE1_SUB2
+		     , TITLE1_SUB3
+		     , TITLE1_SUB4
+		  FROM TB_GRANNAE2
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND YEAR = #{year}
+	]]>
+	</select>
+	
+	<select id="selectGrSeqList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  과정차수 정보
+		SELECT SUBSTR(GRSEQ, -2) AS GRSEQ
+		     , TSEAT
+		     , TO_CHAR(STARTED,'YYYY-MM-DD') AS SDATE
+		     , TO_CHAR(ENDDATE,'YYYY-MM-DD') AS EDATE
+		  FROM TB_GRSEQ
+		 WHERE 1=1
+		   AND GRCODE= #{grcode}
+		   AND GRSEQ LIKE #{year} || '__'
+		   AND USE_YN = 'Y'
+		 ORDER BY GRSEQ  
+	]]>
+	</select>
+
+	<insert id="insertGrannae" parameterType="Map">
+	<![CDATA[
+		--  교육계획 등록.
+		INSERT INTO TB_GRANNAE(
+		       GRCODE       , YEAR         , GOAL        , TARGET      , INWON
+		     , GIGAN        , SIGANGE      , SIBUNYA     , SISOGE      , SICOMMON
+		     , SIJUNMUN     , SIETC        , RATEGANGE   , RATEBUNYA   , RATESOGE
+		     , RATECOMMON   , RATEJUNMUN   , RATEETC     , YUNYOUNG    , TIME
+		) VALUES (
+		       #{grcode}    , #{year}      , #{goal}     , #{target}   , #{inwon}
+		     , #{gigan}     , #{sigange}   , #{sibunya}  , #{sisoge}   , #{sicommon}
+		     , #{sijunmun}  , #{sietc}     , #{rategange}, #{ratebunya}, #{ratesoge}
+		     , #{ratecommon}, #{ratejunmun}, #{rateetc}  , #{yunyoung} , #{time}
+		)
+	]]>
+	</insert>
+	
+	<insert id="insertGrannae2" parameterType="Map">
+	<![CDATA[
+		--  교육계획 소양/직무/행정 등록.
+		INSERT INTO TB_GRANNAE2(
+		       GRCODE       , YEAR         , ANNAE_GUBUN  , ANNAE_SEQ    , ANNAE_TITLE
+		     , TITLE1_SUB1  , TITLE1_SUB2  , TITLE1_SUB3  , TITLE1_SUB4
+		) VALUES (
+		       #{grcode}    , #{year}      , #{annaeGubun}, #{annaeSeq}  , #{annaeTitle}
+		     , #{title1Sub1}, #{title1Sub2}, #{title1Sub3}, #{title1Sub4}
+		)
+	]]>
+	</insert>
+	
+	<update id="updateGrannae" parameterType="Map">
+	<![CDATA[
+		--  교육계획 수정.
+		UPDATE TB_GRANNAE
+		   SET GOAL = #{goal}
+		     , TARGET = #{target}
+		     , INWON = #{inwon}
+		     , GIGAN = #{gigan}
+		     , SIGANGE = #{sigange}
+		     , SIBUNYA = #{sibunya}
+		     , SISOGE = #{sisoge}
+		     , SICOMMON = #{sicommon}
+		     , SIJUNMUN = #{sijunmun}
+		     , SIETC = #{sietc}
+		     , RATEGANGE = #{rategange}
+		     , RATEBUNYA = #{ratebunya}
+		     , RATESOGE = #{ratesoge}
+		     , RATECOMMON = #{ratecommon}
+		     , RATEJUNMUN = #{ratejunmun}
+		     , RATEETC = #{rateetc}
+		     , YUNYOUNG = #{yunyoung}
+		     , TIME = #{time}
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND YEAR = #{year}
+	]]>
+	</update>
+	
+	<delete id="deleteGrannae" parameterType="Map">
+	<![CDATA[
+		--  교육계획 삭제
+		DELETE
+		  FROM TB_GRANNAE
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND YEAR = #{year}
+	]]>
+	</delete>
+	
+	<delete id="deleteGrannae2" parameterType="Map">
+	<![CDATA[
+		--  교육계획 삭제(소양/직무/행정).
+		DELETE
+		  FROM TB_GRANNAE2
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND YEAR = #{year}
+	]]>
+	</delete>
+	
+	<select id="selectGrannaeByPrevYearList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  교육계획 복사전 이전 년도 리스트
+		SELECT GRCODE, YEAR
+		  FROM TB_GRANNAE
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+           AND YEAR <> #{year} 
+		   AND YEAR < #{year}
+         ORDER BY YEAR DESC
+	]]>
+	</select>
+	
+	<select id="selectGrannaeCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		--  교육계획 복사.
+		SELECT COUNT(1) AS CNT
+		  FROM TB_GRANNAE
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND YEAR = #{copyYear}
+	]]>
+	</select>
+	
+	<insert id="insertGrannaeCopy" parameterType="Map">
+	<![CDATA[
+		--  교육계획 복사.
+		INSERT INTO TB_GRANNAE 
+		SELECT GRCODE
+		     , #{year} AS YEAR
+		     , GOAL
+		     , TARGET
+		     , INWON
+		     , GIGAN
+		     , SIGANGE
+		     , SIBUNYA
+		     , SISOGE
+		     , SICOMMON
+		     , SIJUNMUN
+		     , SIETC
+		     , RATEGANGE
+		     , RATEBUNYA
+		     , RATESOGE
+		     , RATECOMMON
+		     , RATEJUNMUN
+		     , RATEETC
+		     , YUNYOUNG
+		     , TIME
+		  FROM TB_GRANNAE
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND YEAR = #{copyYear}
+	]]>
+	</insert>
+	
+	<insert id="insertGrannae2Copy" parameterType="Map">
+	<![CDATA[
+		--  교육계획 복사 소양/직무/행정 등록.
+		INSERT INTO TB_GRANNAE2
+		SELECT GRCODE
+		     , #{year} AS YEAR
+		     , ANNAE_GUBUN
+		     , ANNAE_SEQ
+		     , ANNAE_TITLE
+		     , TITLE1_SUB1
+		     , TITLE1_SUB2
+		     , TITLE1_SUB3
+		     , TITLE1_SUB4
+		  FROM TB_GRANNAE2
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND YEAR = #{copyYear}
+	]]>
+	</insert>
+</mapper>

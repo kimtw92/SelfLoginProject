@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.subjMgr.mapper.LangSubjMapper">
+
+	<select id="selectLangSubjList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 어학점수관리 리스트
+		SELECT 	SJ.GRCODE, SJ.GRSEQ, SJ.SUBJ, SJ.LECNM,
+				(
+		            SELECT 	COUNT(DISTINCT(USERNO)) AS ACNT 
+		            FROM	TB_STU_LEC 
+		            WHERE 	GRCODE	=	SJ.GRCODE 
+		            AND 	GRSEQ 	= 	SJ.GRSEQ
+		            AND 	SUBJ 	=	SJ.SUBJ
+				) STU_COUNT
+		
+		
+		FROM 	TB_SUBJSEQ SJ,	TB_SUBJ SU 
+		WHERE	SJ.SUBJ		=		SU.SUBJ 
+		AND		SU.LANGUAGE = 		'Y' 
+		
+		${value}
+		
+		ORDER BY
+				SJ.LECNM 		
+	]]>
+	</select>
+	
+	<select id="selectClassList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 반 리스트
+		SELECT	A.CLASSNO, A.CLASSNM,
+				COUNT(B.USERNO) COUNT_USER				
+		FROM
+		(
+		    SELECT 	CLASSNO, CLASSNM, GRCODE, GRSEQ, SUBJ
+		    FROM 	TB_SUBJCLASS 
+		    WHERE 	GRCODE	=	#{grCode}
+		    AND 	GRSEQ	=	#{grSeq}
+		    AND 	SUBJ	=	#{subj}
+		) A LEFT OUTER JOIN
+		(
+		    SELECT 	CLASSNO, USERNO, GRCODE, GRSEQ, SUBJ
+		    FROM	TB_STU_LEC     
+		    WHERE 	GRCODE	=	#{grCode}
+		    AND 	GRSEQ	=	#{grSeq}
+		    AND 	SUBJ	=	#{subj}
+		) B
+		ON	A.CLASSNO	=	B.CLASSNO
+		AND	A.GRCODE	=	B.GRCODE
+		AND	A.GRSEQ		=	B.GRSEQ
+		AND	A.SUBJ		=	B.SUBJ
+		
+		GROUP BY
+				A.CLASSNO, A.CLASSNM
+		ORDER BY
+				A.CLASSNO, A.CLASSNM
+
+	]]>
+	</select>
+	
+	<sql id="selectLangSubjFormListCommon">
+		FROM 	TB_STU_LEC A INNER JOIN tb_member B
+		ON		A.USERNO	=	B.USERNO
+		
+		LEFT OUTER JOIN	TB_DEPT C
+		ON		A.DEPT		=	C.DEPT
+		
+		LEFT OUTER JOIN	TB_JIK D
+		ON		A.JIK		=	D.JIK
+		 
+		WHERE	A.GRCODE	=	#{grCode}
+		AND		A.GRSEQ		=	#{grSeq}
+		AND		A.SUBJ		=	#{subj}
+		
+		${sqlWhere}
+		
+		ORDER BY
+				A.NAME
+	</sql>
+	<select id="selectLangSubjFormListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount"></include>
+		<include refid="selectLangSubjFormListCommon"></include>
+	</select>
+	<select id="selectLangSubjFormList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<![CDATA[
+			-- 어학점수입력  리스트
+			SELECT	A.NAME,			SCP.DEC_B64('KEY1',B.RESNO) AS RESNO,	C.DEPTNM,	D.JIKNM,
+					A.LANG_POINT,
+			        A.LANG_POINT2,
+			        A.LANG_POINT3,
+			        A.LANG_POINT4,
+					A.DEPT, A.JIK,	A.CLASSNO,	A.USERNO
+		]]>
+		<include refid="selectLangSubjFormListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<update id="updateLangSubj" parameterType="Map">
+	<![CDATA[
+		-- 어학점수입력 업데이트	
+		UPDATE 	TB_STU_LEC SET
+				LANG_POINT	=	#{point1},
+		        LANG_POINT2	=	#{point2},
+		        LANG_POINT3 = 	#{point3},
+		        LANG_POINT4	=	#{point4}
+		WHERE	GRCODE		=	#{grCode}
+		AND		GRSEQ		=	#{grSeq}
+		AND		SUBJ		=	#{subj}
+		AND		USERNO		=	#{userNo}	
+	]]>
+	</update>
+		
+</mapper>

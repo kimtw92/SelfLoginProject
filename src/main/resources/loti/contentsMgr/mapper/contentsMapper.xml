@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.contentsMgr.mapper.ContentsMapper">
+
+	<select id="selectContentSubjListCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 과목 리스트
+		SELECT COUNT(0) AS CNT
+		  FROM TB_SUBJ A
+		     , LCMS_IMAGE_CATEGORY B
+		     , (SELECT SUBJ
+		             , SUM(DECODE(NVL(SMO.PREVIEW_YN, 'N'), 'Y', 1, 0)) AS PRE_COUNT
+			      FROM SCORM_MAPPING_INFO SMIN
+			         , SCORM_MAPPING_ORGANIZATION SMO 
+			     WHERE 1=1
+			       AND SMIN.MAPPING_SEQ = SMO.MAPPING_SEQ
+			     GROUP BY SUBJ
+			   ) C
+		 WHERE 1=1
+		   AND A.SUBJTYPE = 'Y' 
+		   AND A.MENUNUM = B.IMG_CODE(+)
+		   AND A.SUBJ = C.SUBJ(+)
+	]]>
+	<if test="searchValue != null and searchValue != ''">
+	<![CDATA[
+	       AND A.SUBJNM LIKE '%'||#{searchValue}||'%'
+	]]>
+	</if>
+	</select>
+	
+	<select id="selectContentSubjList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 과목 리스트
+						SELECT A.SUBJ
+						     , A.SUBJNM
+						     , A.LCMS_WIDTH
+						     , A.LCMS_HEIGHT
+						     , A.MENUNUM
+						     , A.MENUYN
+						     , B.IMG_CODE
+						     , B.IMG_NAME
+						     , A.LCMS_PROGRESS
+						     , NVL(C.PRE_COUNT, 0) AS PREVIEW_CNT
+						  FROM TB_SUBJ A
+						     , LCMS_IMAGE_CATEGORY B
+						     , (SELECT SUBJ
+						             , SUM(DECODE(NVL(SMO.PREVIEW_YN, 'N'), 'Y', 1, 0)) AS PRE_COUNT
+							      FROM SCORM_MAPPING_INFO SMIN
+							         , SCORM_MAPPING_ORGANIZATION SMO 
+							     WHERE 1=1
+							       AND SMIN.MAPPING_SEQ = SMO.MAPPING_SEQ
+							     GROUP BY SUBJ
+							   ) C
+						 WHERE 1=1
+						   AND A.SUBJTYPE = 'Y' 
+						   AND A.MENUNUM = B.IMG_CODE(+)
+						   AND A.SUBJ = C.SUBJ(+)
+	]]>
+	<if test="searchValue != null and searchValue != ''">
+	<![CDATA[
+					       AND A.SUBJNM LIKE '%'||#{searchValue}||'%'
+	]]>
+	</if>
+	<![CDATA[
+						 ORDER BY A.SUBJNM
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectLecturerListCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 강사전용 콘텐츠보기 
+        SELECT COUNT(0) AS CNT
+          FROM TB_GRSEQ A
+             , TB_SUBJSEQ B
+             , TB_SUBJ C
+             , LCMS_IMAGE_CATEGORY D
+         WHERE 1=1
+           AND A.GRCODE = B.GRCODE
+           AND A.GRSEQ = B.GRSEQ
+           AND B.SUBJ = C.SUBJ
+           AND A.GRCODE = #{commGrcode}
+           AND A.GRSEQ = #{commGrseq}
+           AND C.SUBJTYPE = 'Y'
+           AND C.MENUNUM = D.IMG_CODE(+)
+         ORDER BY C.SUBJ		
+	]]>
+	</select>
+	
+	<select id="selectLecturerList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 강사전용 콘텐츠보기 
+				        SELECT C.SUBJ
+				             , C.SUBJNM
+				             , C.LCMS_WIDTH
+				             , C.LCMS_HEIGHT
+				             , C.MENUNUM
+				             , C.MENUYN
+				             , D.IMG_CODE
+				             , D.IMG_NAME
+				             , C.LCMS_PROGRESS
+				          FROM TB_GRSEQ A
+				             , TB_SUBJSEQ B
+				             , TB_SUBJ C
+				             , LCMS_IMAGE_CATEGORY D
+				         WHERE 1=1
+				           AND A.GRCODE = B.GRCODE
+				           AND A.GRSEQ = B.GRSEQ
+				           AND B.SUBJ = C.SUBJ
+				           AND A.GRCODE = #{commGrcode}
+				           AND A.GRSEQ = #{commGrseq}
+				           AND C.SUBJTYPE = 'Y'
+				           AND C.MENUNUM = D.IMG_CODE(+)
+				         ORDER BY C.SUBJ
+				       ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectSubjBySimpleRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 과목 간단 정보 Row
+		SELECT SUBJ
+		     , SUBJNM
+		     , SUBJTYPE
+		  FROM TB_SUBJ
+		 WHERE 1=1
+		   AND SUBJ = #{subj}
+	]]>
+	</select>
+	
+	<select id="selectScormMappingOrgList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과목에 속한 콘텐츠 회차 리스트 (SUBJ)
+		SELECT A.SUBJ
+		     , B.ORG_SEQ
+		     , B.ORG_DIR
+		     , B.DATES
+		     , B.PREVIEW_YN
+		     , C.CT_ID
+		     , C.ORG_DIR_NAME
+		     , C.ORG_TITLE
+		     , SJ.MENUYN
+		     , SJ.MENUNUM
+		     , SJ.LCMS_WIDTH
+		     , LCMS_HEIGHT
+		     , C.ORG_ID -- hwani. 추가됨.
+		  FROM SCORM_MAPPING_INFO A
+		     , SCORM_MAPPING_ORGANIZATION B
+		     , LCMSINCH.LCMS_ORGANIZATION C
+		     , TB_SUBJ SJ
+		 WHERE 1=1 
+		   AND A.SUBJ = #{subj}
+		   AND A.MAPPING_SEQ = B.MAPPING_SEQ
+		   AND B.ORG_DIR = C.ORG_DIR
+		   AND A.SUBJ = SJ.SUBJ
+	]]>
+	<if test="sampleYn != ('Y').toString()">
+	<![CDATA[
+		   AND B.PREVIEW_YN = 'Y'
+	]]>
+	</if>
+	<![CDATA[
+		 ORDER BY A.MAPPING_SEQ, B.DATES, B.ORG_SEQ
+	]]>
+	</select>
+	
+	<select id="selectScormMappingOrgBySeqKeyList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과목에 속한 콘텐츠 회차 리스트 (mapping_seq)
+		SELECT A.SUBJ
+		     , B.ORG_SEQ
+		     , B.ORG_DIR
+		     , B.DATES
+		     , B.PREVIEW_YN
+		     , C.CT_ID
+		     , C.ORG_DIR_NAME
+		     , C.ORG_TITLE
+		     , SJ.MENUYN
+		     , SJ.MENUNUM
+		     , SJ.LCMS_WIDTH
+		     , LCMS_HEIGHT
+		  FROM SCORM_MAPPING_INFO A
+		     , SCORM_MAPPING_ORGANIZATION B
+		     , LCMSINCH.LCMS_ORGANIZATION C
+		     , TB_SUBJ SJ
+		 WHERE 1=1 
+		   AND B.ORG_SEQ = #{mappingSeq}
+		   AND A.MAPPING_SEQ = B.MAPPING_SEQ
+		   AND B.ORG_DIR = C.ORG_DIR
+		   AND A.SUBJ = SJ.SUBJ
+	]]>
+	<if test="sampleYn != ('Y').toString()">
+	<![CDATA[
+		   AND B.PREVIEW_YN = 'Y'
+	]]>
+	</if>
+	<![CDATA[
+		 ORDER BY A.MAPPING_SEQ, B.DATES, B.ORG_SEQ
+	]]>
+	</select>
+	
+	<select id="selectLcmsImageCategoryList" resultType="DataMap">
+	<![CDATA[
+		-- Lcms 테마 카테고리
+		SELECT IMG_NO
+		     , IMG_NAME
+		     , IMG_CODE 
+		  FROM LCMS_IMAGE_CATEGORY
+	]]>
+	</select>
+	
+	<select id="selectLcmsCategoryList" resultType="DataMap">
+	<![CDATA[
+		-- Lcms 카테고리
+		SELECT CT_ID
+		     , CT_NAME 
+		  FROM LCMS_CATEGORY 
+		 ORDER BY CT_NAME ASC
+	]]>
+	</select>
+	
+	<update id="updateScormMappingOrgByPreviewYn" parameterType="Map">
+	<![CDATA[
+		-- 콘텐츠 맛보기 설정.
+		UPDATE SCORM_MAPPING_ORGANIZATION
+		   SET PREVIEW_YN = #{previewYn}
+		 WHERE 1=1
+		   AND ORG_SEQ = #{orgSeq}
+	]]>
+	</update>
+	
+	<delete id="deleteSubjSeq" parameterType="Map">
+	<![CDATA[
+		-- 콘텐츠 회차 삭제
+		DELETE
+		  FROM TB_SUBJWEEK
+		 WHERE 1=1
+		   AND SUBJ = #{subj}
+		   AND DATES = #{dates}
+	]]>
+	</delete>
+</mapper>

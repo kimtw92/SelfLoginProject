@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.homepageMgr.mapper.PersonInfoMapper">
+
+	<select id="selectPersonInfoListCount" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 개인정보조회출력
+	    SELECT 
+    		COUNT(0) AS CNT
+    	FROM 
+    		TB_BREAKDOWN A INNER JOIN tb_member B
+    		ON A.USERNO = B. USERNO 
+   	 	WHERE 
+    		TO_CHAR(REGDATE, 'YYYYMMDD') BETWEEN  #{date1} AND #{date2}
+    		${where}
+	]]>
+	</select>
+	
+	<select id="selectPersonInfoList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 개인정보조회출력
+					    SELECT 
+				    		A.USERNO, A.CONTENT, TO_CHAR(A.REGDATE, 'YYYY-MM-DD') AS REGDATE, B.NAME, A.GUBUN
+				    	FROM 
+				    		TB_BREAKDOWN A INNER JOIN tb_member B
+				    		ON A.USERNO = B. USERNO 
+				   	 	WHERE 
+				    		TO_CHAR(REGDATE, 'YYYYMMDD') BETWEEN  #{date1} AND #{date2}
+				    		${where}
+				       ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectPersonInfoExcel" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 개인정보조회출력
+	    SELECT 
+    		A.USERNO, A.CONTENT, TO_CHAR(A.REGDATE, 'YYYY-MM-DD') AS REGDATE, B.NAME, A.GUBUN
+    	FROM 
+    		TB_BREAKDOWN A INNER JOIN tb_member B
+    		ON A.USERNO = B. USERNO 
+   	 	WHERE 
+    		TO_CHAR(REGDATE, 'YYYYMMDD') BETWEEN  #{date1} AND #{date2}
+    		${where}
+	]]>
+	</select>
+</mapper>

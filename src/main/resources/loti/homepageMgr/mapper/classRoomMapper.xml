@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.homepageMgr.mapper.ClassRoomMapper">
+
+	<select id="selectClassRoomList" parameterType="Map" resultType="DataMap">
+	<![CDATA[	
+	-- 강의실관리 리스트
+		SELECT 
+			CLASSROOM_NO, CLASSROOM_NAME, CLASSROOM_PLACE, CLASSROOM_FLOOR, CLASSROOM_MEMBER
+		FROM 
+			TB_CLASSROOM 
+	]]>
+		<if test="selectType != '' and searchValue != ''">
+        	-- 검색값과 구분값이 있을경우
+			WHERE ${selectType} like '%' || #{searchValue} || '%'
+		</if>
+		<if test="qu == 'modify'">
+			WHERE CLASSROOM_NO = #{classroomNo}
+		</if>
+	</select>
+	
+	<select id="selectClassRoomNoChk" parameterType="String" resultType="Integer"> 
+	<![CDATA[	
+	-- 강의실관리 리스트
+		SELECT COUNT(CLASSROOM_NO) AS COUNT	FROM TB_CLASSROOM  WHERE CLASSROOM_NO = #{value}
+	]]>
+	</select>
+	
+	<update id="modifyClassRoom" parameterType="Map">
+	<![CDATA[
+		-- 사용자 게시판 수정
+		UPDATE 
+			TB_CLASSROOM
+		SET
+			CLASSROOM_NAME	= #{classroomName},
+			CLASSROOM_NO	= #{classroomNo},
+			CLASSROOM_FLOOR = #{classroomFloor},
+			CLASSROOM_MEMBER= #{classroomMember},
+			CLASSROOM_PLACE= #{classroomPlace}
+		WHERE 
+			CLASSROOM_NO	= #{no} 
+	]]>
+	</update>
+	
+	<update id="insertClassRoom" parameterType="Map">
+	<![CDATA[
+		-- 사용자 게시판 등록
+		INSERT INTO
+			TB_CLASSROOM 
+				(CLASSROOM_NAME , CLASSROOM_NO, CLASSROOM_FLOOR, CLASSROOM_MEMBER, CLASSROOM_PLACE)
+			VALUES
+				(#{classroomName}, #{classroomNo}, #{classroomFloor}, #{classroomMember}, #{classroomPlace})
+	]]>
+	</update>
+	
+	<update id="deleteClassRoom" parameterType="String">
+	<![CDATA[
+		-- 사용자 게시판 삭제
+		DELETE FROM TB_CLASSROOM WHERE CLASSROOM_NO = #{value}
+				
+	]]>
+	</update>
+	
+	<select id="selectExcelList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 엑셀리스트
+		SELECT 
+        COUNT(A.STUDYTIME) AS CLASS_TIME, 
+    TO_CHAR(A.STUDYDATE, 'DD') AS STUDYDATE,  
+    A.GRCODE||A.GRSEQ AS GRCODE, '<b>강의실 :' || MIN(B.CLASSROOM_NAME) || '(' || MIN(B.CLASSROOM_NO) || '호)</b>, <br>과정명 : ' || SEARCHGRCODENM(A.GRCODE, A.GRSEQ)||' '||A.GRSEQ||'기 ('||TO_CHAR(MIN(C.STARTED), 'MM.DD')||'~'||TO_CHAR(MIN(C.ENDDATE), 'MM.DD')||')' AS CLASS_GRNAME
+	FROM 
+   		TB_TIMETABLE A,
+  	  	TB_CLASSROOM B,
+    	TB_GRSEQ C
+    	WHERE A.CLASSROOM_NO = B.CLASSROOM_NO
+    	AND A.GRCODE = C.GRCODE
+    	AND A.GRSEQ = C.GRSEQ
+    	AND TO_CHAR(A.STUDYDATE, 'YYYYMM') = #{value}
+    GROUP BY 
+    	A.GRCODE, A.GRSEQ, A.STUDYDATE
+	ORDER BY GRCODE,STUDYDATE ASC		
+	]]>
+	</select>
+			
+</mapper>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.homepageMgr.mapper.PopupMapper">
+
+	<sql id="selectPopupListCommon">
+	<![CDATA[	
+	-- 팝업 관리 리스트
+		SELECT 
+      	  NO, TITLE, CONTENT, to_char(PSTR_DATE, 'YYYY-MM-DD') PSTR_DATE, TO_CHAR(PEND_DATE, 'YYYY-MM-DD') PEND_DATE, POPUP_WIDTH, POPUP_HEIGHT, POPUP_LEFT, POPUP_TOP
+    	FROM 
+      	  TB_POPUP
+   	 ORDER BY NO DESC	
+	]]>
+	</sql>
+	<select id="selectPopupListCount" resultType="Integer">
+		<include refid="page.pageTotalCount2"></include>
+		<include refid="selectPopupListCommon"></include>
+		<include refid="page.pageTotalCount2Foot"></include>
+	</select>	
+	<select id="selectPopupList" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<include refid="selectPopupListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>	
+	
+	
+	<resultMap type="DataMap" id="clobContent">
+		<result property="CONTENT"  column="CONTENT" javaType="String" jdbcType="CLOB" typeHandler="org.apache.ibatis.type.ClobTypeHandler"></result>
+	</resultMap>
+	
+	<select id="selectPopupViewRow" parameterType="Integer" resultMap="clobContent">
+	<![CDATA[	
+	-- 팝업 관리 미리보기 
+		SELECT TITLE,CONTENT,POPUP_HEIGHT FROM TB_POPUP WHERE NO = #{value}
+	]]>
+	</select>	
+	
+	<select id="selectPopupModifyRow" parameterType="Integer" resultMap="clobContent">
+	<![CDATA[	
+	-- 팝업 관리 수정 뷰
+		SELECT 
+  		  TITLE, CONTENT, to_char(PSTR_DATE, 'YYYY-MM-DD') PSTR_DATE, TO_CHAR(PEND_DATE, 'YYYY-MM-DD') PEND_DATE, TO_CHAR(PSTR_DATE, 'hh24') PSTR_DATEH, TO_CHAR(PEND_DATE, 'hh24') PEND_DATEH,
+  		  POPUP_WIDTH, POPUP_HEIGHT, POPUP_LEFT, POPUP_TOP 
+		FROM 
+		    TB_POPUP 
+		WHERE 
+		    NO = #{value}
+	]]>
+	</select>
+	
+	<update id="insertPopup" parameterType="Map">
+	<![CDATA[	
+	-- 팝업 관리 등록
+		INSERT INTO TB_POPUP
+					(NO, TITLE, CONTENT , PSTR_DATE, PEND_DATE, POPUP_WIDTH, POPUP_HEIGHT, POPUP_LEFT, POPUP_TOP, TEMPLATE_NO)
+			   VALUES 
+					(#{maxNo}, #{title}, #{namoContent}, TO_DATE(#{sDate},'YYYYMMDDHH24'), ${eDate}, #{popupWidth}, #{popupHeight}, #{popupLeft}, #{popupTop}, 1)	
+	]]>
+	</update>
+	
+	<select id="selectMaxNoRow" resultType="Integer">
+	<![CDATA[	
+	-- 팝업 관리 MAX넘버
+		SELECT MAX(NO)+1 AS MAX FROM TB_POPUP	
+	]]>
+	</select>
+	
+	<update id="modifyPopup" parameterType="Map">
+	<![CDATA[	
+	-- 팝업 관리 MAX넘버
+			UPDATE 
+   				 TB_POPUP 
+			SET 
+			    TITLE = #{title}, CONTENT = #{namoContent}, PSTR_DATE = TO_DATE(#{sDate},'YYYYMMDDHH24'), PEND_DATE = ${eDate}, POPUP_WIDTH = #{popupWidth}, POPUP_HEIGHT = #{popupHeight}, POPUP_LEFT = #{popupLeft}, POPUP_TOP = #{popupTop}
+			WHERE 
+			    NO = #{no}
+	]]>
+	</update>	
+	
+	<update id="deletePopup" parameterType="Integer">
+	<![CDATA[	
+	-- 팝업 관리 삭제
+		DELETE FROM TB_POPUP WHERE NO = #{value}
+	]]>
+	</update>
+	
+</mapper>

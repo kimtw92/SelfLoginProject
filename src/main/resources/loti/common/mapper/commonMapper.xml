@@ -1,0 +1,712 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="loti.common.mapper.CommonMapper">
+
+	<resultMap type="Map" id="classRoom">
+		<result property="classroomNo" column="CLASSROOM_NO"/>
+  		<result property="classroomName" column="CLASSROOM_NAME"/>
+  		<result property="classroomPlace" column="CLASSROOM_PLACE"/>
+  		<result property="classroomFloor" column="CLASSROOM_FLOOR"/>
+  		<result property="classroomMember" column="CLASSROOM_MEMBER"/>
+	</resultMap>
+
+	<select id="selectClassRoomList" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 강의실 리스트.
+		SELECT 
+					CLASSROOM_NO
+					, CLASSROOM_NAME
+					, CLASSROOM_PLACE
+					, CLASSROOM_FLOOR
+					, CLASSROOM_MEMBER 
+		FROM 	TB_CLASSROOM
+		WHERE 	1=1
+		ORDER BY CLASSROOM_NO
+	]]>
+	</select>
+	
+	
+	<select id="selectGrCodeByTutor" resultType="ut.lib.support.DataMap" parameterType="Map">
+	<![CDATA[
+		-- 과정 (강사용)
+		SELECT 	
+					DISTINCT A.GRCODE CODE
+					, B.GRCODENM CODENM
+		FROM 	TB_GRSEQ A
+					, TB_GRCODE B
+		WHERE 	A.GRCODE 	= 	B.GRCODE 
+			AND 	B.USE_YN	=	'Y'
+			AND 	A.GRSEQMAN_USERNO = #{userNo}
+			AND 	A.GRSEQ LIKE #{year} || '%'
+		ORDER BY GRCODENM
+	]]>
+	</select>
+	
+	<select id="selectGrSeqByTutor" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[	
+	
+		-- 기수 (강사용)
+		SELECT 	GRSEQ CODE, SUBSTR(GRSEQ,-2)  || ' 기' CODENM
+		FROM 	TB_GRSEQ		
+		WHERE 	GRSEQ LIKE  #{year} || '%'
+		AND 	GRCODE = #{grCode}
+		AND		GRSEQMAN_USERNO =  #{userNo}
+		
+	]]>
+	</select>
+	
+	<select id="selectGrSeq" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- CommonDAO.java
+		-- 기수
+		SELECT 	DISTINCT GRSEQ CODE, SUBSTR(GRSEQ,-2)  || ' 기' CODENM
+		FROM 	TB_SUBJSEQ 
+		WHERE 	GRSEQ LIKE  #{year} || '%'
+		${where}
+		ORDER BY CODE
+		
+	]]>
+	</select>
+	
+	<select id="selectSubj" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[	
+	
+		-- 과목
+		SELECT 	DISTINCT SUBJ CODE, LECNM CODENM 
+		FROM 	TB_SUBJSEQ 
+		WHERE 	GRSEQ	= #{grSeq}
+		AND 	GRCODE 	= #{grCode}
+		AND 	LEC_TYPE IN ('S', 'C') 
+		ORDER BY
+				LECNM 
+		
+	]]>
+	</select>
+	
+	<select id="selectPageAdminInfo" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 페이지관리자조회.
+		SELECT 
+					MENUCODE
+					, MENUNAME
+					, DEPTNAME
+					, ADMIN_NAME
+					, ADMIN_USEYN
+					, MENUSCORE_USEYN
+					, ADMIN_TEL
+					, ADMIN_EMAIL
+					, ENTERDATE
+					, TO_CHAR(UPDATEDATE,'yyyy-mm-dd hh:mm:ss') UPDATEDATE
+		FROM TB_ADMIN_INFO
+		where MENUCODE = #{value}
+	]]>
+	</select>
+	
+	<select id="selectUploadFileList" parameterType="Integer" resultType="ut.lib.support.DataMap">
+	<![CDATA[	
+	
+		-- 파일정보 가져오기.
+		SELECT
+			GROUPFILE_NO, FILE_NO, FILE_PATH, 
+			FILE_NAME, FILE_DOWN, LUSERNO, 
+			LDATE, FILE_SIZE
+		FROM TB_UPLOAD 
+		WHERE GROUPFILE_NO = #{value}
+	]]>
+	</select>
+	
+	<delete id="deleteUploadGroupFileNo" parameterType="Integer">
+	<![CDATA[	
+		-- 파일 정보 삭제
+		DELETE FROM TB_UPLOAD 
+		WHERE GROUPFILE_NO = #{value}
+	]]>
+	</delete>
+	
+	<select id="checkKeyword" resultType="ut.lib.support.DataMap">
+	<![CDATA[	
+		-- CommonDAO.java
+		-- 키워드 목록
+		SELECT SEQ, KEYWORD, TO_CHAR(ENTERDATE, 'yyyy-mm-dd') ENTERDATE
+		FROM TB_KEYWORD_SECURITY
+	]]>
+	</select>
+	
+	<select id="selectTopMenu" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 상단 메뉴
+		SELECT	MENU_GRADE, MENU_DEPTH_1,   MENU_DEPTH_2, MENU_DEPTH_3, MENU_NAME,        
+				MENU_URL,   MENU_WRITE_YN,  MENU_SORT_NO, MENU_USE_YN,  MENU_STEP_NO
+		FROM    TB_MENU_2
+		WHERE   TRIM(MENU_GRADE)=   #{value} -- 권한구분
+		AND     MENU_STEP_NO    =   '1'
+		AND     MENU_USE_YN     =   'Y'
+		ORDER BY 
+		        MENU_SORT_NO ASC
+        
+	]]>
+	</select>
+	
+	<select id="selectLeftMenu" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+	
+		-- 좌측 메뉴 
+		SELECT  MENU_NAME, MENU_URL, MENU_WRITE_YN, MENU_DEPTH_2,
+		
+			    CASE    WHEN MENU_DEPTH_3 = '0' THEN '1'
+			            ELSE    '2'
+			    END MENU_LEVEL
+		
+		FROM    TB_MENU_2
+		WHERE   TRIM(MENU_GRADE)=   #{menuGrade}     -- 권한구분 
+		AND     MENU_DEPTH_1    =   #{menuDepth1}     -- 상단 메뉴 ID 
+		AND     MENU_DEPTH_3    =   0
+		AND     MENU_STEP_NO    !=  '1'
+		AND     MENU_USE_YN     =   'Y'
+		ORDER BY 
+		        MENU_DEPTH_1, MENU_DEPTH_2, MENU_DEPTH_3, MENU_SORT_NO ASC
+        
+	]]>
+	</select>
+	
+	<select id="selectLeftSubMenu" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+	
+		-- 좌측 SUB 메뉴 
+		SELECT  MENU_NAME, MENU_URL, MENU_WRITE_YN, MENU_DEPTH_2,
+		
+			    CASE    WHEN MENU_DEPTH_3 = '0' THEN '1'
+			            ELSE    '2'
+			    END MENU_LEVEL
+		
+		FROM    TB_MENU_2
+		WHERE   TRIM(MENU_GRADE)=   #{menuGrade}     -- 권한구분 
+		AND     MENU_DEPTH_1    =   #{menuDepth1}     -- 상단 메뉴 ID
+		AND     MENU_DEPTH_2    =   #{menuDepth2}     -- 좌측 타이틀 메뉴 ID
+		AND     MENU_DEPTH_3    !=   0
+		AND     MENU_STEP_NO    !=  '1'
+		AND     MENU_USE_YN     =   'Y'
+		ORDER BY 
+		        MENU_DEPTH_1, MENU_DEPTH_2, MENU_DEPTH_3, MENU_SORT_NO ASC
+        
+	]]>
+	</select>
+	
+	<select id="selectTotalLeftMenu" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+	
+		-- 좌측 메뉴 전체.
+        SELECT 
+	            MENU_DEPTH_1, 	MENU_DEPTH_2, 	MENU_DEPTH_3,
+	            MENU_NAME, 		MENU_URL, 		MENU_WRITE_YN,
+	            
+	            CASE    WHEN MENU_DEPTH_3 = '0' THEN '1'
+	                    ELSE    '2'
+	            END MENU_LEVEL
+	            
+        FROM	TB_MENU_2
+        WHERE 	TRIM(MENU_GRADE) = #{menuGrade}	-- 권한구분
+        AND 	MENU_DEPTH_1 = #{menuDepth1}	-- 상단 메뉴 ID
+        AND 	MENU_USE_YN <> 'N' 
+        AND 	MENU_STEP_NO <> 1
+ 		ORDER BY 
+ 		        MENU_DEPTH_1, MENU_DEPTH_2, MENU_DEPTH_3, MENU_SORT_NO ASC
+        
+	]]>
+	</select>
+	
+	<select id="selectCurrentMenuName" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+	
+		-- 현재 메뉴 이름	
+		SELECT	MENU_NAME 	            
+		FROM	TB_MENU_2
+		WHERE 	TRIM(MENU_GRADE) = #{menuGrade}	-- 권한구분
+		AND 	MENU_DEPTH_1 = #{menuDepth1}
+		AND		MENU_DEPTH_2 = #{menuDepth2}
+		AND		MENU_DEPTH_3 = #{menuDepth3}
+		AND 	MENU_USE_YN <> 'N'
+		AND 	MENU_STEP_NO <> 1
+	]]>
+	</select>
+	
+	<select id="selectNavigationMenu" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+	
+		-- 네이게이션 정보.
+		-- 권한, level1, level2, level3
+        SELECT getNavigationMenu(#{menuGrade}, #{menuDepth1}, #{menuDepth2}, #{menuDepth3}) AS NAVIGATION FROM DUAL
+        
+	]]>
+	</select>
+	
+	<select id="selectGrSeqByCyber" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- CommonDAO.java
+		-- Cyber 과정의 기수
+
+		SELECT 
+			DISTINCT GRSEQ CODE, SUBSTR(GRSEQ,-2)  || ' 기' CODENM
+		FROM TB_GRSEQ
+		--WHERE F_CYBER = 'Y'
+		WHERE USE_YN = 'Y'
+			AND GRCODENIKNM LIKE 'e-' || '%'
+			AND GRSEQ LIKE  #{value} || '%'
+		ORDER BY GRSEQ			
+	]]>
+	</select>
+	
+	<select id="selectUploadFileRow" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[	
+		-- 파일정보 가져오기.
+		SELECT
+			GROUPFILE_NO, FILE_NO, FILE_PATH, 
+			FILE_NAME, FILE_DOWN, LUSERNO, 
+			LDATE
+		FROM TB_UPLOAD 
+		WHERE GROUPFILE_NO = #{groupFileNo}
+			AND FILE_NO = #{fileNo}
+	]]>
+	</select>
+	
+	<select id="selectUserNameString" parameterType="String" resultType="String">
+	<![CDATA[	
+		-- 유저의 이름만 가져오는 메소드
+		SELECT 
+			NAME 
+		FROM tb_member 
+		WHERE USERNO = #{value}
+	]]>
+	</select>
+	
+	<select id="selectSearchZip" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[	
+		-- 우편번호 검색 .
+		SELECT * 
+		FROM TB_ZIPCODE 
+		WHERE ADDR3 LIKE  '%' || #{value} || '%'
+	]]>
+	</select>
+
+	<select id="selectTwoSearchZip" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[	
+		-- 우편번호 검색 .
+		SELECT * 
+		FROM TB_ZIPCODE 
+		WHERE ZIPCODE1 = #{zipCode1} AND ZIPCODE2 = #{zipCode2}
+	]]>
+	</select>	
+	
+	<select id="selectMaxGroupFileNo" resultType="Integer">
+	<![CDATA[	
+		-- 파일 등록시 Max GROUPFILE_NO
+		SELECT NVL(MAX(GROUPFILE_NO), 0) + 1 AS MAX 
+		FROM TB_UPLOAD
+	]]>
+	</select>
+	
+	<insert id="insertCopyUpload" parameterType="Map">
+	<![CDATA[	
+		-- 기존 파일 정보를 복사하여 등록
+		INSERT INTO TB_UPLOAD 
+		SELECT 
+			#{maxGroupFileNo}, #{fileCnt}, FILE_PATH, 
+			FILE_NAME, FILE_DOWN, LUSERNO, 
+			LDATE, FILE_SIZE
+		FROM TB_UPLOAD
+		WHERE GROUPFILE_NO = #{orgGroupFileNo} AND FILE_NO = #{orgFileNo}
+	]]>
+	</insert>
+	
+	<insert id="insertFileUpload" parameterType="Map">
+	<![CDATA[	
+		-- 파일 등록
+		INSERT INTO TB_UPLOAD 
+			(GROUPFILE_NO, FILE_NO, FILE_PATH, 
+			FILE_NAME, FILE_DOWN, LUSERNO, 
+			LDATE, FILE_SIZE) 
+		VALUES 
+			( #{groupfileNo}, #{fileNo}, #{filePath},
+			  #{fileName}, 0, #{luserno}, 
+			  SYSDATE, #{fileSize})
+	]]>
+	</insert>
+	
+	<update id="updateUploadVisitCnt" parameterType="Map">
+	<![CDATA[	
+		-- 파일 다운로드수 증가.
+		UPDATE TB_UPLOAD SET
+			FILE_DOWN = FILE_DOWN + 1
+		WHERE GROUPFILE_NO = #{groupFileNo} AND FILE_NO = #{fileNo}
+	]]>
+	</update>
+	
+	<select id="selectSearchDept" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 직급코드 검색
+		
+    SELECT JIK, JIKNM, USE_YN, 
+			(SELECT CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'jikj' AND CODE = J.JIKJ) JIKJNM, 
+			(SELECT CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'jikr' AND CODE = J.JIKR) JIKRNM, 
+			(SELECT CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'dogs' AND CODE = J.DOGS) DOGSNM, 
+			(SELECT CODENM FROM TB_JIKGUBUN WHERE JIKGUBUN = 'jikl' AND CODE = J.JIKL) JIKLNM ,
+			JIK_GUBUN 
+	FROM TB_JIK J 
+	WHERE JIKNM LIKE #{value}
+    ORDER BY JIK,JIKJ,JIKL,DOGS,JIKNM
+	]]>
+	</select>
+	
+	<select id="selectDicGroupCodeByCbo" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 색인 코드 (셀렉트 박스용)
+		SELECT GROUPS,	DIC_SEQ 
+		FROM 	TB_DICGROUP 
+		ORDER BY 
+				DIC_SEQ 	
+	]]>
+	</select>
+	
+	<select id="selectSubjCodeByCbo" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 과목 코드 (셀렉트 박스용)
+		SELECT	SUBJ,	SUBJNM 
+		FROM 	TB_SUBJ
+		WHERE 	USE_YN = 'Y' 
+		ORDER BY 
+				SUBJNM 	
+	]]>
+	</select>
+	
+	<select id="selectTutorGubunByCbo" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 강사관리의 담당분야  (셀렉트 박스용)
+		SELECT 	A.GUBUN, A.GUBUNNM||'('||COUNT(B.USERNO)||')' AS GUBUNNM 
+		FROM	TB_GUBUN A, TB_TUTOR B 
+		WHERE 	A.GRSUBJ	=	'SU'
+		AND 	A.GUBUN		=	B.GUBUN 
+		GROUP BY 
+				A.GUBUN, A.GUBUNNM 
+		ORDER BY
+				A.GUBUN
+	]]>
+	</select>
+	
+	
+	<select id="selectGrCodeByRow" resultType="ut.lib.support.DataMap" parameterType="String">
+	<![CDATA[
+		-- 과정명
+		SELECT 	GRCODENM 
+		FROM 	TB_GRCODE 
+		WHERE 	GRCODE = #{value}
+	]]>
+	</select>
+	
+	<select id="selectSubjByRow" resultType="ut.lib.support.DataMap" parameterType="String">
+	<![CDATA[
+		-- 과목명
+		SELECT 	SUBJNM 
+		FROM 	TB_SUBJ 
+		WHERE 	SUBJ = #{value}
+	]]>
+	</select>
+	
+	<delete id="deleteCommonQuery" parameterType="Map">
+	<![CDATA[
+		-- 테이블 명과 삭제 조건을 받아서 테이블의 내용을 삭제 하는 공통 삭제 쿼리.
+		DELETE FROM ${TABLENAME} 
+		WHERE 1=1 ${WHERE_STRING}
+	]]>
+	</delete>
+	
+	<select id="selectDeptSearch" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 기관 검색.
+		SELECT 
+			DEPT, DEPTNM, LOWNM,
+			LEVELS, UPPER, PARENT,
+			USE_YN
+		FROM TB_DEPT 
+		WHERE DEPTNM LIKE '%'||#{value}||'%'
+		ORDER BY
+				DEPTNM
+	]]>
+	</select>
+	
+	<select id="selectPageAdminInfoList" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 페이지관리자목록조회.
+		SELECT MENUCODE, MENUNAME, DEPTNAME, ADMIN_NAME, ADMIN_USEYN, MENUSCORE_USEYN, ADMIN_TEL, ADMIN_EMAIL, ENTERDATE, TO_CHAR(UPDATEDATE,'yyyy-mm-dd hh:mm:ss') UPDATEDATE
+		FROM TB_ADMIN_INFO
+		ORDER BY MENUCODE ASC
+	]]>
+	</select>
+	
+	<select id="selectMenuScoreList" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 만족도목록조회.
+		SELECT
+		  MENUCODE
+		  , MENUNAME
+		  , DEPTNAME
+		  , MENUSCORE_USEYN
+		  , MENUSCORE
+		  , CNT
+		  , TRUNC((DECODE(MENUSCORE,0,0, (MENUSCORE / CNT))),1) AGE
+		FROM (
+		    SELECT
+		      A.MENUCODE
+		      , A.MENUNAME
+		      , A.DEPTNAME
+		      , A.MENUSCORE_USEYN
+		      , (SELECT NVL(SUM(MENUSCORE),0) FROM TB_MENUSCORE WHERE MENUID = A.MENUCODE) MENUSCORE
+		      , (SELECT COUNT(MENUSCORE) FROM TB_MENUSCORE WHERE MENUID = A.MENUCODE) CNT
+		    FROM TB_ADMIN_INFO A
+		    ORDER BY MENUCODE ASC
+		)
+	]]>
+	</select>
+	
+	<select id="selectTotalMenuScoreList" resultType="ut.lib.support.DataMap" parameterType="String">
+	<![CDATA[
+		-- 만족도 총목록조회.
+			SELECT
+			  MENUSCORE
+			  , DECODE(MENUSCORE,'10','매우만족','7.5','만족','5','보통','2.5','불만족','매우불만족') MENUSCORENAME
+			  , DECODE(OPINION,NULL,'입력안함',OPINION) OPINION
+			  , NAME || '(' || USER_ID || ')' USERINFO
+			  , TO_CHAR(ENTERDATE,'yyyy-mm-dd hh:mm:ss') ENTERDATE
+			FROM TB_MENUSCORE A, TB_MEMBER B
+			WHERE A.MEMBERNO = B.USERNO(+)
+			  AND MENUID = #{value}
+			ORDER BY MENUSCOREID 
+	]]>
+	</select>
+	
+	<update id="savePageAdmininfo" parameterType="Map">
+	<![CDATA[
+		UPDATE TB_ADMIN_INFO
+		  SET DEPTNAME = #{deptname}
+		  , ADMIN_NAME = #{adminName}
+		  , ADMIN_TEL = #{adminTel}
+		  , UPDATEDATE = SYSDATE
+		  , ADMIN_USEYN = #{adminUseyn}
+		WHERE MENUCODE = #{menucode}
+	]]>
+	</update>
+	
+	<update id="updateMenuScoreUseyn" parameterType="Map">
+	<![CDATA[
+		UPDATE TB_ADMIN_INFO
+		  SET MENUSCORE_USEYN = #{menuscoreUseyn}
+		WHERE MENUCODE = #{menucode}
+	]]>
+	</update>
+	
+	<insert id="saveMenuScore" parameterType="Map">
+	<![CDATA[
+		INSERT INTO TB_MENUSCORE
+		   (MENUSCOREID, MENUID, MENUSCORE, MENUSCOREIP, OPINION, MEMBERNO, ENTERDATE)
+		 VALUES
+		   (TB_MENUSCORE_SEQNO.NEXTVAL, #{menucode}, #{menuScore}, #{userIP}, #{opinion}, #{userNo}, SYSDATE)
+	]]>
+	</insert>
+	
+	<select id="selectMenuScore" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		SELECT COUNT(*) CNT
+		FROM TB_MENUSCORE
+		WHERE MENUID = #{menucode}
+		  AND MEMBERNO = #{userNo}
+	]]>
+	</select>
+	
+	<select id="selectDeptnmRow" parameterType="String" resultType="String">
+	<![CDATA[
+		-- 기관 이름 가져오기.
+		SELECT 
+			DEPTNM 
+		FROM TB_DEPT 
+		WHERE DEPT = #{value}
+	]]>
+	</select>
+	
+	<select id="selectGrCodeByLec" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 과정 (강사기록입력에서 사용함, use = y 인것)
+		SELECT 	GRCODE AS CODESEQ,	(GRCODE || ' ' || GRCODENM) AS CODENM
+		FROM 	TB_GRCODE 
+		WHERE 	USE_YN = 'Y' 
+		ORDER BY 
+				GRCODENM
+	]]>
+	</select>
+	
+	<select id="selectGrSeqByLec" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 기수 (강사기록입력에서 사용함)
+		SELECT	DISTINCT GRSEQ AS CODESEQ, GRSEQ AS CODENM
+		FROM	TB_SUBJSEQ
+		WHERE	GRCODE	=	#{value}
+		ORDER BY
+				GRSEQ ASC
+	]]>
+	</select>
+	
+	<select id="selectSubjByLec" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 과목 (강사기록입력에서 사용함)
+		SELECT 	DISTINCT SUBJ AS CODESEQ, LECNM AS CODENM
+		FROM 	TB_SUBJSEQ
+		WHERE	GRCODE	=	#{grCode}	
+		AND		GRSEQ 	= 	#{grSeq}
+		ORDER BY
+				LECNM
+	]]>
+	</select>
+	
+	<select id="selectGrcodeByCyber" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- CommonDAO.java
+		-- Cyber 과정의 과정 코드 가져오기
+		SELECT   
+			GRCODE CODE, GRCODENM CODENM
+		FROM TB_GRCODE
+		WHERE USE_YN = 'Y' 
+			AND GRCODE IN ( SELECT DISTINCT GRCODE
+						    FROM TB_GRSEQ
+						    WHERE GRSEQ = #{value}
+								--AND F_CYBER = 'Y'
+								AND GRCODENIKNM LIKE 'e-' || '%'
+						   )
+		ORDER BY GRCODENM
+	]]>
+	</select>
+	
+	<select id="selectEtestExamList" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[		
+		-- CommonDAO.java
+		-- 평가명 리스트 가져 오기 
+		SELECT
+			ID_EXAM, TITLE
+		FROM ETEST.EXAM_M
+		WHERE COURSE_YEAR = #{grcode}
+			AND COURSE_NO = #{grseq}
+		ORDER BY TITLE
+	]]>
+	</select>
+	
+	<delete id="deleteAllZipcode">
+	<![CDATA[		
+		-- 주소 테이블 일괄삭제
+		DELETE FROM TESE_ZIPCODE
+	]]>
+	</delete>
+	
+	<insert id="insertAllZipcode" parameterType="Map">
+	<![CDATA[		
+		-- 주소 테이블 일괄등록
+	        INSERT INTO 
+                TESE_ZIPCODE(SEQ, ZIPCODE1, ZIPCODE2, ADDR1, ADDR2, ADDR3, ADDR4, ADDR5)
+                VALUES((SELECT NVL(MAX(SEQ),0)+1 AS SEQ FROM TESE_ZIPCODE),
+                		#{zipCode1}, #{zipCode2}, #{addr1}, #{addr2}, #{addr3}, #{addr4}, #{addr5})	
+
+	]]>
+	</insert>
+	
+	<select id="selectSubjClassByClassList" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[ 
+		-- CommonDAO.java
+		-- 과정의 과목별 반구성 리스트 
+		SELECT 
+			CLASSNO, CLASSNM
+		FROM TB_SUBJCLASS
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND SUBJ = #{subj}
+	]]>
+	</select>
+	
+	<select id="selectSubjSeqByChioceList" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[	
+		-- CommonDAO.java
+		-- 선택 과목 리스트 
+		SELECT   
+			SUBJ, LECNM, REF_SUBJ
+		FROM TB_SUBJSEQ
+		WHERE GRCODE = #{grcode} 
+			AND GRSEQ = #{grseq}
+			AND LEC_TYPE = #{lecType}
+		ORDER BY SUBJ
+	]]>
+	</select>
+	
+	<select id="selectGrCodeByAll" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+	
+		-- 과정 (전체과정)
+		SELECT	GRCODE CODE,	GRCODENM CODENM
+		FROM 	TB_GRCODE 
+		WHERE 	USE_YN = 'Y' 
+		AND 	GRCODE IN	(
+		                        SELECT 	DISTINCT GRCODE 
+		                        FROM 	TB_GRSEQ 
+		                        WHERE 	GRSEQ LIKE #{year} || '%'	-- 년도		                        
+							)  
+		ORDER BY 
+				GRCODENM        
+	]]>
+	</select>
+	
+	<update id="updatePasswd" parameterType="Map">
+	<![CDATA[	
+		-- 패스워드 변경
+		UPDATE TB_MEMBER
+			SET PWD = SCP.ENC_B64('KEY1',#{passwd}), LGFAILCNT = 0
+		WHERE USERNO = #{userno}
+	]]>
+	</update>
+	
+	<select id="selectTutorLevelByCbo" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- 강사관리의 강사등급  (셀렉트 박스용)
+		SELECT 	TLEVEL, LEVEL_NAME 
+		FROM 	TB_TUTOR_LEVEL
+		ORDER BY
+				TLEVEL
+	]]>
+	</select>
+	
+	<select id="selectGrCodeByIng" parameterType="Map" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+	
+		-- 과정 (진행형)
+		SELECT	GRCODE CODE,	GRCODENM CODENM
+		FROM 	TB_GRCODE 
+		WHERE 	USE_YN = 'Y' 
+		AND 	GRCODE IN	(
+		                        SELECT 	DISTINCT GRCODE 
+		                        FROM 	TB_GRSEQ 
+		                        WHERE 	GRSEQ LIKE #{grseq} || '%'	-- 년도
+		                        AND 	TO_CHAR(SYSDATE,'yyyymmdd') BETWEEN TO_CHAR(STARTED,'yyyymmdd') AND TO_CHAR(ENDDATE, 'yyyymmdd')
+							)  
+		ORDER BY 
+				GRCODENM
+	]]>
+	</select>
+	
+	<select id="selectGadminString" parameterType="String" resultType="String">
+	<![CDATA[	
+		-- 권한이름만 가져오기.
+		SELECT 
+			GADMINNM 
+		FROM TB_GADMIN 
+		WHERE GADMIN = #{value}
+	]]>
+	</select>
+	
+</mapper>

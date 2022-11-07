@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.subjMgr.mapper.ReportMapper">
+
+	<select id="selectReportList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 리스트
+			SELECT   
+				SUBJ, GRCODE, GRSEQ, CLASSNO, DATES, TITLE, RPARTF, RPARTT,
+				GROUPFILE_NO,
+				(	SELECT MAX (GRADE_POINT)
+					FROM TB_REPORT_GRADE
+					WHERE GRCODE = R.GRCODE
+					AND GRSEQ = R.GRSEQ
+					AND SUBJ = R.SUBJ
+					AND CLASSNO = R.CLASSNO
+					AND DATES = R.DATES
+				) POINT
+			FROM 
+				TB_REPORT R
+			WHERE SUBJ = #{subj}
+				AND GRCODE = #{grcode}
+				AND GRSEQ = #{grseq}
+				AND CLASSNO = #{classno}
+			ORDER BY TO_NUMBER (R.DATES)
+	]]>
+	</select>	
+	
+	<select id="selectReportClassNoList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 반 리스트
+            SELECT 
+                CLASSNO, CLASSNM
+            FROM 
+                TB_SUBJCLASS
+            WHERE 
+            GRCODE = #{grcode} AND GRSEQ = #{grseq} AND SUBJ = #{subj}
+	]]>
+	</select>
+	
+	<select id="selectReportRow" parameterType="Map" resultMap="common.clobContent">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 폼데이터
+			SELECT 
+                SUBJ, GRCODE, GRSEQ, CLASSNO, DATES, TITLE, CONTENT, LUSERNO, LDATE,
+                GROUPFILE_NO, RPARTF, RPARTT, ANSFILE_NO, SUBMST_DATE, SUBMED_DATE,
+                REPINS_DATE, TO_CHAR (SUBMST_DATE, 'HH24') SUBMST_TIME,
+                TO_CHAR (SUBMED_DATE, 'HH24') SUBMED_TIME
+            FROM 
+                TB_REPORT
+            WHERE 
+                SUBJ = #{subj}
+                AND GRCODE = #{grcode}
+                AND GRSEQ = #{grseq}
+                AND CLASSNO = #{classno}
+                AND DATES = #{dates}
+	]]>
+	</select>
+	
+	<select id="selectReportDatesRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 차시
+		SELECT 
+			DATES 
+		FROM 
+			TB_SUBJWEEK 
+		WHERE 
+			SUBJ = #{value}
+		ORDER BY DATES 
+	]]>
+	</select>
+	
+	<select id="selectReportClassTutorRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 강사 명단 
+            SELECT 
+                TUSERNO, GRSEQ, 
+                (   SELECT NAME
+                    FROM tb_member
+                    WHERE USERNO = A.TUSERNO
+                ) AS NAME
+            FROM TB_CLASSTUTOR A
+            WHERE GRSEQ = #{grseq}
+              AND GRCODE = #{grcode}
+              AND SUBJ = #{subj}
+              AND CLASSNO = #{classno}
+	]]>
+	</select>
+	
+	<update id="updateReport" parameterType="Map">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 수정
+			UPDATE TB_REPORT SET 
+			    TITLE = #{title}, 
+			    CONTENT = #{namoContent}, 
+			    LUSERNO = #{luserno}, 
+			    LDATE = #{repinsDate}, 
+			    RPARTF = #{rpartf}, 
+			    RPARTT = #{rpartt}, 
+			    SUBMST_DATE = TO_DATE(#{submstDate} || #{submstTime},'YYYY-MM-DD HH24:MI:SS'), 
+			    SUBMED_DATE = TO_DATE(#{submedDate} || #{submedTime},'YYYY-MM-DD HH24:MI:SS'), 
+			    REPINS_DATE = #{repinsDate},
+			    GROUPFILE_NO = #{fileGroupNo}
+			WHERE SUBJ = #{subj} AND GRCODE = #{grcode} AND GRSEQ = #{grseq} AND CLASSNO = #{classno}  AND DATES = #{dates}
+	]]>
+	</update>
+	
+	<select id="selectReportMaxDates" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 MAX차시
+		SELECT
+			NVL(MAX(TO_NUMBER(DATES)), 0) + 1 AS DATES
+		FROM
+			TB_REPORT
+		WHERE
+			SUBJ = #{subj}
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND CLASSNO = #{classno}	
+			
+	]]>
+	</select>
+	
+	<update id="insertReport" parameterType="Map">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 수정
+		INSERT INTO 
+			TB_REPORT( 
+						SUBJ, 	GRCODE, 	GRSEQ, 			CLASSNO, 		DATES, 
+						TITLE, 	CONTENT, 	LUSERNO, 		LDATE, 			GROUPFILE_NO, 
+						RPARTF, RPARTT, 	SUBMST_DATE, 	SUBMED_DATE, 	REPINS_DATE, 
+						USERNO, ANSFILE_NO
+					  )
+			VALUES(
+					#{subj}, #{grcode}, #{grseq}, #{classno}, #{dates},
+					#{title}, #{namoContent}, #{luserno}, SYSDATE, #{fileGroupNo},
+					#{rpartf}, #{rpartt}, #{submstDate}, #{submedDate}, #{repinsDate},
+					#{tutorName}, #{_SUB_DIR}
+				  ) 		
+	]]>
+	</update>
+	
+	<update id="deleteReportGrade" parameterType="Map">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 평가등급 점수 삭제
+		DELETE 
+			FROM 
+				TB_REPORT_GRADE 
+			WHERE 
+				SUBJ = #{subj} 
+				AND GRCODE = #{grcode} 
+				AND GRSEQ = #{grseq} 
+				AND CLASSNO = #{classno} 
+				AND DATES = #{chk}
+			
+	]]>
+	</update>
+	
+	<update id="deleteReportSubmit" parameterType="Map">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 평가 삭제
+		DELETE 
+			FROM 
+				TB_REPORT_SUBMIT
+			WHERE 
+				SUBJ = #{subj} 
+				AND GRCODE = #{grcode} 
+				AND GRSEQ = #{grseq} 
+				AND CLASSNO = #{classno} 
+				AND DATES = #{chk}
+			
+	]]>
+	</update>
+	
+	<update id="deleteReport" parameterType="Map">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 제목글삭제
+		DELETE 
+			FROM 
+				TB_REPORT 
+			WHERE 
+				SUBJ = #{subj} 
+				AND GRCODE = #{grcode} 
+				AND GRSEQ = #{grseq} 
+				AND CLASSNO = #{classno} 
+				AND DATES = #{chk}
+			
+	]]>
+	</update>
+	
+	<select id="selectReportGradePointRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 평가등급 점수
+			SELECT 
+				SUM (POINT) AS GRADE_POINT
+			FROM (
+					SELECT   
+						GRSEQ, GRCODE, SUBJ, DATES, MAX (GRADE_POINT) AS POINT
+					FROM 
+						TB_REPORT_GRADE
+					WHERE 
+						GRSEQ = #{grseq}
+						AND GRCODE = #{grcode}
+						AND SUBJ = #{subj}
+					GROUP BY GRSEQ, GRCODE, SUBJ, DATES
+				 )
+			
+	]]>
+	</select>
+	
+	<select id="selectReportGradeMaxPointRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 평가등급 최대 점수
+		SELECT 
+			REPORTPOINT 
+		FROM 
+			TB_SUBJSEQ 
+		WHERE 
+			SUBJ = #{subj} AND GRCODE = #{grcode} AND GRSEQ = #{grseq}
+			
+	]]>
+	</select>
+	
+	<select id="reportAppGradePointRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 과제물  제출자 점수
+			SELECT GRADE_POINT
+            FROM TB_REPORT_GRADE
+            WHERE GRCODE = #{grcode}
+               AND GRSEQ = #{grseq}
+               AND SUBJ = #{subj}
+               AND CLASSNO = #{classno}
+               AND DATES = #{dates}
+               AND GRADE_NO = 1
+
+	]]>
+	</select>
+
+	<select id="reportAppClassNameRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 과제물  제출자 반, 반명
+		SELECT 
+    		CLASSNO, CLASSNM
+		FROM 
+   			TB_SUBJCLASS
+		WHERE 
+    		GRCODE = #{grcode} AND GRSEQ = #{grseq} AND SUBJ = #{subj}
+	]]>
+	</select>
+		
+	<select id="selectGradeGrcode" parameterType="Map" resultType="DataMap"> 
+	<![CDATA[
+		-- 과제물관리 -> 과제물 제출기간, 과정명
+            SELECT 
+                SEARCHGRCODENM(GRCODE,GRSEQ) AS GRCODENM,TO_CHAR(SUBMST_DATE,'mm.dd')||'~'||TO_CHAR(SUBMED_DATE,'mm.dd') AS REPORT_DATE 
+            FROM 
+                TB_REPORT WHERE SUBJ = #{subj} AND GRCODE = #{grcode} AND GRSEQ = #{grseq} AND CLASSNO= #{classno} AND DATES= #{dates}
+	]]>
+	</select>
+	
+	<select id="selectGradeEvalCnt" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 과제물  제출 자
+            SELECT USERNO
+            FROM TB_REPORT_SUBMIT
+            WHERE GRCODE = #{grcode}
+               AND GRSEQ = #{grseq}
+               AND SUBJ = #{subj}
+               AND CLASSNO = #{classno}
+               AND DATES = #{dates}
+               AND SUBMIT_POINT > 0
+	]]>
+	</select>
+	
+	<select id="selectReportGradeList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 평가등급 리스트
+			SELECT 
+                GRADE_NO, GRADE_POINT
+            FROM 
+                TB_REPORT_GRADE
+            WHERE 
+                GRCODE = #{grcode}
+                AND GRSEQ = #{grseq}
+                AND SUBJ = #{subj}
+                AND CLASSNO = #{classno}
+                AND DATES = #{dates}
+			
+	]]>
+	</select>
+	
+	<select id="selectReportGradeCountRow" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 등급별 점수정보 카운터
+            SELECT 
+                COUNT(*) AS COUNT
+            FROM 
+                TB_REPORT_GRADE 
+            WHERE 
+                SUBJ =#{subj} 
+                AND GRCODE = #{grcode} 
+                AND GRSEQ = #{grseq} 
+                AND CLASSNO = #{classno}
+				AND DATES = #{dates}
+				AND GRADE_NO = #{gradeNo}
+	]]>
+	</select>
+	
+	<update id="insertReportGrade" parameterType="Map" >
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 평가등급 등록
+		INSERT INTO TB_REPORT_GRADE
+            (GRCODE, GRSEQ, SUBJ, CLASSNO, DATES, GRADE_NO
+            )
+     	VALUES (#{grcode}, #{grseq}, #{subj}, #{classno}, #{dates}, #{gradeNo}
+            )			
+	]]>
+	</update>
+	
+	<update id="updateReprtGrade" parameterType="Map">
+	<![CDATA[
+		-- 과제물관리 -> 과제물 출제 평가등급 수정
+		UPDATE TB_REPORT_GRADE
+			SET GRADE_POINT = #{gradePoint},
+				LUSERNO = #{sessNo},
+				LDATE = SYSDATE
+			WHERE GRCODE = #{grcode}
+				  AND GRSEQ = #{grseq}
+				  AND SUBJ = #{subj}
+				  AND CLASSNO = #{classno}
+				  AND DATES = #{dates}
+				  AND GRADE_NO = #{gradeNo}
+
+	]]>
+	</update>
+	
+	<select id="reportAppList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 과제물  평가리스트
+				SELECT   M.USERNO USERNO, M.NAME NAME,
+                        '19'
+                     || SUBSTR (SCP.DEC_B64('KEY1',M.RESNO), 1, 2)
+                     || '/'
+                     || SUBSTR (SCP.DEC_B64('KEY1',M.RESNO), 3, 2)
+                     || '/'
+                     || SUBSTR (SCP.DEC_B64('KEY1',M.RESNO), 5, 2) RESNO,
+                     (SELECT DEPTNM
+                        FROM TB_DEPT
+                       WHERE DEPT = M.DEPT) || M.DEPTSUB AS DEPTNM,
+                     (SELECT JIKNM
+                        FROM TB_JIK
+                       WHERE JIK = M.JIK) JIKWI, M.HP AS HP,
+                     (SELECT EDUNO
+                        FROM TB_APP_INFO
+                       WHERE GRCODE = SL.GRCODE
+                         AND GRSEQ = SL.GRSEQ
+                         AND USERNO = SL.USERNO) EDUNO,
+                     RS.ESTIMATE ESTIMATE, NVL(TO_CHAR(RS.SUBMIT_POINT),'') SUBMIT_POINT, RS.SUBMIT_DATE,
+                     RS.GROUPFILE_NO GROUPFILE_NO, RS.CLASSNO CLASSNO, RS.DATES DATES,
+                     RS.LUSERNO LUSERNO
+                FROM TB_STU_LEC SL,
+                     tb_member M,
+                     (	
+                     	SELECT *
+                        FROM TB_REPORT_SUBMIT
+						WHERE SUBJ = #{subj}
+							AND GRCODE = #{grcode}
+							AND GRSEQ = #{grseq}
+							AND DATES = #{dates}
+					 ) RS
+				WHERE M.USERNO(+) = SL.USERNO
+					AND SL.SUBJ = RS.SUBJ(+)
+					AND SL.GRCODE = RS.GRCODE(+)
+					AND SL.GRSEQ = RS.GRSEQ(+)
+					AND SL.CLASSNO = RS.CLASSNO(+)
+					AND SL.USERNO = RS.USERNO(+)
+					AND SL.SUBJ = #{subj}
+					AND SL.GRCODE = #{grcode}
+					AND SL.GRSEQ = #{grseq}
+	]]>
+				<if test="order == ''">
+					ORDER BY EDUNO ASC
+				</if>
+				<if test="order != ''">
+					ORDER BY ${order} ASC
+				</if>
+	</select>
+	
+	<update id="updateGradetApp" parameterType="Map">
+	<![CDATA[
+		-- 과제물관리 -> 과제물  점수 수정
+            UPDATE TB_REPORT_SUBMIT
+            SET LUSERNO = #{sessNo},
+                LDATE = SYSDATE,
+                SUBMIT_POINT = #{point},
+            	ESTIMATE = #{estimate}
+            WHERE SUBJ = #{subj}
+                AND GRCODE = #{grcode}
+                AND GRSEQ = #{grseq}
+                AND CLASSNO = #{classno}
+                AND DATES = #{dates}
+                AND USERNO = #{userno}
+	]]>
+	</update>
+	
+	<update id="updateReportSubmit" parameterType="Map">
+	<![CDATA[
+		-- 과제물관리 -> 과제물  평가 수정
+            UPDATE TB_STU_LEC A
+               SET AVREPORT = 
+                      NVL ((SELECT SUM (NVL (SUBMIT_POINT, 0))
+                              FROM TB_REPORT_SUBMIT
+                             WHERE SUBJ = A.SUBJ
+                               AND GRCODE = A.GRCODE
+                               AND GRSEQ = A.GRSEQ
+                               AND CLASSNO = A.CLASSNO
+                               AND USERNO = A.USERNO),
+                           0
+                          ),
+                   LUSERNO = #{sessNo},
+                   LDATE = SYSDATE
+             WHERE SUBJ = #{subj} AND GRCODE = #{grcode} AND GRSEQ = #{grseq} AND CLASSNO = #{classno} AND USERNO = #{userno}
+	]]>
+	</update>
+	
+	<update id="insertGradetApp" parameterType="Map">
+	<![CDATA[
+		-- 과제물관리 -> 과제물  점수 등록
+			INSERT INTO 
+				TB_REPORT_SUBMIT
+					(SUBJ, GRCODE, GRSEQ, CLASSNO, DATES, USERNO, LUSERNO, SUBMIT_POINT, ESTIMATE, LDATE)
+				VALUES(#{subj} , #{grcode}, #{grseq}, #{classno}, #{dates}, #{userno}, #{sessNo}, #{point}, #{estimate}, SYSDATE)
+	]]>
+	</update>
+	
+	<select id="selectReportSubmitCountRow" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 과제물관리 -> 과제물  과목코드 등록여부 확인 
+	        SELECT 
+                COUNT(*) AS COUNT
+            FROM 
+                TB_REPORT_SUBMIT
+            WHERE 
+            	SUBJ = #{subj} AND GRCODE = #{grcode} AND GRSEQ = #{grseq} AND CLASSNO = #{classno}  AND DATES = #{dates} AND USERNO = #{userno}
+     ]]>
+	</select>	
+	
+	<select id="selectGradeAppList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 평가관리 리스트
+            SELECT SUBJ, GRCODE, GRSEQ, CLASSNO, DATES, TITLE, RPARTF, RPARTT,
+                   GROUPFILE_NO,
+                   (SELECT MAX (GRADE_POINT)
+                      FROM TB_REPORT_GRADE
+                     WHERE GRCODE = R.GRCODE
+                       AND GRSEQ = R.GRSEQ
+                       AND SUBJ = R.SUBJ
+                       AND CLASSNO = R.CLASSNO
+                       AND DATES = R.DATES) POINT
+            FROM TB_REPORT R
+            WHERE SUBJ = #{subj}
+                AND GRCODE = #{grcode}
+                AND GRSEQ = #{grseq}
+                AND CLASSNO = #{classno}
+	]]>
+	</select>
+	
+	<select id="selectReportClassNoRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과제물관리 -> 과제물제출 반명
+		SELECT 
+			CLASSNO, CLASSNM 
+		FROM 
+			TB_SUBJCLASS 
+		WHERE 
+			GRCODE = #{grcode} AND GRSEQ = #{grseq} AND SUBJ = #{subj}
+	]]>
+	</select>	
+	
+	<select id="selectReportAppGradeCntRow" parameterType="Map" resultType="String">
+	<![CDATA[
+		-- 과제물관리 -> 과제 출제인지 미제출인지 체크
+        --    SELECT 
+        --        REPORT_CNT
+       --     FROM 
+        --        TB_GRSEQ
+        SELECT count(*) cnt FROM
+        TB_REPORT_SUBMIT
+            WHERE 
+                GRCODE = #{grcode} AND GRSEQ = #{grseq}
+        
+	]]>
+	</select>
+	
+	<select id="regChoice" parameterType="Map" resultType="Integer">
+		<![CDATA[
+		    -- 과제물평가관리 -> 제출 이력 여부
+		    SELECT count(*) as cnt FROM TB_REPORT_SUBMIT
+			WHERE SUBJ = #{subj} 
+			AND GRCODE = #{grcode} 
+			AND GRSEQ = #{grseq} 
+			AND CLASSNO = #{classno} 
+			AND DATES = #{dates} 
+			AND USERNO = #{luserno} 
+		]]>
+	</select>
+	
+	<update id="reportInsert" parameterType="Map">
+		<![CDATA[
+		    -- 과제물평가관리 -> 과제물 제출 입력
+			INSERT INTO TB_REPORT_SUBMIT 
+				(SUBJ, GRCODE, GRSEQ, CLASSNO, DATES, USERNO, LUSERNO, LDATE, GROUPFILE_NO) 
+			VALUES
+				(#{subj}, #{grcode}, #{grseq}, #{classno}, #{dates}, #{luserno}, #{luserno}, sysdate, #{groupfileNo})
+		]]>
+	</update>
+	
+	<update id="reportUpdate" parameterType="Map">
+		<![CDATA[
+		    -- 과제물평가관리 -> 과제물 제출 업데이트
+			UPDATE TB_REPORT_SUBMIT SET
+				DEPT = (SELECT dept FROM TB_MEMBER WHERE USERNO = #{luserno}),
+				SUBMIT_DATE = sysdate,
+				LUSERNO = #{luserno},
+				LDATE = sysdate,
+				GROUPFILE_NO = #{groupfileNo}
+			WHERE SUBJ = #{subj} 
+			AND GRCODE = #{grcode} 
+			AND GRSEQ = #{grseq} 
+			AND CLASSNO = #{classno} 
+			AND DATES = #{dates} 
+			AND USERNO = #{luserno} 
+		]]>
+	</update>	
+	
+</mapper>

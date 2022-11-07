@@ -1,0 +1,101 @@
+td {
+	font-size: 9pt;
+	line-height: 18pt;
+	color: #666666;
+}
+a:link {
+	color: #666666;
+	text-decoration: none;
+}
+a:visited {
+	color: #666666;
+	text-decoration: none;
+}
+a:hover {
+	color: #993300;
+	text-decoration: none;
+}
+a:active {
+	color: #993300;
+	text-decoration: none;
+}
+
+.left {
+	background-attachment: fixed;
+	background-image:  url(../Imgs/menu/left_menu_bg.gif);
+	background-repeat: repeat-x;
+	background-position: left bottom;
+	height: 22px;
+	
+}
+	
+.topmenu {font-size: 11pt; color:#FFFFCC}	
+.topmenu A:link { color:#FFFFCC; text-decoration: none}
+.topmenu A:visited { color:#FFFFCC; text-decoration: none}
+.topmenu A:hover { color:#FFFFCC;}
+
+.inputbox01 {
+	background-color: #FFFFFF;
+	border: 1px solid #CCCCCC;
+	font-size: 9pt;
+	height: 18px;
+}
+
+.loginbox {
+	font-size: 12px;
+	color: #FFFFCC;
+	text-decoration: none;
+	}
+
+.nev:link, .nev:active, .nev:visited {
+	font-size: 9px;
+	color: #FFFFFF;
+	text-decoration: none;
+	}
+
+
+.boardbg01 {
+	background-attachment: fixed;
+	background-image:  url(../Imgs/img/dot_line03.gif);
+	padding-top: 3px;	
+	background-repeat: repeat-x;
+	background-position: left bottom;
+	height: 25px;
+}
+
+.boardnumber {
+	font-size: 8.5pt;
+	color: #999999;
+}
+
+.boardinput03 {
+	background-color: ffffff;
+	border: 1px solid CCCBC7;
+	color: #666666;
+
+}
+
+.button {
+	background-color: #FFFFFF;
+	border: 1px solid #CCCCCC;
+	font-family: "µ¸¿ò";
+	font-size: 12px;
+	color: #666666;
+	text-decoration: none;
+	padding-top: 2px;
+	height: 18px;
+
+}
+
+.button01 {
+	background-attachment: fixed;
+	background-image:  url(../Imgs/btn/bg_01.gif);
+	border: 1px solid #A2BB3E;
+	font-family: "µ¸¿ò";
+	font-size: 12px;
+	color: #666666;
+	text-decoration: none;
+	padding-top: 2px;
+	height: 18px;
+
+}

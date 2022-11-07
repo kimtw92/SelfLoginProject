@@ -1,0 +1,121 @@
+@charset "EUC-KR";
+
+html, body {width:100%; height:100%;}
+
+/* default definition */
+body {
+	font:12px 'µ¸¿ò',dotum,AppleGothic,sans-serif;
+	color:#444;
+	word-break:break-all;
+	margin:0;
+	padding:0;
+	scrollbar-face-color:#F2F2F2;
+	scrollbar-shadow-color:#DEDEDE;
+	scrollbar-highlight-color:#DEDEDE;
+	scrollbar-3dlight-color:#FFF;
+	scrollbar-darkshadow-color:#FFF;
+	scrollbar-track-color:#FFF;
+	scrollbar-arrow-color:#D2D2D2;
+    background:url(../../images/main/bg_sub.jpg) repeat-x left top;
+}
+
+#topheader {position:relative; width:100%; height:115px; font-size:0; z-index:1;}
+#topheader div.topheader {position:relative; width:860px; height:115px; margin:0 auto; background:url(../../images/main/top_bg.gif) no-repeat left top;}
+#topheader div.flash {position:absolute; left:-85px;}
+#topheader div.toparea {position:absolute; left:-5px; width:806px; height:95px; padding:0 36px 0 29px; background:url(../../images/main/top_bg.gif) no-repeat left top;}
+#topheader div.box_layer {position:absolute; left:469px; top:107px; width:385px; height:178px; padding:22px 0 0 5px; background:#fff;}
+#topheader div.box_layer dl {float:left; width:110px; height:155px; margin-bottom:63px; padding:0 8px; border-right:1px dotted #BEBEBE;}
+#topheader div.box_layer dl dd {line-height:20px; font-size:11px; color:#3B546C !important; letter-spacing:-1px;}
+#topheader div.box_layer dl dd a {color:#3B546C;}
+#topheader div.box_layer dl dt {text-indent:-9999px;}
+#topheader div.box_layer dl.box1 dt {width:81px; height:12px; background:url(../../images/main/title.gif) no-repeat left -68px; margin:0 auto 63px;}
+#topheader div.box_layer dl.box2 dt {width:80px; height:12px; background:url(../../images/main/title.gif) no-repeat left -80px; margin:0 auto 63px;}
+#topheader div.box_layer dl.box3 dt {width:59px; height:12px; background:url(../../images/main/title.gif) no-repeat left -92px; margin:0 auto 63px;}
+#topheader div.box_layer dl.box1 {background:url(../../images/main/layer_bg1.gif) no-repeat center 20px;}
+#topheader div.box_layer dl.box2 {background:url(../../images/main/layer_bg2.gif) no-repeat center 20px;}
+#topheader div.box_layer dl.box3 {background:url(../../images/main/layer_bg3.gif) no-repeat center 20px; border-right:0;}
+
+h6 {float:left; width:148px; height:50px; margin:22px 88px 0 0; background:url(../../images/main/logo.gif) no-repeat left top; font-size:0; text-indent:-9999px;}
+h6 a {display:block; height:50px;}
+
+#menu {float:right; width:570px;}
+
+#menu dl {float:right; width:193px; height:12px; margin-bottom:13px; padding:3px 18px 5px 22px; background:url(../../images/main/top_menu.gif) no-repeat left top;}
+#menu dl dd {float:left;}
+#menu dl dd a {float:left; text-indent:-9999px;}
+#menu dl dd a.sitemap {width:43px; height:11px; margin-right:17px;}
+#menu dl dd a.english {width:39px; height:12px; margin-right:17px;}
+#menu dl dd a.cyberedu {width:77px; height:11px;}
+
+#menu ul.gnb {position:relative; clear:both; width:100%;}
+#menu ul li, #menu ul li a {float:left;}
+#menu a {text-indent:-9999px;}
+#menu ul ul {position:absolute; top:40px; display:none;}
+#menu1_ {width:75px; height:43px; background:url(../../images/main/gnb.gif) no-repeat left top;}
+#menu2_ {width:81px; height:43px; background:url(../../images/main/gnb.gif) no-repeat -75px top;}
+#menu3_ {width:80px; height:43px; background:url(../../images/main/gnb.gif) no-repeat -156px top;}
+#menu4_ {width:77px; height:43px; background:url(../../images/main/gnb.gif) no-repeat -236px top;}
+#menu5_ {width:81px; height:43px; background:url(../../images/main/gnb.gif) no-repeat -313px top;}
+#menu6_ {width:75px; height:43px; background:url(../../images/main/gnb.gif) no-repeat -394px top;}
+#menu7_ {width:101px; height:43px; background:url(../../images/main/gnb.gif) no-repeat -469px top;}
+#menu1_:hover {width:75px; height:43px; background:url(../../images/main/gnb.gif) no-repeat left -43px;}
+#menu2_:hover {width:81px; height:43px; background:url(../../images/main/gnb.gif) no-repeat -75px -43px;}
+#menu3_:hover {width:80px; height:43px; background:url(../../images/main/gnb.gif) no-repeat -156px -43px;}
+#menu4_:hover {width:77px; height:43px; background:url(../../images/main/gnb.gif) no-repeat -236px -43px;}
+#menu5_:hover {width:81px; height:43px; background:url(../../images/main/gnb.gif) no-repeat -313px -43px;}
+#menu6_:hover {width:75px; height:43px; background:url(../../images/main/gnb.gif) no-repeat -394px -43px;}
+#menu7_:hover {width:101px; height:43px; background:url(../../images/main/gnb.gif) no-repeat -469px -43px;}
+
+#sub2 { left:73px; width:204px; height:21px; padding:8px 0 0 16px; background:url(../../images/main/gnb.gif) no-repeat left -86px;}
+	#sub2_1 {width:41px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -16px -94px;}
+	#sub2_2 {width:62px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -75px -94px;}
+	#sub2_3 {width:42px; height:12px; background:url(../../images/main/gnb.gif) no-repeat -155px -94px;}
+	#sub2_1:hover {width:41px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -16px -123px;}
+	#sub2_2:hover {width:62px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -75px -123px;}
+	#sub2_3:hover {width:42px; height:12px; background:url(../../images/main/gnb.gif) no-repeat -155px -123px;}
+#sub3 {left:151px; width:256px; height:21px; padding:8px 0 0 14px; background:url(../../images/main/gnb.gif) no-repeat left -144px;}
+	#sub3_1 {width:63px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -14px -152px;}
+	#sub3_2 {width:41px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -95px -152px;}
+	#sub3_3 {width:42px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -154px -152px;}
+	#sub3_4 {width:42px; height:12px; background:url(../../images/main/gnb.gif) no-repeat -213px -152px;}
+	#sub3_1:hover {width:63px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -14px -181px;}
+	#sub3_2:hover {width:41px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -95px -181px;}
+	#sub3_3:hover {width:42px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -154px -181px;}
+	#sub3_4:hover {width:42px; height:12px; background:url(../../images/main/gnb.gif) no-repeat -213px -181px;}
+#sub4 {left:237px; width:120px; height:21px; padding:8px 0 0 14px; background:url(../../images/main/gnb.gif) no-repeat left -202px;}
+	#sub4_1 {width:42px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -14px -210px;}
+	#sub4_2 {width:42px; height:12px; background:url(../../images/main/gnb.gif) no-repeat -73px -210px;}
+	#sub4_1:hover {width:42px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -14px -239px;}
+	#sub4_2:hover {width:42px; height:12px; background:url(../../images/main/gnb.gif) no-repeat -73px -239px;}
+#sub5 {left:313px; width:248px; height:21px; padding:8px 0 0 14px; background:url(../../images/main/gnb.gif) no-repeat left -260px;}
+	#sub5_1 {width:42px; height:12px; margin-right:17px; background:url(../../images/main/gnb.gif) no-repeat -14px -268px;}
+	#sub5_2 {width:31px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -73px -268px;}
+	#sub5_3 {width:52px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -122px -268px;}
+	#sub5_4 {width:48px; height:12px; background:url(../../images/main/gnb.gif) no-repeat -192px -268px;}
+	#sub5_1:hover {width:42px; height:12px; margin-right:17px; background:url(../../images/main/gnb.gif) no-repeat -14px -297px;}
+	#sub5_2:hover {width:31px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -73px -297px;}
+	#sub5_3:hover {width:52px; height:12px; margin-right:18px; background:url(../../images/main/gnb.gif) no-repeat -122px -297px;}
+	#sub5_4:hover {width:48px; height:12px; background:url(../../images/main/gnb.gif) no-repeat -192px -297px;}
+#sub7 {left:70px; width:510px; height:21px; padding:8px 0 0 14px; background:url(../../images/main/gnb.gif) no-repeat left -318px;}
+	#sub7_1 {width:32px; height:12px; margin-right:17px; background:url(../../images/main/gnb.gif) no-repeat -14px -326px;}
+	#sub7_8 {width:52px; height:12px; margin-right:17px; background:url(../../images/main/gnb.gif) no-repeat -63px -326px;}
+	#sub7_2 {width:42px; height:12px; margin-right:17px; background:url(../../images/main/gnb.gif) no-repeat -133px -326px;}
+	#sub7_3 {width:59px; height:12px; margin-right:17px; background:url(../../images/main/gnb.gif) no-repeat -191px -326px;}
+	#sub7_4 {width:48px; height:12px; margin-right:13px; background:url(../../images/main/gnb.gif) no-repeat -267px -326px;}
+	#sub7_5 {width:46px; height:12px; margin-right:17px; background:url(../../images/main/gnb.gif) no-repeat -329px -326px;}
+	#sub7_6 {width:35px; height:12px; margin-right:17px; background:url(../../images/main/gnb.gif) no-repeat -386px -326px;}
+	#sub7_7 {width:65px; height:12px; background:url(../../images/main/gnb.gif) no-repeat -443px -326px;}
+	#sub7_1:hover {width:32px; height:12px; margin-right:17px; background:url(../../images/main/gnb.gif) no-repeat -14px -355px;}
+	#sub7_8:hover {width:52px; height:12px; margin-right:17px; background:url(../../images/main/gnb.gif) no-repeat -63px -355px;}
+	#sub7_2:hover {width:42px; height:12px; margin-right:17px; background:url(../../images/main/gnb.gif) no-repeat -133px -355px;}
+	#sub7_3:hover {width:59px; height:12px; margin-right:17px; background:url(../../images/main/gnb.gif) no-repeat -191px -355px;}
+	#sub7_4:hover {width:48px; height:12px; margin-right:13px; background:url(../../images/main/gnb.gif) no-repeat -267px -355px;}
+	#sub7_5:hover {width:46px; height:12px; margin-right:17px; background:url(../../images/main/gnb.gif) no-repeat -329px -355px;}
+	#sub7_6:hover {width:35px; height:12px; margin-right:17px; background:url(../../images/main/gnb.gif) no-repeat -386px -355px;}
+	#sub7_7:hover {width:65px; height:12px; background:url(../../images/main/gnb.gif) no-repeat -443px -355px;}
+
+
+div.tabs04{width:671px;height:34px;padding:0 0 10px 0;margin:0 0 0 0;background:url(/images/skin1/common/back_tabs01.gif) repeat-x bottom;}
+div.tabs04 ul			{margin:0;padding:0 0 0 0;font-size:0;line-height:0;letter-spacing:0;}
+div.tabs04 ul li		{float:left;margin:0;padding:0;font-size:0;list-style:none;display:inline;}
+div.tabs04 ul li img	{margin:0;font-size:0;}

@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.homeFront.mapper.CourseMapper">
+
+<!-- 사용자 교육과정 공통 sql -->
+	<select id="getCourseDataCnt" parameterType="Map" resultType="Integer">
+		SELECT 
+			    	count(*)
+			FROM 
+			( 
+			    SELECT 
+			        GRCODE, 
+			        MIN(GRCODENM) AS GRCODENM, 
+			        SUBSTR (MAX (SYS_CONNECT_BY_PATH (GRSEQ, ',')), 2) GRSEQ, 
+			        MIN(TARGET) AS TARGET, 
+			        SUBSTR (MAX (SYS_CONNECT_BY_PATH (EDUDATE, ',')), 2) EDUDATE, 
+			        MIN(TIME) AS EDUTIME 
+			    FROM 
+			    (  
+			        SELECT 
+			            ROW_NUMBER() OVER (partition by A.GRCODE ORDER BY A.GRCODE, B.GRSEQ) as rn, 
+			            A.GRCODE AS GRCODE, -- 교육과정코드 
+			            A.GRCODENM,         -- 교유과정명 
+			            B.GRSEQ, 
+			            B.TSEAT AS TSEAT,   -- 정원 
+			            B.TDATE AS TDATE,   -- 교육일수 
+			            TO_CHAR(B.STARTED,'YY-MM-DD') || '~' || SUBSTR(TO_CHAR(B.ENDDATE,'YYYY-MM-DD'),6,5) AS EDUDATE, 
+			            C.TARGET AS TARGET, -- 교육대상 
+			            C.TIME AS TIME      -- 교육시간 
+			        FROM 
+			            TB_GRCODE A INNER JOIN TB_GRSEQ B  
+			            ON A.GRCODE = B.GRCODE AND A.USE_YN = 'Y' AND B.USE_YN = 'Y' INNER JOIN TB_GRANNAE C 
+			            ON B.GRCODE = C.GRCODE AND SUBSTR(B.GRSEQ,1,4) = TO_CHAR(SYSDATE, 'YYYY') AND SUBSTR(B.GRSEQ,1,4) = to_char(sysdate,'yyyy')
+			        WHERE    
+			            A.GRTYPE LIKE DECODE(#{grtype},'','%',#{grtype})  
+			            AND A.GRGUBUN LIKE DECODE(#{grgubun},'','%',#{grgubun}) 
+			            AND A.GRSUBCD LIKE DECODE(#{grsubcd},'','%',#{grsubcd}) 
+						AND c.year = to_char(sysdate,'yyyy')
+			    ) A 
+			    START WITH rn = 1 
+			    CONNECT BY PRIOR rn = rn -1 AND PRIOR GRCODE = GRCODE 
+			    GROUP BY A.GRCODE 
+			    order by GRCODENM
+			) A 
+	</select>
+	
+	<select id="getCourseData" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+			SELECT 
+			    GRCODE, 
+			    GRCODENM, 
+			    GRSEQ, 
+			    TARGET, 
+			    EDUDATE, 
+			    EDUTIME 
+			FROM 
+			( 
+			    SELECT 
+			        GRCODE, 
+			        MIN(GRCODENM) AS GRCODENM, 
+			        SUBSTR (MAX (SYS_CONNECT_BY_PATH (GRSEQ, ',')), 2) GRSEQ, 
+			        MIN(TARGET) AS TARGET, 
+			        SUBSTR (MAX (SYS_CONNECT_BY_PATH (EDUDATE, ',')), 2) EDUDATE, 
+			        MIN(TIME) AS EDUTIME 
+			    FROM 
+			    (  
+			        SELECT 
+			            ROW_NUMBER() OVER (partition by A.GRCODE ORDER BY A.GRCODE, B.GRSEQ) as rn, 
+			            A.GRCODE AS GRCODE, -- 교육과정코드 
+			            A.GRCODENM,         -- 교유과정명 
+			            B.GRSEQ, 
+			            B.TSEAT AS TSEAT,   -- 정원 
+			            B.TDATE AS TDATE,   -- 교육일수 
+			            DECODE(TO_CHAR(B.STARTED,'YY-MM-DD') || '~', '~', '', TO_CHAR(B.STARTED,'YY-MM-DD') || '~') || SUBSTR(TO_CHAR(B.ENDDATE,'YYYY-MM-DD'),6,5) AS EDUDATE, 
+			            C.TARGET AS TARGET, -- 교육대상 
+			            C.TIME AS TIME      -- 교육시간 
+			        FROM 
+			            TB_GRCODE A INNER JOIN TB_GRSEQ B  
+			            ON A.GRCODE = B.GRCODE AND A.USE_YN = 'Y' AND B.USE_YN = 'Y' INNER JOIN TB_GRANNAE C 
+			            ON B.GRCODE = C.GRCODE AND SUBSTR(B.GRSEQ,1,4) = TO_CHAR(SYSDATE, 'YYYY') AND SUBSTR(B.GRSEQ,1,4) = to_char(sysdate,'yyyy')
+			        WHERE    
+			            A.GRTYPE LIKE DECODE(#{grtype},'','%',#{grtype})  
+			            AND A.GRGUBUN LIKE DECODE(#{grgubun},'','%',#{grgubun}) 
+			            AND A.GRSUBCD LIKE DECODE(#{grsubcd},'','%',#{grsubcd}) 
+						AND c.year = to_char(sysdate,'yyyy')
+			    ) A 
+			    START WITH rn = 1 
+			    CONNECT BY PRIOR rn = rn -1 AND PRIOR GRCODE = GRCODE 
+			    GROUP BY A.GRCODE 
+			    order by GRCODENM
+			) A 
+		) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<!-- 과정정보 조회, 교육과정에서 팝업에 쓰이는 쿼리 5개중 첫번째 -->
+	<select id="getCourseInfoPopup1" parameterType="String" resultType="DataMap">
+	<![CDATA[	
+		SELECT 
+					GRCODE
+					, GRCODENM
+					, SCODE_NAME
+					, MCODE_NAME
+		FROM 	
+					tb_grcode a 
+		JOIN 		
+					tb_maincode b	
+		ON 		
+					b.major_code= grtype	
+		JOIN 
+					tb_subcode c 
+		ON 		
+					c.major_code= grtype 
+			AND	c.minor_code= grsubcd
+		WHERE 
+					b.cd_gubun='G' 
+			AND	c.cd_gubun='G'	
+			AND	a.use_yn = 'Y' 
+			AND	b.use_yn = 'Y' 
+			AND	grcode = #{value}
+		ORDER BY 
+					GRTYPE, GRCODENM
+	]]>
+	</select>
+	
+	<select id="getCourseInfoPopup2" parameterType="String" resultType="DataMap">
+	<![CDATA[	
+		SELECT 
+					GRCODE   
+					, YEAR        
+					, GOAL      
+					, TARGET  
+					, INWON    
+					, GIGAN     
+					, SIGANGE   
+					, SIBUNYA   
+					, SISOGE      
+					, SICOMMON   
+					, SIJUNMUN    
+					, SIETC          
+					, RATEGANGE   
+					, RATEBUNYA   
+					, RATESOGE     
+					, RATECOMMON   
+					, RATEJUNMUN    
+					, RATEETC          
+					, YUNYOUNG    
+					, TIME              
+		FROM 
+					tb_grannae 
+		WHERE 
+					grcode= #{value} 
+			AND 	year=to_char(sysdate,'YYYY')
+	]]>
+	</select>
+	
+	<!-- 과정교육계획관리 데이타 조회, 교육과정에서 팝업에 쓰이는 쿼리 5개중 네번째 -->
+	<select id="getCourseInfoSum" parameterType="String" resultType="DataMap">
+	<![CDATA[	
+		SELECT 
+					sum(title1_sub1) as sub1
+					, sum(title1_sub2) as sub2
+					, sum(title1_sub3) as sub3
+					, sum(title1_sub4) as sub4
+		FROM
+				 	tb_grannae2
+		WHERE 
+					grcode= #{value} 
+			AND 	year=to_char(sysdate,'YYYY')
+	]]>
+	</select>
+	
+	<!-- 과정교육계획관리 데이타 조회, 교육과정에서 팝업에 쓰이는 쿼리 5개중 다섯번째 -->	
+	<select id="getCourseInfoSubSum" parameterType="Map" resultType="DataMap">
+	<![CDATA[	
+		SELECT 
+					count(*) as rowspan
+					, sum(title1_sub1) as sub1
+					, sum(title1_sub2) as sub2
+					, sum(title1_sub3) as sub3
+					, sum(title1_sub4) as sub4
+		FROM 
+					tb_grannae2
+		WHERE 
+					grcode= #{grcode} 
+			AND 	year=to_char(sysdate,'YYYY') 
+			AND 	annae_gubun = #{order}
+	]]>
+	</select>
+	
+	<!-- 과정교육계획관리 데이타 조회, 교육과정에서 팝업에 쓰이는 쿼리 5개중 세번째 -->
+	<select id="getCourseInfoDetail" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT 
+					GRCODE  
+					, YEAR       
+					, ANNAE_GUBUN   
+					, ANNAE_SEQ        
+					, ANNAE_TITLE  
+					, TITLE1_SUB1     
+					, TITLE1_SUB2     
+					, TITLE1_SUB3     
+					, TITLE1_SUB4    
+		FROM 
+					tb_grannae2 
+		WHERE 
+					grcode= #{value} 
+			AND 	year=to_char(sysdate,'YYYY')
+	]]>
+	</select>
+	
+	<select id="searchCourseDataCnt" parameterType="Map" resultType="Integer">
+		SELECT 
+		    count(*)
+		FROM 
+		( 
+		    SELECT 
+		        GRCODE, 
+		        MIN(GRCODENM) AS GRCODENM, 
+		        SUBSTR (MAX (SYS_CONNECT_BY_PATH (GRSEQ, ',')), 2) GRSEQ, 
+		        MIN(TARGET) AS TARGET, 
+		        SUBSTR (MAX (SYS_CONNECT_BY_PATH (EDUDATE, ',')), 2) EDUDATE, 
+		        MIN(TIME) AS EDUTIME 
+		    FROM 
+		    (  
+		        SELECT 
+		            ROW_NUMBER() OVER (partition by A.GRCODE ORDER BY A.GRCODE, B.GRSEQ) as rn, 
+		            A.GRCODE AS GRCODE, -- 교육과정코드 
+		            A.GRCODENM,         -- 교유과정명 
+		            B.GRSEQ, 
+		            B.TSEAT AS TSEAT,   -- 정원 
+		            B.TDATE AS TDATE,   -- 교육일수 
+		            B.STARTED || '~' || SUBSTR(TO_CHAR(B.ENDDATE,'YYYY-MM-DD'),6,5) AS EDUDATE, 
+		            C.TARGET AS TARGET, -- 교육대상 
+		            C.TIME AS TIME      -- 교육시간 
+		        FROM 
+		            TB_GRCODE A INNER JOIN TB_GRSEQ B  
+		            ON A.GRCODE = B.GRCODE AND A.USE_YN = 'Y' AND B.USE_YN = 'Y' INNER JOIN TB_GRANNAE C 
+		            ON B.GRCODE = C.GRCODE AND SUBSTR(B.GRSEQ,1,4) = TO_CHAR(SYSDATE, 'YYYY') AND SUBSTR(B.GRSEQ,1,4) = C.YEAR 
+		        WHERE
+		            B.GRCODENIKNM LIKE '%' || #{courseName} || '%'
+		
+		    ) A 
+		    START WITH rn = 1 
+		    CONNECT BY PRIOR rn = rn -1 AND PRIOR GRCODE = GRCODE 
+		    GROUP BY A.GRCODE 
+		) A 	
+	</select>
+	<select id="searchCourseData" parameterType="Map" resultType="DataMap">
+	<![CDATA[	
+	SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		SELECT 
+		    GRCODE, 
+		    GRCODENM, 
+		    GRSEQ, 
+		    TARGET, 
+		    EDUDATE, 
+		    EDUTIME 
+		FROM 
+		( 
+		    SELECT 
+		        GRCODE, 
+		        MIN(GRCODENM) AS GRCODENM, 
+		        SUBSTR (MAX (SYS_CONNECT_BY_PATH (GRSEQ, ',')), 2) GRSEQ, 
+		        MIN(TARGET) AS TARGET, 
+		        SUBSTR (MAX (SYS_CONNECT_BY_PATH (EDUDATE, ',')), 2) EDUDATE, 
+		        MIN(TIME) AS EDUTIME 
+		    FROM 
+		    (  
+		        SELECT 
+		            ROW_NUMBER() OVER (partition by A.GRCODE ORDER BY A.GRCODE, B.GRSEQ) as rn, 
+		            A.GRCODE AS GRCODE, -- 교육과정코드 
+		            A.GRCODENM,         -- 교유과정명 
+		            B.GRSEQ, 
+		            B.TSEAT AS TSEAT,   -- 정원 
+		            B.TDATE AS TDATE,   -- 교육일수 
+		            B.STARTED || '~' || SUBSTR(TO_CHAR(B.ENDDATE,'YYYY-MM-DD'),6,5) AS EDUDATE, 
+		            C.TARGET AS TARGET, -- 교육대상 
+		            C.TIME AS TIME      -- 교육시간 
+		        FROM 
+		            TB_GRCODE A INNER JOIN TB_GRSEQ B  
+		            ON A.GRCODE = B.GRCODE AND A.USE_YN = 'Y' AND B.USE_YN = 'Y' INNER JOIN TB_GRANNAE C 
+		            ON B.GRCODE = C.GRCODE AND SUBSTR(B.GRSEQ,1,4) = TO_CHAR(SYSDATE, 'YYYY') AND SUBSTR(B.GRSEQ,1,4) = C.YEAR 
+		            AND B.USE_YN = 'Y'
+		        WHERE
+		            B.GRCODENIKNM LIKE '%' || #{courseName} || '%'
+		
+		    ) A 
+		    START WITH rn = 1 
+		    CONNECT BY PRIOR rn = rn -1 AND PRIOR GRCODE = GRCODE 
+		    GROUP BY A.GRCODE 
+		) A 	
+	) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<!-- 사용자 교육과정 공통 sql -->
+	<select id="selecteducationcourseCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		SELECT 
+		    count(*) 
+		FROM 
+		( 
+		    SELECT 
+		        GRCODE, 
+		        MIN(GRCODENM) AS GRCODENM, 
+		        SUBSTR (MAX (SYS_CONNECT_BY_PATH (GRSEQ, ',')), 2) GRSEQ, 
+		        MIN(TARGET) AS TARGET, 
+		        SUBSTR (MAX (SYS_CONNECT_BY_PATH (EDUDATE, ',')), 2) EDUDATE, 
+		        MIN(TIME) AS EDUTIME 
+		    FROM 
+		    (  
+		        SELECT 
+		            ROW_NUMBER() OVER (partition by A.GRCODE ORDER BY A.GRCODE, B.GRSEQ) as rn, 
+		            A.GRCODE AS GRCODE, -- 교육과정코드 
+		            A.GRCODENM,         -- 교유과정명 
+		            B.GRSEQ, 
+		            B.TSEAT AS TSEAT,   -- 정원 
+		            B.TDATE AS TDATE,   -- 교육일수 
+		            TO_CHAR(B.STARTED,'YY-MM-DD') || '~' || SUBSTR(TO_CHAR(B.ENDDATE,'YYYY-MM-DD'),6,5) AS EDUDATE, 
+		            C.TARGET AS TARGET, -- 교육대상 
+		            C.TIME AS TIME      -- 교육시간 
+		        FROM 
+		            TB_GRCODE A INNER JOIN TB_GRSEQ B  
+		            ON A.GRCODE = B.GRCODE AND A.USE_YN = 'Y' AND B.USE_YN = 'Y' INNER JOIN TB_GRANNAE C 
+		            ON B.GRCODE = C.GRCODE AND SUBSTR(B.GRSEQ,1,4) = TO_CHAR(SYSDATE, 'YYYY') AND SUBSTR(B.GRSEQ,1,4) = to_char(sysdate,'yyyy')
+		        WHERE    
+		            A.GRTYPE LIKE DECODE(#{grtype},'','%',#{grtype})  
+		            AND A.GRGUBUN LIKE DECODE(#{grgubun},'','%',#{grgubun}) 
+		            AND A.GRSUBCD LIKE DECODE(#{grsubcd},'','%',#{grsubcd}) 
+					AND c.year = to_char(sysdate,'yyyy')
+		    ) A 
+		    START WITH rn = 1 
+		    CONNECT BY PRIOR rn = rn -1 AND PRIOR GRCODE = GRCODE 
+		    GROUP BY A.GRCODE 
+		    order by GRCODENM
+		) A 
+	]]>
+	</select>
+	<select id="selecteducationcourse" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		SELECT 
+		    GRCODE, 
+		    GRCODENM, 
+		    GRSEQ, 
+		    TARGET, 
+		    EDUDATE, 
+		    EDUTIME 
+		FROM 
+		( 
+		    SELECT 
+		        GRCODE, 
+		        MIN(GRCODENM) AS GRCODENM, 
+		        SUBSTR (MAX (SYS_CONNECT_BY_PATH (GRSEQ, ',')), 2) GRSEQ, 
+		        MIN(TARGET) AS TARGET, 
+		        SUBSTR (MAX (SYS_CONNECT_BY_PATH (EDUDATE, ',')), 2) EDUDATE, 
+		        MIN(TIME) AS EDUTIME 
+		    FROM 
+		    (  
+		        SELECT 
+		            ROW_NUMBER() OVER (partition by A.GRCODE ORDER BY A.GRCODE, B.GRSEQ) as rn, 
+		            A.GRCODE AS GRCODE, -- 교육과정코드 
+		            A.GRCODENM,         -- 교유과정명 
+		            B.GRSEQ, 
+		            B.TSEAT AS TSEAT,   -- 정원 
+		            B.TDATE AS TDATE,   -- 교육일수 
+		            TO_CHAR(B.STARTED,'YY-MM-DD') || '~' || SUBSTR(TO_CHAR(B.ENDDATE,'YYYY-MM-DD'),6,5) AS EDUDATE, 
+		            C.TARGET AS TARGET, -- 교육대상 
+		            C.TIME AS TIME      -- 교육시간 
+		        FROM 
+		            TB_GRCODE A INNER JOIN TB_GRSEQ B  
+		            ON A.GRCODE = B.GRCODE AND A.USE_YN = 'Y' AND B.USE_YN = 'Y' INNER JOIN TB_GRANNAE C 
+		            ON B.GRCODE = C.GRCODE AND SUBSTR(B.GRSEQ,1,4) = TO_CHAR(SYSDATE, 'YYYY') AND SUBSTR(B.GRSEQ,1,4) = to_char(sysdate,'yyyy')
+		            AND B.USE_YN = 'Y'
+		        WHERE    
+		            A.GRTYPE LIKE DECODE(#{grtype},'','%',#{grtype})  
+		            AND A.GRGUBUN LIKE DECODE(#{grgubun},'','%',#{grgubun}) 
+		            AND A.GRSUBCD LIKE DECODE(#{grsubcd},'','%',#{grsubcd}) 
+					AND c.year = to_char(sysdate,'yyyy')
+		    ) A 
+		    START WITH rn = 1 
+		    CONNECT BY PRIOR rn = rn -1 AND PRIOR GRCODE = GRCODE 
+		    GROUP BY A.GRCODE 
+		    order by GRCODENM
+		) A 
+	) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+</mapper>

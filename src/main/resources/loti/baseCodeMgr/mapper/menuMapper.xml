@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.baseCodeMgr.mapper.MenuMapper">
+
+	<select id="selectMenuAdminList" resultType="DataMap">
+	<![CDATA[
+		--  메뉴 관리자 목록 조회
+		SELECT GADMIN
+		     , GADMINNM 
+		  FROM TB_GADMIN 
+		 WHERE 1=1
+		   AND GADMIN NOT IN('8','99','6') 
+		 ORDER BY GADMIN
+	]]>
+	</select>
+	
+	<select id="selectMenuList" parameterType="String" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		--  메뉴관리 리스트
+		SELECT MENU_GRADE
+		     , MENU_DEPTH_1
+		     , MENU_DEPTH_2
+		     , MENU_DEPTH_3
+		     , MENU_SORT_NO
+		     , MENU_STEP_NO
+		     , MENU_WRITE_YN
+		     , MENU_NAME
+		     , MENU_URL
+		     , MENU_USE_YN
+		  FROM TB_MENU_2
+		 WHERE 1=1 
+		   AND TRIM(MENU_GRADE) = #{menuGrade}
+		 ORDER BY MENU_GRADE, MENU_DEPTH_1, MENU_DEPTH_2, MENU_DEPTH_3
+	]]>
+	</select>
+	
+	<select id="insertMenuCheck" parameterType="Map" resultType="int">
+	<![CDATA[
+		--  메뉴관리 등록 체크
+         SELECT COUNT(MENU_DEPTH_1)
+           FROM TB_MENU_2 
+          WHERE 1=1
+            AND TRIM(MENU_GRADE) = #{addMenuGrade}
+            AND MENU_DEPTH_1 = #{addMenuDepth1}
+            AND MENU_DEPTH_2 = #{addMenuDepth2}
+            AND MENU_DEPTH_3 = #{addMenuDepth3}
+	]]>
+	</select>
+	
+	<insert id="insertMenu" parameterType="Map">
+	<![CDATA[
+		--  메뉴관리 등록
+		INSERT INTO TB_MENU_2(
+		       MENU_GRADE     , MENU_DEPTH_1    , MENU_DEPTH_2             , MENU_DEPTH_3
+		     , MENU_NAME      , MENU_URL        , MENU_WRITE_YN            , MENU_SORT_NO
+		     , MENU_USE_YN    , MENU_STEP_NO
+		) VALUES (
+		       #{addMenuGrade}, #{addMenuDepth1}, NVL(#{addMenuDepth2},'0'), NVL(#{addMenuDepth3},'0')
+		     , #{addMenuName} , #{addMenuUrl}   , #{addMenuWriteYn}        , #{addMenuSortNo}
+		     , #{addMenuUseYn}, #{addMenuStepNo}
+		)
+	]]>
+	</insert>
+	
+	<update id="updateMenu" parameterType="Map">
+	<![CDATA[
+		--  메뉴관리 수정
+		UPDATE TB_MENU_2
+		   SET MENU_NAME = #{menuName}
+		     , MENU_URL = #{menuUrl}
+		     , MENU_WRITE_YN = #{menuWriteYn}
+		     , MENU_SORT_NO = #{menuSortNo}
+		     , MENU_USE_YN = #{menuUseYn}
+		 WHERE 1=1
+		   AND TRIM(MENU_GRADE) = #{menuGrade}
+		   AND MENU_DEPTH_1 = #{menuDepth1}
+		   AND MENU_DEPTH_2 = #{menuDepth2}
+		   AND MENU_DEPTH_3 = #{menuDepth3}
+	]]>
+	</update>
+	
+	<delete id="deleteMenu" parameterType="Map">
+	<![CDATA[
+		--  메뉴관리 삭제
+		DELETE
+		  FROM TB_MENU_2 
+		 WHERE 1=1
+		   AND TRIM(MENU_GRADE) = #{menuGrade} 
+		   AND MENU_DEPTH_1 = #{menuDepth1}
+		   AND MENU_DEPTH_2 = #{menuDepth2}
+		   AND MENU_DEPTH_3 = #{menuDepth3}
+	]]>
+	</delete>
+	
+	<select id="getLayerList" resultType="DataMap">
+	<![CDATA[	
+		SELECT GRCODENM
+		     , GRSEQ
+		     , TITLE
+		     , USERNM
+		     , SUBJNM
+		     , GO_URL
+		  FROM TV_SUBJQNA
+ 	]]>
+	</select>
+	
+</mapper>

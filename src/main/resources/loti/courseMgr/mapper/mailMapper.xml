@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.MailMapper">
+
+	<select id="selectGrcodeRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- MailDAO.java
+		-- 과정 정보
+		SELECT 
+			GRCODE, GRTYPE, GRSUBCD,
+			GRGUBUN, GRCODENM, USE_YN 
+		FROM TB_GRCODE 
+		WHERE GRCODE = #{value}
+	]]>
+	</select>
+	
+	<select id="selectAppInfoEnterList" parameterType="Map" resultType="DataMap">
+		-- MailDAO.java
+		-- 미입교 수강생 리스트
+		SELECT 
+			B.USERNO, B.NAME, B.EMAIL, SCP.DEC_B64('KEY1',B.HP) AS HP, B.DEPTNM, 
+			(SELECT JIKNM FROM TB_JIK WHERE JIK = A.JIK) JIKNM
+		FROM TB_APP_INFO A, tb_member B
+		WHERE A.USERNO = B.USERNO
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			
+		<choose>
+			<when test="grchk == ('Y').toString()">
+				 AND A.GRCHK = 'Y' 
+			</when>
+			<when test="grchk == ('N').toString()">
+				 AND (A.GRCHK = 'N' OR A.GRCHK IS NULL) 
+			</when>
+		</choose>
+	</select>
+	
+	<select id="selectAppInfoEnterUserList" parameterType="Map" resultType="DataMap">
+		-- MailDAO.java
+		-- 미입교 수강생 리스트
+		SELECT 
+			B.USERNO, B.NAME, B.EMAIL, SCP.DEC_B64('KEY1',B.HP) AS HP, B.DEPTNM, 
+			(SELECT JIKNM FROM TB_JIK WHERE JIK = A.JIK) JIKNM
+		FROM TB_APP_INFO A, tb_member B
+		WHERE A.USERNO = B.USERNO
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+		<choose>
+			<when test="qu == 'enter' or qu == 'notice'">
+				 AND A.GRCHK = 'Y' 
+				 AND A.USERNO IN(${tmpUserNo})
+			</when>
+			<otherwise>
+				 AND (A.GRCHK = 'N' OR A.GRCHK IS NULL)
+				 AND A.USERNO IN(${tmpUserNo})  
+			</otherwise>
+		</choose>
+		
+	</select>
+	
+	<select id="selectGrResultUserList" parameterType="Map" resultType="DataMap">
+		-- MailDAO.java
+		-- 수료자 리스트 수료, 미수료자 리스트
+		SELECT 
+			A.USERNO, A.NAME, A.EMAIL, SCP.DEC_B64('KEY1',A.HP) AS HP, A.DEPTNM, 
+			(SELECT JIKNM FROM TB_JIK WHERE JIK = B.RJIK) JIKNM
+		FROM tb_member A, TB_GRRESULT B
+		WHERE A.USERNO = B.USERNO
+			AND B.GRCODE = #{grcode}
+			AND B.GRSEQ = #{grseq}
+			
+      	<choose>
+      		<when test="rgraYn == ('Y').toString()">
+      			AND B.RGRAYN = 'Y'
+      		</when>
+      		<when test="rgraYn == ('N').toString()">
+      			AND (B.RGRAYN = 'N' OR B.RGRAYN IS NULL)
+      		</when>
+      	</choose>
+	</select>
+	
+	<select id="selectGrResultUserList2" parameterType="Map" resultType="DataMap">
+		-- MailDAO.java
+		-- 수료자 리스트 수료, 미수료자 리스트
+		SELECT 
+			A.USERNO, A.NAME, A.EMAIL, SCP.DEC_B64('KEY1',A.HP) AS HP, A.DEPTNM, 
+			(SELECT JIKNM FROM TB_JIK WHERE JIK = B.RJIK) JIKNM
+		FROM tb_member A, TB_GRRESULT B
+		WHERE A.USERNO = B.USERNO
+			AND A.GRCODE = #{grcode}
+			AND A.GRSEQ = #{grseq}
+			
+      	<choose>
+      		<when test="qu == 'success'">
+      			AND B.RGRAYN = 'Y'
+      			AND A.SMS_YN = 'Y'
+      			AND A.USERNO IN(#{tmpUserNo})
+      		</when>
+      		<otherwise>
+      			AND (B.RGRAYN = 'N' OR B.RGRAYN IS NULL)
+      			AND A.SMS_YN = 'Y'
+      			AND A.USERNO IN(#{tmpUserNo})
+      		</otherwise>
+      	</choose>
+      	
+	</select>
+	
+	<select id="selectUserInfo" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT NAME, EMAIL, SCP.DEC_B64('KEY1',HP) AS HP, USERNO
+		FROM TB_MEMBER
+		WHERE USER_ID = #{value}
+	]]>
+	</select>
+	
+	<select id="selectDeptManagerList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- MailDAO.java
+		-- 과정의 기관관리자 리스트
+		SELECT 
+			DISTINCT A.USERNO USERNO, B.NAME NAME, B.EMAIL EMAIL, SCP.DEC_B64('KEY1',B.HP) AS HP, B.DEPTNM DEPTNM
+		FROM TB_MANAGER A, tb_member B, TB_APP_INFO C
+		WHERE A.GADMIN IN ( '3' ) 
+			AND A.USERNO = B.USERNO 
+			AND  C.GRCODE = #{grcode} 
+			AND C.GRSEQ = #{grseq}
+		ORDER BY B.DEPTNM
+	]]>
+	</select>
+	<select id="selectDeptManagerUserList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- MailDAO.java
+		-- 과정의 기관관리자 리스트
+		SELECT 
+			DISTINCT A.USERNO USERNO, B.NAME NAME, B.EMAIL EMAIL, SCP.DEC_B64('KEY1',B.HP) AS HP, B.DEPTNM DEPTNM
+		FROM TB_MANAGER A, tb_member B, TB_APP_INFO C
+		WHERE A.GADMIN IN ( '3' ) 
+			AND A.USERNO = B.USERNO 
+			AND  C.GRCODE = #{grcode} 
+			AND C.GRSEQ = #{grseq}
+			AND B.SMS_YN = 'Y' AND A.USERNO IN(#{tmpUserNo}) 
+		ORDER BY B.DEPTNM
+	]]>
+	</select>
+	
+	<select id="selectClassTutorGrseqList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- MailDAO.java
+		-- 과정의 강사 리스트
+		SELECT 
+			A.USERNO, A.NAME, A.EMAIL, A.DEPTNM, SCP.DEC_B64('KEY1',a.HP) AS HP, A.DEPTNM,
+			MAX((SELECT JIKNM FROM TB_JIK WHERE JIK = A.JIK)) JIKNM
+		FROM TB_CLASSTUTOR B, tb_member A
+		WHERE A.USERNO = B.TUSERNO 
+			AND B.GRCODE = #{grcode} 
+			AND B.GRSEQ = #{grseq}
+		GROUP BY  A.USERNO, A.NAME, A.EMAIL, A.DEPTNM, HP, A.DEPTNM
+	]]>
+	</select>
+	<select id="selectClassTutorGrseqList2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- MailDAO.java
+		-- 과정의 강사 리스트
+		SELECT 
+			A.USERNO, A.NAME, A.EMAIL, A.DEPTNM, SCP.DEC_B64('KEY1',A.HP) AS HP, A.DEPTNM,
+			MAX((SELECT JIKNM FROM TB_JIK WHERE JIK = A.JIK)) JIKNM
+		FROM TB_CLASSTUTOR B, tb_member A
+		WHERE A.USERNO = B.TUSERNO 
+			AND B.GRCODE = #{grcode} 
+			AND B.GRSEQ = #{grseq}
+			AND A.SMS_YN = 'Y' AND A.USERNO IN(#{tmpUserNo}) 
+		GROUP BY  A.USERNO, A.NAME, A.EMAIL, A.DEPTNM, HP, A.DEPTNM
+	]]>
+	</select>
+	
+</mapper>

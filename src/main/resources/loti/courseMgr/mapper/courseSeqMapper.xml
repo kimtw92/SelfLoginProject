@@ -1,0 +1,2946 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.CourseSeqMapper">
+
+	<select id="selectGrSeqDistictYearList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수의 DISTINCT조건으로 년도 검색(SESS_GUBUN별,  과정장ID별)
+		SELECT DISTINCT SUBSTR(GRSEQ, 1, 4) YEAR 
+		  FROM TB_GRSEQ
+		 WHERE 1=1
+	]]>
+	<if test="sessClass == sessClassVal">
+		   AND GRSEQMAN_USERNO = #{sessUserNo}
+	</if>
+	<if test="sessGubun == ('1').toString()">
+		   AND TO_CHAR(SYSDATE,'YYYYMMDD') BETWEEN TO_CHAR(STARTED,'YYYYMMDD') AND TO_CHAR(ENDDATE, 'YYYYMMDD')
+	</if>
+	<![CDATA[
+		 ORDER BY SUBSTR(GRSEQ, 1, 4) DESC 
+	]]>
+	</select>
+
+	<select id="selectGrSeqList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수관리 리스트 (SESS_GUBUN별)
+		SELECT GS.GRCODE
+		     , GS.GRSEQ
+		     , GS.CAFE_YN
+		     , GS.GROUPFILE_NO
+		     , CD.GRCODENM AS GRCODENM
+		     , CD.GRGUBUN
+		     , TO_CHAR(GS.NEW_SEXAMPROPOSE,'YYYYMMDD') AS NEW_SEXAMPROPOSE
+		     , TO_CHAR(GS.NEW_EEXAMPROPOSE,'YYYYMMDD') AS NEW_EEXAMPROPOSE
+		     , NVL(SQ.SUBJ_COUNT, 0) AS SUBJ_COUNT
+		  FROM TB_GRSEQ GS
+             , TB_GRCODE CD
+             , (SELECT COUNT(0) AS SUBJ_COUNT, GRCODE, GRSEQ FROM TB_SUBJSEQ WHERE 1=1 AND LEC_TYPE <> 'P' GROUP BY GRCODE, GRSEQ) SQ
+		 WHERE 1=1
+		   AND CD.GRCODE = GS.GRCODE
+		   AND SQ.GRCODE(+) = GS.GRCODE
+		   AND SQ.GRSEQ(+) = GS.GRSEQ
+		   AND SUBSTR(GS.GRSEQ,1,4) = #{year}
+		   AND GS.GRCODE = #{grcode}
+	]]>
+	<if test="sessGubun == ('1').toString()">
+		   AND TO_CHAR(SYSDATE,'YYYYMMDD') BETWEEN TO_CHAR(GS.STARTED,'YYYYMMDD') AND TO_CHAR(GS.ENDDATE, 'YYYYMMDD')
+	</if>
+		ORDER BY GS.GRSEQ ASC
+	</select>
+	
+	<select id="selectSubjLecTypeList1" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수에 속한 과목 리스트 (강의타입별 목록)
+		SELECT SS.SUBJ AS SUBJ
+		     , SB.SUBJNM AS SUBJNM
+		     , E.PTYPE
+             , TG.GRGUBUN
+		     , CASE 
+		     		WHEN E.PTYPE = 'T' THEN '중간'
+		     		WHEN E.PTYPE = 'M' THEN '최종'
+		     		WHEN E.PTYPE = '1' THEN '상시1회'
+		     		WHEN E.PTYPE = '2' THEN '상시2회'
+		     		ELSE ''
+	     		END PTYPENM
+	     	 ,  CASE 
+		              WHEN EV.CNT > 0 THEN 'Y'
+		              ELSE 'N'
+		           END EVL_YN
+		     , SB.SUBJTYPE AS SUBJTYPE
+		     , TO_CHAR(SS.STARTED, 'YYYY-MM-DD') AS STARTED
+		     , TO_CHAR(SS.ENDDATE, 'YYYY-MM-DD') AS ENDDATE
+		     , SS.LEC_TYPE AS LEC_TYPE
+		     , SS.CLOSING AS CLOSING
+		     , SS.PREED AS PREED
+		     , NVL(AI1.COUNT1, 0) AS COUNT1
+		     , NVL(AI2.COUNT2, 0) AS COUNT2
+		     , NVL(SL.COUNT3, 0) AS COUNT3
+		     , CASE E.PTYPE WHEN 'T' THEN MGAKPOINT
+		                    WHEN 'M' THEN LGAKPOINT
+		                    WHEN '1' THEN NGAKPOINT1
+		                    WHEN '2' THEN NGAKPOINT2
+		                    WHEN '3' THEN NGAKPOINT3
+		                    WHEN '4' THEN NGAKPOINT4
+		                    WHEN '5' THEN NGAKPOINT5
+		                    ELSE 0
+		       END AS GAKPOINT
+		     , CASE E.PTYPE WHEN 'T' THEN MJUPOINT
+		                    WHEN 'M' THEN LJUPOINT
+		                    WHEN '1' THEN NJUPOINT1
+		                    WHEN '2' THEN NJUPOINT2
+		                    WHEN '3' THEN NJUPOINT3
+		                    WHEN '4' THEN NJUPOINT4
+		                    WHEN '5' THEN NJUPOINT5
+		                    ELSE 0
+		       END AS JUPOINT
+		     , CASE E.PTYPE WHEN 'T' THEN MGAKWEIGHT
+		                    WHEN 'M' THEN LGAKWEIGHT
+		                    WHEN '1' THEN NGAKWEIGHT1
+		                    WHEN '2' THEN NGAKWEIGHT2
+		                    WHEN '3' THEN NGAKWEIGHT3
+		                    WHEN '4' THEN NGAKWEIGHT4
+		                    WHEN '5' THEN NGAKWEIGHT5
+		                    ELSE 0
+		       END AS GAKWEIGHT
+		     , CASE E.PTYPE WHEN 'T' THEN MJUWEIGHT
+		                    WHEN 'M' THEN LJUWEIGHT
+		                    WHEN '1' THEN NJUWEIGHT1
+		                    WHEN '2' THEN NJUWEIGHT2
+		                    WHEN '3' THEN NJUWEIGHT3
+		                    WHEN '4' THEN NJUWEIGHT4
+		                    WHEN '5' THEN NJUWEIGHT5
+		                    ELSE 0
+		       END AS JUWEIGHT
+		  FROM TB_SUBJSEQ SS
+		     , TB_GRCODE TG
+		     , TB_SUBJ SB
+		     , TB_EVLINFO_SUBJ E
+		     , (SELECT COUNT(*) AS CNT, GRCODE, GRSEQ, SUBJ FROM TB_EVLINFO_SUBJ WHERE 1=1 GROUP BY GRCODE, GRSEQ, SUBJ) EV
+		     , (SELECT COUNT(*) AS COUNT1, GRCODE, GRSEQ FROM TB_APP_INFO GROUP BY GRCODE, GRSEQ) AI1
+		     , (SELECT COUNT(*) AS COUNT2, GRCODE, GRSEQ FROM TB_APP_INFO WHERE DEPTCHK = 'Y' GROUP BY GRCODE, GRSEQ) AI2
+		     , (SELECT COUNT(*) AS COUNT3, SUBJ, GRCODE, GRSEQ FROM TB_STU_LEC GROUP BY SUBJ, GRCODE, GRSEQ) SL
+		 WHERE 1=1
+		   AND SS.GRCODE = TG.GRCODE
+		   AND AI1.GRCODE(+) = SS.GRCODE
+		   AND AI1.GRSEQ(+) = SS.GRSEQ
+		   AND AI2.GRCODE(+) = SS.GRCODE
+		   AND AI2.GRSEQ(+) = SS.GRSEQ
+		   AND SL.SUBJ(+) = SS.SUBJ
+		   AND SL.GRCODE(+) = SS.GRCODE
+		   AND SL.GRSEQ(+) = SS.GRSEQ
+		   AND SS.SUBJ = SB.SUBJ(+) 
+		   AND SS.GRCODE = #{grcode} 
+		   AND SS.GRSEQ = #{forGrSeq}
+		   
+           AND E.GRCODE(+) = SS.GRCODE
+		   AND E.GRSEQ(+) = SS.GRSEQ
+		   AND E.SUBJ(+) = SS.SUBJ
+           AND EV.GRCODE(+) = SS.GRCODE
+		   AND EV.GRSEQ(+) = SS.GRSEQ
+		   AND EV.SUBJ(+) = SS.SUBJ
+	]]>
+	<if test="lecType == null or lecType == ''">
+	<![CDATA[
+		   AND SS.LEC_TYPE IN ('S', 'P')
+	]]>
+	</if>
+	<if test="lecType == ('P').toString()">
+	<![CDATA[
+		   AND SS.LEC_TYPE = 'C'
+		   AND REF_SUBJ = #{subj}
+	]]>
+	</if>
+	<![CDATA[
+		ORDER BY SB.SUBJNM 
+	]]>
+	</select>
+	
+	<select id="selectGrSeqRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수 상세정보
+		SELECT GR.GRCODE
+		     , GR.GRSEQ
+		     , GR.GRCODENIKNM
+		     , GR.USE_YN
+		     , GR.F_CYBER
+		     , GR.GRPOT
+		     , GR.TDATE
+		     , GR.RPGRAD
+		     , GR.CLOSING
+		     , GR.SULOPEN
+		     , GR.TSEAT
+		     , GR.STARTRNO
+		     , GR.ENDRNO
+		     , GR.MEXAMPROPOSE
+		     , GR.LEXAMPROPOSE
+		     , GR.REPORTGRADEA
+		     , GR.REPORTGRADEB
+		     , GR.REPORTGRADEC
+		     , GR.CLASSROOM_NO
+		     , GR.GR_POINT
+		     , GR.REPORT_CNT
+		     , GR.GRSEQMAN_USERNO
+		     , TO_CHAR(GR.EAPPLYST,'YYYYMMDDHH24') AS EAPPLYST
+		     , TO_CHAR(GR.EAPPLYED,'YYYYMMDDHH24') AS EAPPLYED
+		     , TO_CHAR(GR.EAPPLYST,'YYYYMMDD') AS EAPPLYST1
+		     , TO_CHAR(GR.EAPPLYED,'YYYYMMDD') AS EAPPLYED1
+		     , TO_CHAR(GR.EAPPLYED-1,'YYYYMMDD')||'24' AS PREEAPPLYED
+		     , TO_CHAR(GR.ENDSENT,'YYYYMMDD') AS ENDSENT
+		     , TO_CHAR(GR.ENDAENT,'YYYYMMDD') AS ENDAENT
+		     , TO_CHAR(GR.STARTED,'YYYYMMDD') AS STARTED
+		     , TO_CHAR(GR.ENDDATE,'YYYYMMDD') AS ENDDATE
+		     , CR.CLASSROOM_NAME AS CLASSROOM_NAME
+		     , TR.NAME AS GRSEQMAN
+		     , TO_CHAR(GR.NEW_SEXAMPROPOSE,'YYYYMMDD') AS NEW_SEXAMPROPOSE
+		     , TO_CHAR(GR.NEW_EEXAMPROPOSE,'YYYYMMDD') AS NEW_EEXAMPROPOSE
+		     , GR.PEOPLESYSTEM_YN
+		     , TO_CHAR(GR.QUESTION_SDATE,'YYYYMMDD') AS QUESTION_SDATE
+		     , TO_CHAR(GR.QUESTION_EDATE,'YYYYMMDD') AS QUESTION_EDATE
+		     , GR.ENDSENT_USE_YN
+		     , GR.ENDAENT_USE_YN
+		     , GR.STARTEXAM_YN
+		     , GR.STUDENT_NODATA
+		     , NVL(GR.NIGHTGUBUN, 'N') AS NIGHTGUBUN
+		     , GR.GROUPFILE_NO
+		     , GR.APPLY_LIMIT
+		     , TO_CHAR(GR.EAPPLYED,'HH24MI') AS EAPPLYED2
+		  FROM TB_GRSEQ GR
+		     , TB_CLASSROOM CR
+		     , TB_TUTOR TR
+		 WHERE 1=1
+		   AND CR.CLASSROOM_NO(+) = GR.CLASSROOM_NO
+		   AND TR.USERNO(+) = GR.GRSEQMAN_USERNO
+		   AND GR.GRCODE = #{grcode}
+		   AND GR.GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectGrSeqRowForCyber" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수 상세정보
+		SELECT *
+		  FROM (SELECT GR.GRCODE
+		             , GR.GRSEQ
+		             , GR.GRCODENIKNM
+		             , GR.USE_YN
+		             , GR.F_CYBER
+		             , GR.GRPOT
+		             , GR.TDATE
+		             , GR.RPGRAD
+		             , GR.CLOSING
+		             , GR.SULOPEN
+		             , GR.TSEAT
+		             , GR.STARTRNO
+		             , GR.ENDRNO
+		             , GR.MEXAMPROPOSE
+		             , GR.LEXAMPROPOSE
+		             , GR.REPORTGRADEA
+		             , GR.REPORTGRADEB
+		             , GR.REPORTGRADEC
+		             , GR.CLASSROOM_NO
+		             , GR.GR_POINT
+		             , GR.REPORT_CNT
+		             , GR.GRSEQMAN_USERNO
+		             , TO_CHAR(GR.EAPPLYST,'YYYYMMDDHH24') AS EAPPLYST
+		             , TO_CHAR(GR.EAPPLYED,'YYYYMMDDHH24') AS EAPPLYED
+		             , TO_CHAR(GR.EAPPLYST,'YYYYMMDD') AS EAPPLYST1
+		             , TO_CHAR(GR.EAPPLYED,'YYYYMMDD') AS EAPPLYED1
+		             , TO_CHAR(GR.EAPPLYED-1,'YYYYMMDD')||'24' AS PREEAPPLYED
+		             , TO_CHAR(GR.ENDSENT,'YYYYMMDD') AS ENDSENT
+		             , TO_CHAR(GR.ENDAENT,'YYYYMMDD') AS ENDAENT
+		             , TO_CHAR(GR.STARTED,'YYYYMMDD') AS STARTED
+		             , TO_CHAR(GR.ENDDATE,'YYYYMMDD') AS ENDDATE
+		             , CR.CLASSROOM_NAME AS CLASSROOM_NAME
+		             , TR.NAME AS GRSEQMAN
+		             , TO_CHAR(GR.NEW_SEXAMPROPOSE,'YYYYMMDD') AS NEW_SEXAMPROPOSE
+		             , TO_CHAR(GR.NEW_EEXAMPROPOSE,'YYYYMMDD') AS NEW_EEXAMPROPOSE
+		             , GR.PEOPLESYSTEM_YN
+		             , TO_CHAR(GR.QUESTION_SDATE,'YYYYMMDD') AS QUESTION_SDATE
+		             , TO_CHAR(GR.QUESTION_EDATE,'YYYYMMDD') AS QUESTION_EDATE
+		             , GR.ENDSENT_USE_YN
+		             , GR.ENDAENT_USE_YN
+		             , GR.STARTEXAM_YN
+		             , GR.STUDENT_NODATA
+		             , NVL(GR.NIGHTGUBUN, 'N') AS NIGHTGUBUN
+			     FROM TB_GRSEQ GR
+			        , TB_CLASSROOM CR
+			        , TB_TUTOR TR
+			    WHERE 1=1
+			      AND CR.CLASSROOM_NO(+) = GR.CLASSROOM_NO
+			      AND TR.USERNO(+) = GR.GRSEQMAN_USERNO
+			      AND GR.F_CYBER = 'Y'
+			      AND GR.GRSEQ = #{grseq}
+	]]>
+	<if test="grcode != null and grcode != ''">
+	<![CDATA[
+	              AND GR.GRCODE = #{grcode}
+	]]>
+	</if>
+	<![CDATA[
+			    ORDER BY GR.EAPPLYST
+			   ) T
+		 WHERE 1=1
+		   AND ROWNUM <= 1
+	]]>
+	</select>
+	
+	<update id="updateGrSeq" parameterType="Map">
+	<![CDATA[
+		-- 과정 기수 정보 수정.
+		UPDATE TB_GRSEQ
+		   SET GRCODENIKNM = #{grcodeniknm}
+		     , USE_YN = #{useYn}
+		     , F_CYBER = #{fCyber}
+		     , EAPPLYST = TO_DATE(#{eapplyst}||#{eapplysth}, 'yyyymmddhh24')
+		     , EAPPLYED = TO_DATE(#{eapplyed}||#{eapplyedh}, 'YYYYMMDDHH24MISS')
+		     , ENDSENT = TO_DATE(#{endsent}, 'YYYYMMDDHH')
+		     , ENDAENT = TO_DATE(#{endaent}, 'YYYYMMDDHH')
+		     , STARTED = TO_DATE(#{started}, 'YYYYMMDDHH')
+		     , ENDDATE = TO_DATE(#{enddate}, 'YYYYMMDDHH')
+		     , TDATE = #{tdate}
+		     , RPGRAD = #{rpgrad}
+		     , TSEAT = #{tseat}
+		     , MEXAMPROPOSE = #{mexampropose}
+		     , LEXAMPROPOSE = #{lexampropose}
+		     , CLASSROOM_NO = #{classroomNo}
+		     , GR_POINT = #{grPoint}
+		     , GRSEQMAN_USERNO = #{grseqmanUserno}
+		     , NEW_SEXAMPROPOSE = TO_DATE(#{newSexampropose}, 'YYYYMMDDHH')
+		     , NEW_EEXAMPROPOSE = TO_DATE(#{newEexampropose}, 'YYYYMMDDHH')
+		     , PEOPLESYSTEM_YN = #{peoplesystemYn}
+		     , QUESTION_SDATE = TO_DATE(#{questionSdate}, 'YYYYMMDDHH')
+		     , QUESTION_EDATE = TO_DATE(#{questionEdate}, 'YYYYMMDDHH')
+		     , ENDSENT_USE_YN = #{endsentUseYn}
+		     , ENDAENT_USE_YN = #{endaentUseYn}
+		     , STARTEXAM_YN = #{startexamYn}
+		     , STUDENT_NODATA = #{studentNodata}
+		     , APPLY_LIMIT = #{applyLimit}
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<update id="updateSubjSeqDate" parameterType="Map">
+	<![CDATA[
+		-- 강의 개설 정보 수정 (교육 일자만).
+		UPDATE TB_SUBJSEQ
+		   SET STARTED = #{started}
+		     , ENDDATE = #{enddate}
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND (STARTED IS NULL OR STARTED = '')
+		   AND (ENDDATE IS NULL OR ENDDATE = '')
+	]]>
+	</update>
+	
+	<select id="selectGrSeqSubjConnectChk" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 연계된 과목기수정보 갯수.
+		SELECT COUNT(1) AS DUPCNT 
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRSEQ = #{grseq}
+		   AND GRCODE = #{grcode}
+	]]>
+	</select>
+	
+	<select id="selectSubjLecTypeList2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수에 속한 과목 리스트 (강의타입별 목록)
+		SELECT SS.SUBJ AS SUBJ
+		     , SB.SUBJNM AS SUBJNM
+		     , SB.SUBJTYPE AS SUBJTYPE
+		     , SS.STARTED AS STARTED
+		     , SS.ENDDATE AS ENDDATE
+		     , SS.LEC_TYPE AS LEC_TYPE
+		     , SS.CLOSING AS CLOSING
+		     , SS.PREED AS PREED
+		     , NVL(AI1.COUNT1, 0) AS COUNT1
+		     , NVL(AI2.COUNT2, 0) AS COUNT2
+		     , NVL(SL.COUNT3, 0) AS COUNT3 
+		  FROM TB_SUBJSEQ SS
+		     , TB_SUBJ SB
+		     , (SELECT COUNT(*) AS COUNT1, GRCODE, GRSEQ FROM TB_APP_INFO GROUP BY GRCODE, GRSEQ) AI1
+		     , (SELECT COUNT(*) AS COUNT2, GRCODE, GRSEQ FROM TB_APP_INFO WHERE DEPTCHK = 'Y' GROUP BY GRCODE, GRSEQ) AI2
+		     , (SELECT COUNT(*) AS COUNT3, SUBJ, GRCODE, GRSEQ FROM TB_STU_LEC GROUP BY SUBJ, GRCODE, GRSEQ) SL
+		 WHERE 1=1
+		   AND AI1.GRCODE(+) = SS.GRCODE
+		   AND AI1.GRSEQ(+) = SS.GRSEQ
+		   AND AI2.GRCODE(+) = SS.GRCODE
+		   AND AI2.GRSEQ(+) = SS.GRSEQ
+		   AND SL.SUBJ(+) = SS.SUBJ
+		   AND SL.GRCODE(+) = SS.GRCODE
+		   AND SL.GRSEQ(+) = SS.GRSEQ
+		   AND SS.SUBJ = SB.SUBJ(+) 
+		   AND SS.GRCODE = #{grcode} 
+		   AND SS.GRSEQ = #{forGrSeq}
+	]]>
+	<if test="lecType == null or lecType == ''">
+	<![CDATA[
+		   AND SS.LEC_TYPE IN ('S', 'P')
+	]]>
+	</if>
+	<if test="lecType == ('S').toString()">
+	<![CDATA[
+		   AND SS.LEC_TYPE = 'S'
+	]]>
+	</if>
+	<if test="lecType == ('P').toString()">
+	<![CDATA[
+		   AND SS.LEC_TYPE = 'S'
+	]]>
+	</if>
+	<if test="lecType == ('C').toString()">
+	<![CDATA[
+		   AND SS.LEC_TYPE = 'C'
+		   AND REF_SUBJ = #{subj}
+	]]>
+	</if>
+	<![CDATA[
+		ORDER BY SB.SUBJNM 
+	]]>
+	</select>
+	
+	<select id="selectSessClassGrCodeList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수의 DISTINCT조건으로 년도 검색(SESS_GUBUN별,  과정장ID별)
+		SELECT DISTINCT B.GRCODE
+		     , B.GRCODENM 
+		  FROM TB_GRSEQ GS
+		     , TB_GRCODE B
+		 WHERE 1=1
+		   AND SUBSTR(GS.GRSEQ,1,4) = #{year}
+		   AND GS.GRCODE = B.GRCODE
+		   AND B.USE_YN = 'Y'
+	]]>
+	<if test="sessGubun == ('1').toString()">
+	<![CDATA[
+		   AND TO_CHAR(SYSDATE,'YYYYMMDD') BETWEEN TO_CHAR(GS.STARTED,'YYYYMMDD') AND TO_CHAR(GS.ENDDATE, 'YYYYMMDD')
+	]]>
+	</if>
+	<if test="sessClass == sessClassVal">
+	<![CDATA[
+		   AND GS.GRSEQMAN_USERNO = #{sessUserNo}
+	]]>
+	</if>
+	<![CDATA[
+		 ORDER BY B.GRCODENM
+	]]>
+	</select>
+	
+	<select id="selectGrcodeList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수관리 개설과정 리스트 (년도별, 과정검색)
+		SELECT GR.GRCODE
+		     , GR.GRCODENM
+		     , MC.MCODE_NAME AS MCODE_NAME
+		     , SC.SCODE_NAME AS SCODE_NAME
+		     , NVL(SQ.CNT, '') AS CK_GRSEQ
+			 , DECODE(GRTIME, '', '0', GRTIME) AS GRTIME --과정이수시간. 요청사항으로 추가함.
+		  FROM TB_GRCODE GR
+		     , TB_MAINCODE MC
+		     , TB_SUBCODE SC
+		     , (SELECT DECODE(COUNT(*),0,'',1) AS CNT, GRCODE FROM TB_GRSEQ WHERE SUBSTR(GRSEQ,1,4) = #{year, jdbcType=VARCHAR} GROUP BY GRCODE)  SQ
+		 WHERE 1=1
+		   AND MC.CD_GUBUN = 'G'
+		   AND MC.MAJOR_CODE = GR.GRTYPE
+		   AND SC.CD_GUBUN = 'G'
+		   AND SC.MAJOR_CODE = GR.GRTYPE
+		   AND SC.MINOR_CODE = GR.GRSUBCD
+		   AND SQ.GRCODE(+) = GR.GRCODE
+		   AND GR.USE_YN = 'Y'
+	]]>
+	<if test="searchValue != null and searchValue != ''">
+	<![CDATA[
+		   AND GRCODENM LIKE '%'||#{searchValue}|| '%'
+	]]>
+	</if>
+	<![CDATA[
+		 ORDER BY MCODE_NAME, SCODE_NAME, GRCODENM
+	]]>
+	</select>
+	
+	<select id="selectGrseqMaxList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수관리 개설과정 MAX 리스트 (개설과정 추가시)
+		SELECT 
+			GRCODE, GRCODENM, USE_YN, NVL(GR_POINT, 0) AS GR_POINT 
+			, (SELECT NVL(MAX(GRSEQ), '${year}'||'00') + 1 FROM TB_GRSEQ WHERE SUBSTR(GRSEQ,1,4) = '${year}' AND GRCODE =  A.GRCODE ) GRSEQ
+			, DECODE(GRGUBUN,'C','Y','N') GRGUBUN                                                                                        
+		FROM TB_GRCODE A
+		WHERE 1=1
+			${whereStr}
+	]]>
+	</select>
+	
+	<insert id="insertGrSeqGrcodeLittle" parameterType="Map">
+	<![CDATA[
+		-- 과정기수관리 개설과정 추가
+		INSERT INTO TB_GRSEQ(
+		       GRCODE    , GRSEQ   , GRCODENIKNM, USE_YN  , GR_POINT
+		     , F_CYBER   , TDATE
+		     , INSA_GRSEQ
+		) VALUES (
+		       #{grcode} , #{grseq}, #{grcodenm}, #{useYn}, #{grPoint}
+		     , #{grgubun}, #{tdate, jdbcType=VARCHAR}
+		     , (SELECT TO_CHAR(SYSDATE, 'YYYYMMDD')||LPAD(NVL(TO_NUMBER(SUBSTR(MAX(INSA_GRSEQ),9,4)),0)+1,4,0)
+                  FROM TB_GRSEQ
+                 WHERE 1=1
+                   AND INSA_GRSEQ LIKE TO_CHAR(SYSDATE, 'YYYYMMDD')||'%'
+               )
+		)
+	]]>
+	</insert>
+	
+	<insert id="insertGrSubjSpec" parameterType="Map">
+	<![CDATA[
+		-- 과정기수관리 개설과정의 과목
+		INSERT INTO TB_GRSUBJ(
+		       GRCODE   , GRSEQ   , SUBJ, F_OK, LEC_TYPE
+		) 
+		SELECT #{grcode}, #{grseq}, SUBJ, 'N' , SEL_GUBUN 
+		  FROM TB_SUBJ
+		 WHERE 1=1
+		   AND SUBJ IN ('GUN0000001', 'SUB1000026', 'SUB1000793')
+	]]>
+	</insert>
+	
+	<insert id="insertSubjSeqSpec" parameterType="Map">
+	<![CDATA[
+		-- 과정기수관리 개설과정의 TB_SUBJSEQ
+		INSERT INTO TB_SUBJSEQ(
+		       GRCODE   , GRSEQ    , SUBJ   , LEC_TYPE , LECNM
+		     , LDATE    , STARTED  , ENDDATE, CLOSING  , TSECTION
+		     , LIMIT    , LUSERNO
+		) 
+		SELECT #{grcode}, #{grseq} , SUBJ   , SEL_GUBUN, SUBJNM
+		     , SYSDATE  , ''       , ''     , 'N'      , (SELECT COUNT(*) FROM TB_SUBJWEEK WHERE SUBJ = SU.SUBJ)
+		     , LIMIT    , #{userNo}
+		  FROM TB_SUBJ SU 
+		 WHERE 1=1
+		   AND SUBJ IN ('GUN0000001', 'SUB1000026', 'SUB1000793')
+	]]>
+	</insert>
+	
+	<insert id="insertSubjClassSpec" parameterType="Map">
+	<![CDATA[
+		-- 과정기수관리 개설과정의 TB_SUBJCLASS 등록
+		INSERT INTO TB_SUBJCLASS(
+		       SUBJ   , GRCODE   , GRSEQ
+		     , CLASSNO, CLASSNM  , LDATE
+		     , LUSERNO
+		) 
+		SELECT SUBJ   , #{grcode}, #{grseq}
+		     , '1'    , '1반'     , SYSDATE
+		     , #{userNo}
+		  FROM TB_SUBJ 
+		 WHERE 1=1
+		   AND SUBJ IN ('GUN0000001', 'SUB1000026', 'SUB1000793')
+	]]>
+	</insert>
+	
+	<delete id="deleteGrSubjClass" parameterType="Map">
+	<![CDATA[
+		-- 과정기수관리 반구성 TB_SUBJCLASS 삭제
+		DELETE
+		  FROM TB_SUBJCLASS 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND SUBSTR(GRSEQ,1,4) = #{year}
+	]]>
+	</delete>
+	
+	<delete id="deleteSubjSeq" parameterType="Map">
+	<![CDATA[
+		-- 과정기수관리 개설과정의 TB_SUBJSEQ 삭제
+		DELETE
+		  FROM TB_SUBJSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND SUBSTR(GRSEQ,1,4) = #{year}
+	]]>
+	</delete>
+	
+	<delete id="deleteGrsubj" parameterType="Map">
+	<![CDATA[
+		-- 과정기수관리 개설과정의 과목 삭제
+		DELETE
+		  FROM TB_GRSUBJ 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND SUBSTR(GRSEQ,1,4) = #{year}
+	]]>
+	</delete>
+	
+	<delete id="deleteGrseqGrcode" parameterType="Map">
+	<![CDATA[
+		-- 과정기수관리 개설과정 삭제
+		DELETE
+		  FROM TB_GRSEQ 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND SUBSTR(GRSEQ,1,4) = #{year}
+	]]>
+	</delete>
+	
+	<select id="selectGrStuMasList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수에 속한 회장, 부회장 전체 리스트
+		SELECT M.USERNO AS USERNO
+		     , M.NAME AS NAME
+		     , M.DEPTNM AS DEPTNM
+		     , M.MJIKNM AS MJIKNM
+		     , S.MAS_GUBUN AS MAS_GUBUN 
+		  FROM TB_MEMBER M
+		     , TB_GRSTUMAS S 
+		 WHERE 1=1
+		   AND M.USERNO(+) = S.USERNO
+		   AND S.GRCODE = #{grcode}
+		   AND S.GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectGrStuMasGubunList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수에 속한 회장, 부회장 리스트
+		SELECT DISTINCT USERNO
+		     , NAME
+		     , DEPTNM
+		     , MJIKNM 
+		  FROM TB_MEMBER 
+		 WHERE 1=1
+		   AND USERNO IN (SELECT USERNO FROM TB_GRSTUMAS WHERE GRCODE = #{grcode} AND GRSEQ = #{grseq} AND MAS_GUBUN = #{masGubun})
+	]]>
+	</select>
+	
+	<select id="selectGrSeqAppMemberList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수 수강신청 완료 된 학생 검색 리스트
+		SELECT M.USERNO AS USERNO
+		     , SCP.DEC_B64('KEY1',M.RESNO) AS RESNO
+		     , M.NAME AS NAME
+		     , M.DEPTSUB AS DEPTSUB
+		     , M.MJIKNM AS MJIKNM
+		     , AI.EDUNO AS EDUNO
+		     , NVL(MAS_GUBUN, '') AS STUMAS
+		  FROM TB_MEMBER M
+		     , TB_APP_INFO AI
+		     , TB_GRSTUMAS GS
+		 WHERE 1=1
+		   AND AI.GRCODE = #{grcode}
+		   AND AI.GRSEQ = #{grseq}
+		   AND AI.GRCHK = 'Y'
+		   AND M.USERNO = AI.USERNO
+		   AND GS.GRCODE(+) = AI.GRCODE
+		   AND GS.GRSEQ(+) = AI.GRSEQ
+		   AND GS.USERNO(+) = AI.USERNO
+		   AND (M.DELETE_YN IS NULL OR M.DELETE_YN <> 'Y')
+		   AND M.NAME LIKE '%'||#{searchName}||'%' 
+	]]>
+	</select>
+	
+	<insert id="insertGrSeqStuMas" parameterType="Map">
+	<![CDATA[
+		-- 과정기수에 속한 회장, 부회장 등록
+		INSERT INTO TB_GRSTUMAS(
+		       GRCODE   , GRSEQ   , USERNO   , MAS_GUBUN  , ADDPOINT
+		) VALUES (
+		       #{grcode}, #{grseq}, #{userno}, #{masGubun}, #{addpoint}
+		)
+	]]>
+	</insert>
+	
+	<delete id="deleteGrSeqStuMas" parameterType="Map">
+	<![CDATA[
+		-- 과정기수에 속한 회장, 부회장 삭제
+		DELETE
+		  FROM TB_GRSTUMAS 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode
+		   AND GRSEQ = #{grseq}
+		   AND USERNO = #{userno}
+		   AND MAS_GUBUN = #{masGubun}
+	]]>
+	</delete>
+	
+	<select id="selectMemberTutorListCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 강사 회원 count 검색
+		SELECT COUNT(0)
+		  FROM TB_MEMBER
+		 WHERE 1=1
+		   AND (DELETE_YN IS NULL OR DELETE_YN <> 'Y')
+		   AND USERNO IN (SELECT USERNO FROM TB_TUTOR)
+		   AND NAME LIKE '%'||#{searchName}||'%'
+	]]>
+	</select>
+	
+	<select id="selectMemberTutorList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 강사 회원 검색
+		                SELECT USERNO
+		                     , SCP.DEC_B64('KEY1',RESNO) as RESNO	
+		                     , NAME
+		                  FROM TB_MEMBER
+		                 WHERE 1=1
+		                   AND (DELETE_YN IS NULL OR DELETE_YN <> 'Y')
+		                   AND USERNO IN (SELECT USERNO FROM TB_TUTOR)
+		                   AND NAME LIKE '%'||#{searchName}||'%'
+		                 ORDER BY NAME ASC
+		               ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectNextGrSeqRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정 기수 추가시 다음 과정기수 정보.
+		SELECT 
+			GRCODE, GRCODENM, USE_YN, GR_POINT,
+			(SELECT NVL (MAX (GRSEQ), #{year}) + 1 FROM TB_GRSEQ WHERE SUBSTR (GRSEQ, 1, 4) = #{year} AND GRCODE = A.GRCODE) GRSEQ,
+			DECODE (GRGUBUN, 'C', 'Y', 'N') GRGUBUN
+		FROM TB_GRCODE A
+		WHERE 1=1
+			AND GRCODE = #{grcode}
+	]]>
+	</select>
+	
+	<select id="selectSubjByIndexListCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		SELECT COUNT(0) AS CNT
+		  FROM TB_SUBJ SB
+	]]>
+	<if test="searchValue != null and searchValue != '' and qu == 'index'">
+	<![CDATA[
+ 			 , TB_CHARINDEX IX
+	]]>
+	</if>
+	<![CDATA[
+		 WHERE 1=1
+		   AND SB.SUBJ NOT IN (SELECT SUBJ FROM TB_GRSUBJ WHERE GRCODE = #{grcode} AND GRSEQ = #{grseq})
+	]]>
+	<if test="searchKey != null and searchKey != ''">
+	<![CDATA[
+		   AND SUBJTYPE = #{searchKey}
+	]]>
+	</if>
+	<if test="searchValue != null and searchValue != ''">
+		<if test="qu == 'index'">
+	<![CDATA[
+		   AND IX.INDEXSEQ = #{searchValue}
+		   AND ASCII(SUBSTR(SB.SUBJNM,1,1)) BETWEEN IX.STARTNUM AND IX.ENDNUM
+	]]>
+		</if>
+		<if test="qu == 'button'">
+	<![CDATA[
+		   AND SB.SUBJNM LIKE '%'||#{searchValue}||'%'
+	]]>
+		</if>
+	</if>
+	</select>
+	
+	<select id="selectSubjByIndexList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT *
+		  FROM (SELECT ROWNUM nPaging_rnum
+		             , nQuery.*
+		          FROM (-- 과목 정보 검색 (index검색, 과목 유형검색, 현재 과정기수의 과목이 아닌것만 검색.)
+						SELECT SB.SUBJ
+						     , SB.SUBJNM
+						     , SB.SUBJTYPE
+						     , SB.EVALUTEGUBUN
+						     , SB.OPENEDUGUBUN
+						     , SB.F_NEW
+						     , SB.LUSERNO
+						     , SB.LANGUAGE
+						     , SB.SUBJGUBUN
+						     , SB.LIMIT
+						     , SB.LIMIT_TIME
+						     , SB.SEL_GUBUN
+						     , SB.APP_GUBUN
+						     , SB.USE_YN
+						     , SB.RECOM_YN
+						     , SB.BOOK_FILENAME
+						     , SB.PRO_FILENAME
+						  FROM TB_SUBJ SB
+	]]>
+	<if test="searchValue != null and searchValue != '' and qu == 'index'">
+	<![CDATA[
+		     			     , TB_CHARINDEX IX
+	]]>
+	</if>
+	<![CDATA[
+						 WHERE 1=1
+						   AND SB.SUBJ NOT IN (SELECT SUBJ FROM TB_GRSUBJ WHERE GRCODE = #{grcode} AND GRSEQ = #{grseq})
+	]]>
+	<if test="searchKey != null and searchKey != ''">
+	<![CDATA[
+						   AND SUBJTYPE = #{searchKey}
+	]]>
+	</if>
+	<if test="searchValue != null and searchValue != ''">
+		<if test="qu == 'index'">
+	<![CDATA[
+						   AND IX.INDEXSEQ = #{searchValue}
+						   AND ASCII(SUBSTR(SB.SUBJNM,1,1)) BETWEEN IX.STARTNUM AND IX.ENDNUM
+	]]>
+		</if>
+		<if test="qu == 'button'">
+	<![CDATA[
+						   AND SB.SUBJNM LIKE '%'||#{searchValue}||'%'
+	]]>
+		</if>
+	</if>
+	<![CDATA[
+						 ORDER BY SUBJNM
+					   ) nQuery
+	             WHERE 1=1
+	               AND ROWNUM <= #{end}
+	           )
+	     WHERE 1=1
+	       AND nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectSubjInGrSeqList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수에 등록한 과목 리스트.
+		SELECT SUBJ
+		     , SUBJNM
+		     , SUBJTYPE
+		     , SEL_GUBUN
+		  FROM TB_SUBJ
+		 WHERE 1=1
+		   AND SUBJ IN ( SELECT SUBJ FROM TB_GRSUBJ WHERE GRCODE = #{grcode} AND GRSEQ = #{grseq} )
+		 ORDER BY SUBJNM
+	]]>
+	</select>
+	
+	<select id="selectSubjList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수에 등록한 과목 리스트.
+		SELECT 
+			SUBJ, SEL_GUBUN, LIMIT, SUBJNM,
+			(SELECT COUNT(*) FROM TB_SUBJWEEK WHERE SUBJ = SU.SUBJ) WEEK_COUNT 
+		FROM TB_SUBJ SU 
+		WHERE 1=1
+			${whereSubjStr}
+	]]>
+	</select>
+	
+	<select id="selectSubjInfoList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수의 과목 정보 리스트
+		SELECT 
+ 			DISTINCT(SS.SUBJ), 
+			SU.SEL_GUBUN, 
+			SU.SUBJNM,
+			SS.GRASTEP,		--필수이수진도율 
+ 			SS.TSECTION,	--총일차수 
+			SS.LIMIT,		--1일 차시제한
+			( SELECT COUNT(*) FROM TB_SUBJWEEK WHERE SUBJ = SU.SUBJ ) AS WEEK_COUNT 
+ 		FROM 
+		 	 TB_SUBJSEQ SS,
+		 	 TB_SUBJ    SU
+ 		WHERE 1=1
+ 			 AND SS.SUBJ   = SU.SUBJ 
+ 			 AND SS.GRCODE = #{grcode}
+ 			 AND SS.GRSEQ  = #{grseq}
+ 			 ${whereSubjStr}
+ 	]]>
+	</select>
+	
+	<insert id="insertGrSubj" parameterType="Map">
+	<![CDATA[
+		-- 과정기수에 속한 과목 정보 등록
+		INSERT INTO TB_GRSUBJ (
+		       GRCODE   , GRSEQ   , SUBJ   , F_OK  , LEC_TYPE
+		) VALUES (
+		       #{grcode}, #{grseq}, #{subj}, #{fOk}, #{lecType}
+		)
+	]]>
+	</insert>
+	
+	<insert id="insertSubjSeq" parameterType="Map">
+	<![CDATA[
+		-- 과정기수에 속한 TB_SUBJSEQ 등록
+		INSERT INTO TB_SUBJSEQ (
+			   GRCODE   , GRSEQ     , SUBJ      , LEC_TYPE  , LECNM
+			 , LDATE    , STARTED   , ENDDATE   , CLOSING   , TSECTION
+			 , LIMIT    , LUSERNO   , REF_SUBJ  , GRASTEP
+		) VALUES ( 
+			   #{grcode}, #{grseq}  , #{subj}   , #{lecType}, #{lecnm}
+			 , SYSDATE  , #{started}, #{enddate}, #{closing}, #{tsection}
+			 , #{limit} , #{luserno}, #{refSubj}, #{grastep}
+		)
+	]]>
+	</insert>
+	
+	<insert id="insertSubjClass" parameterType="Map">
+	<![CDATA[
+		-- 반구성 등록.
+		INSERT INTO TB_SUBJCLASS (
+		       SUBJ      , GRCODE   , GRSEQ   , CLASSNO   , CLASSNM
+		     , LUSERNO   , LDATE
+		) VALUES (
+		       #{subj}   , #{grcode}, #{grseq}, #{classno}, #{classnm}
+		     , #{luserno}, SYSDATE
+		)
+	]]>
+	</insert>
+	
+	<select id="selectStuLecCnt" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 과정기수의 수강생 인원
+		SELECT COUNT(*) AS DUPCNT 
+		  FROM TB_STU_LEC 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectStuLecSubjCnt" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 과목의 수강생 인원
+		SELECT COUNT(*) AS DUPCNT 
+		  FROM TB_STU_LEC 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq} 
+		   AND SUBJ = #{subj}
+	]]>
+	</select>
+	
+	<insert id="insertStuLecSubjSpec" parameterType="Map">
+	<![CDATA[
+		-- 과목의 수강생 등록.
+		INSERT INTO TB_STU_LEC (
+		       GRCODE   , GRSEQ   , SUBJ   , CLASSNO, USERNO
+		     , NAME     , DEPT    , JIK    , GRAYN  , LUSERNO  , LDATE
+		)    
+		SELECT #{grcode}, #{grseq}, #{subj}, 1      , B.USERNO
+		     , B.NAME   , B.DEPT  , B.JIK  , 'N'    , #{userNo}, SYSDATE            
+		  FROM TB_APP_INFO A
+		     , TB_MEMBER B
+		 WHERE 1=1
+		   AND A.USERNO = B.USERNO
+		   AND A.GRCODE = #{grcode}
+		   AND A.GRSEQ = #{grseq}
+		   AND A.GRCHK = 'Y'
+	]]>
+	</insert>
+	
+	<select id="selectSubjListFromSubjGrp" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT SUB_SUBJ
+		  FROM TB_SUBJGRP
+		 WHERE 1=1
+		   AND SUBJ = #{subj}
+	]]>
+	</select>
+	
+	<select id="selectGrResultCnt" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 과정 수료 인원 count
+		SELECT COUNT(1) AS CNT 
+		  FROM TB_GRRESULT 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectSubjResultCnt" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 과목 수료 인원 count
+		SELECT COUNT(1) AS CNT 
+		  FROM TB_SUBJRESULT 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND SUBJ = #{subj}
+	]]>
+	</select>
+	
+	<select id="selectSubjAllResultCnt" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		SELECT COUNT(1) AS CNT 
+		  FROM TB_SUBJRESULT 
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectSubjSeqRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과목의 개설정보
+		SELECT A.GRCODE
+		     , A.GRSEQ
+		     , A.SUBJ
+		     , LECNM
+		     , PGRAD
+		     , GRASTEP
+		     , GRAQUIZ
+		     , TSECTION
+		     , LESSONTIME
+		     , SILGITIME
+		     , TORONTIME
+		     , HYUNTIME
+		     , MULTITIME
+		     , ETCTIME
+		     , TORONOPEN
+		     , MGAKPOINT
+		     , MJUPOINT
+		     , LGAKPOINT
+		     , LJUPOINT
+		     , NGAKPOINT1
+		     , NJUPOINT1
+		     , NGAKPOINT2
+		     , NJUPOINT2
+		     , NGAKPOINT3
+		     , NJUPOINT3
+		     , NGAKPOINT4
+		     , NJUPOINT4
+		     , NGAKPOINT5
+		     , NJUPOINT5
+		     , MGAKWEIGHT
+		     , MJUWEIGHT
+		     , LGAKWEIGHT
+		     , LJUWEIGHT
+		     , NGAKWEIGHT1
+		     , NJUWEIGHT1
+		     , NGAKWEIGHT2
+		     , NJUWEIGHT2
+		     , NGAKWEIGHT3
+		     , NJUWEIGHT3
+		     , NGAKWEIGHT4
+		     , NJUWEIGHT4
+		     , NGAKWEIGHT5
+		     , NJUWEIGHT5
+		     , REPORTPOINT
+		     , STEPPOINT
+		     , QUIZPOINT
+		     , TOTPOINT
+		     , TO_CHAR(STARTED, 'YYYY-MM-DD') STARTED
+		     , TO_CHAR(ENDDATE, 'YYYY-MM-DD') ENDDATE
+		     , PREED
+		     , CLOSING
+		     , GRBDSEQ
+		     , A.LUSERNO
+		     , A.LDATE
+		     , EXAMTIME
+		     , A.LIMIT
+		     , LEC_TYPE
+		     , REF_SUBJ
+		     , A.LIMIT_TIME
+		     , PROG_TIME
+		     , B.SUBJTYPE
+		     , B.SUBJGUBUN
+		  FROM TB_SUBJSEQ A
+		     , TB_SUBJ B
+		 WHERE 1=1
+		   AND A.SUBJ = B.SUBJ
+		   AND A.GRCODE = #{grcode}
+		   AND A.GRSEQ = #{grseq}
+		   AND A.SUBJ = #{subj}
+	]]>
+	</select>
+	
+	<update id="updateSubjSeq" parameterType="Map">
+	<![CDATA[
+		-- 강의 개설 정보 수정
+		UPDATE TB_SUBJSEQ
+		   SET LECNM = #{lecnm}
+		     , GRASTEP = #{grastep}
+		     , TSECTION = #{tsection}
+		     , LESSONTIME  = #{lessontime}
+		     , SILGITIME = #{silgitime}
+		     , TORONTIME = #{torontime}
+		     , HYUNTIME = #{hyuntime}
+		     , MULTITIME = #{multitime}
+		     , ETCTIME = #{etctime}
+		     , STARTED = TO_DATE(#{started}, 'YYYY-MM-DD')
+		     , ENDDATE = TO_DATE(#{enddate}, 'YYYY-MM-DD')
+		     , LIMIT = #{limit}
+		     , PROG_TIME = #{progTime}
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND SUBJ = #{subj}
+	]]>
+	</update>
+	
+	<update id="updateSubjSeqDateSub" parameterType="Map">
+	<![CDATA[
+		-- 강의 개설 정보 하위 과목 교육 일자 수정.
+		UPDATE TB_SUBJSEQ
+		   SET STARTED = #{started}
+		     , ENDDATE = #{enddate}
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+		   AND SUBJ IN (SELECT SUB_SUBJ FROM TB_SUBJGRP WHERE SUBJ = #{subj})
+	]]>
+	</update>
+	
+	<select id="selectGrSeqByNotInList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정기수관리 리스트 (입력한 기수 제외)
+		SELECT GRCODE
+		     , GRSEQ
+		  FROM TB_GRSEQ  
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ <> #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectSubjSeqList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과목의 개설정보 리스트
+        SELECT A.GRCODE
+             , A.GRSEQ
+             , A.SUBJ
+             , LECNM
+             , PGRAD
+             , GRASTEP
+             , GRAQUIZ
+             , TSECTION
+             , LESSONTIME
+             , SILGITIME
+             , TORONTIME
+             , HYUNTIME
+             , MULTITIME
+             , ETCTIME
+             , TORONOPEN
+             , MGAKPOINT
+             , MJUPOINT
+             , LGAKPOINT
+             , LJUPOINT
+             , NGAKPOINT1
+             , NJUPOINT1
+             , NGAKPOINT2
+             , NJUPOINT2
+             , NGAKPOINT3
+             , NJUPOINT3
+             , NGAKPOINT4
+             , NJUPOINT4
+             , NGAKPOINT5
+             , NJUPOINT5
+             , MGAKWEIGHT
+             , MJUWEIGHT
+             , LGAKWEIGHT
+             , LJUWEIGHT
+             , NGAKWEIGHT1
+             , NJUWEIGHT1
+             , NGAKWEIGHT2
+             , NJUWEIGHT2
+             , NGAKWEIGHT3
+             , NJUWEIGHT3
+             , NGAKWEIGHT4
+             , NJUWEIGHT4
+             , NGAKWEIGHT5
+             , NJUWEIGHT5
+             , REPORTPOINT
+             , STEPPOINT
+             , QUIZPOINT
+             , TOTPOINT
+             , STARTED
+             , ENDDATE
+             , PREED
+             , CLOSING
+             , GRBDSEQ
+             , A.LUSERNO
+             , A.LDATE
+             , EXAMTIME
+             , A.LIMIT
+             , LEC_TYPE
+             , REF_SUBJ
+             , A.LIMIT_TIME
+             , PROG_TIME
+             , B.SUBJTYPE
+             , B.SUBJGUBUN
+          FROM TB_SUBJSEQ A
+             , TB_SUBJ B
+         WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+           AND A.SUBJ = B.SUBJ
+           AND A.LEC_TYPE <> 'C'
+	]]>
+	</select>
+	
+	<select id="selectSubjSeqCopyList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 개설과정 정보의 과목 리스트 (복사위해)
+		-- 1:과정기수, 2:과정코드, 3:복사할 과정기수
+		SELECT SUBJ, LECNM, 
+			(SELECT COUNT(*) FROM TB_SUBJSEQ WHERE S.SUBJ = SUBJ AND GRCODE = S.GRCODE AND GRSEQ = #{grseq} ) SUBJ_MODE   
+		FROM TB_SUBJSEQ S 
+		WHERE 1=1
+			AND GRCODE = #{grcode} AND GRSEQ = #{copyGrseq}
+			AND LEC_TYPE <> 'C'
+		ORDER BY LECNM
+	]]>
+	</select>
+	
+	<select id="selectGrseqMngGrseqList" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 년도에 속한 기수 코드 리스트.
+		SELECT GRSEQ 
+		  FROM TB_GRSEQMNG 
+		 WHERE 1=1
+		   AND SUBSTR(GRSEQ, 1, 4) IN ( #{year} , #{year} + 1 ) 
+		 ORDER BY GRSEQ
+	]]>
+	</select>
+	
+	<select id="selectGrcodeListByGrseq" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과정 리스트 (기수에 속한)
+		SELECT GR.GRCODE
+		     , GR.GRCODENM
+		     , GR.GRGUBUN
+		     , GS.GRSEQ AS CK_GRSEQ
+		     , MC.MCODE_NAME AS MCODE_NAME
+		     , MC.MAJOR_CODE AS MCODE
+		     , SC.SCODE_NAME AS SCODE_NAME
+		     , SC.MINOR_CODE AS SCODE
+		  FROM TB_GRCODE GR
+		     , TB_GRSEQ GS
+		     , TB_MAINCODE MC
+		     , TB_SUBCODE SC
+		 WHERE 1=1
+		   AND GS.GRSEQ(+) = #{grseq}
+		   AND GS.GRCODE(+) = GR.GRCODE 
+		   AND GR.USE_YN = 'Y'
+		   AND MC.CD_GUBUN = 'G'
+		   AND MC.MAJOR_CODE = GR.GRTYPE
+		   AND SC.CD_GUBUN = 'G'
+		   AND SC.MAJOR_CODE = GR.GRTYPE
+		   AND SC.MINOR_CODE = GR.GRSUBCD
+		   AND DECODE (#{grseq}, '', 0, 1) = 1
+	]]>
+	<if test="searchValue != null and searchValue != ''">
+		   AND GRCODENM LIKE '%'||#{searchValue}||'%' 
+	</if>	
+	<![CDATA[
+		 ORDER BY MCODE, SCODE
+	]]>
+	</select>
+	
+	<insert id="insertGrseqByGrseqMng" parameterType="Map">
+	<![CDATA[
+		-- 기수코드 관리의 개설과정 추가
+		INSERT INTO TB_GRSEQ
+			(GRCODE, GRCODENIKNM, USE_YN, GRSEQ, F_CYBER, 
+			 STARTED, ENDDATE, EAPPLYST, EAPPLYED ,TDATE, 
+			 TSEAT, ENDSENT, ENDAENT, RPGRAD, GR_POINT, INSA_GRSEQ )
+		SELECT 
+			A.GRCODE, A.GRCODENM, A.USE_YN, #{grseq}, DECODE(A.GRGUBUN, 'C', 'Y', 'N'), 
+			MG.STARTED, MG.ENDDATE, MG.EAPPLYST, MG.EAPPLYED, MG.TDATE, 
+			MG.PERSON, MG.ENDSENT, MG.ENDAENT, MG.RPGRAD, MG.GR_POINT, (select to_char(sysdate, 'YYYYMMDD')||lpad(nvl(to_number(substr(max(insa_grseq),9,4)),0)+1,4,0) from TB_GRSEQ where insa_grseq like to_char(sysdate, 'YYYYMMDD')||'%')
+		FROM TB_GRCODE A, TB_GRSEQMNG MG 
+		WHERE 1=1 
+			AND MG.GRSEQ = #{grseq}
+			${whereStr}
+	]]>
+	</insert>
+	
+	<select id="selectGrseqSimpleRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 간단한 과정 기수 정보.
+		SELECT GRCODE
+		     , GRSEQ
+		     , GRCODENIKNM
+		     , TO_CHAR(EAPPLYST, 'YYYYMMDD') AS EAPPLYST
+		     , TO_CHAR(EAPPLYED, 'YYYYMMDD') AS EAPPLYED
+		     , TO_CHAR(STARTED, 'YYYYMMDD') AS STARTED
+		     , TO_CHAR(ENDDATE, 'YYYYMMDD') AS ENDDATE
+		     , SUBSTR(GRSEQ, 0, 4) AS SUBSTR_YEAR
+		     , SUBSTR(GRSEQ, 5, 2) AS SUBSTR_SEQ
+		     , IS_TMWEEKCNT(TO_CHAR(STARTED,'yyyymmdd'), TO_CHAR(ENDDATE,'yyyymmdd')) AS WEEK_CNT
+		     , STARTEXAM_YN
+		     , CLOSING
+		     , F_CYBER
+		  FROM TB_GRSEQ
+		 WHERE 1=1
+		   AND GRCODE = #{grcode} 
+		   AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectMemberSimpleRowAndUserid" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 간략한 유저 정보 가져오기.
+		SELECT USER_ID AS USERID
+		     , USERNO
+		     , NAME
+		     , SCP.DEC_B64('KEY1',RESNO) as RESNO
+		     , SEARCHDEPTNM(DEPT) AS DEPTNM
+		     , DECODE(SEARCHJIKNM(JIK),'', MJIKNM, SEARCHJIKNM(JIK)) AS JIKNM
+		     , DEPTSUB
+		     , JIK
+		     , DEPT
+		     , HOME_TEL
+		     , EMAIL
+		     , NVL(SCHOOL,'00') AS V_SCHOOL
+		  FROM TB_MEMBER 
+		 WHERE 1=1
+		   AND USERNO = #{userNo}
+	]]>
+	</select>
+	
+	<select id="selectGrseqPrevMaxGrseq" parameterType="Map" resultType="String">
+	<![CDATA[
+		-- 과정기수관리 이전 기수 코드
+		SELECT NVL(MAX(GRSEQ), '') AS PRE_GRSEQ 
+		  FROM TB_GRSEQ
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ < #{grseq}
+	]]>
+	</select>
+	
+	<insert id="insertGrSubjByPrevGrseq" parameterType="Map">
+	<![CDATA[
+		-- 이전기수의 과정구성정보 복사
+		INSERT INTO TB_GRSUBJ(
+		       GRCODE, GRSEQ   , SUBJ, F_OK, LEC_TYPE
+		)
+		SELECT GRCODE, #{grseq}, SUBJ, F_OK, LEC_TYPE
+		  FROM TB_GRSUBJ
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{prevGrseq}
+	]]>
+	</insert>
+	
+	<insert id="insertSubjSeqByPrevGrseq" parameterType="Map">
+	<![CDATA[
+		-- 이전기수의 개설과정정보 복사
+		INSERT INTO TB_SUBJSEQ(
+		       GRCODE     , GRSEQ      , SUBJ       , LECNM      , GRASTEP
+		     , TSECTION   , LESSONTIME , SILGITIME  , TORONTIME  , HYUNTIME
+		     , MULTITIME  , ETCTIME    , STARTED    , ENDDATE    , CLOSING
+		     , LEC_TYPE   , LDATE      , REF_SUBJ   , LIMIT      , PROG_TIME
+		     , LUSERNO    , MGAKPOINT  , MJUPOINT   , LGAKPOINT  , LJUPOINT
+		     , NGAKPOINT1 , NJUPOINT1  , NGAKPOINT2 , NJUPOINT2  , NGAKPOINT3
+		     , NJUPOINT3  , NGAKPOINT4 , NJUPOINT4  , NGAKPOINT5 , NJUPOINT5
+		     , MGAKWEIGHT , MJUWEIGHT  , LGAKWEIGHT , LJUWEIGHT  , NGAKWEIGHT1
+		     , NJUWEIGHT1 , NGAKWEIGHT2, NJUWEIGHT2 , NGAKWEIGHT3, NJUWEIGHT3
+		     , NGAKWEIGHT4, NJUWEIGHT4 , NGAKWEIGHT5, NJUWEIGHT5 , REPORTPOINT
+		     , STEPPOINT  , QUIZPOINT  , TOTPOINT   , GRAQUIZ
+		)
+		SELECT GRCODE     , #{grseq}   , SUBJ       , LECNM      , GRASTEP
+			 , TSECTION   , LESSONTIME , SILGITIME  , TORONTIME  , HYUNTIME
+			 , MULTITIME  , ETCTIME    , #{started} , #{enddate} , 'N'
+			 , LEC_TYPE   , SYSDATE    , REF_SUBJ   , LIMIT      , PROG_TIME
+			 , #{userno}  , MGAKPOINT  , MJUPOINT   , LGAKPOINT  , LJUPOINT
+			 , NGAKPOINT1 , NJUPOINT1  , NGAKPOINT2 , NJUPOINT2  , NGAKPOINT3
+			 , NJUPOINT3  , NGAKPOINT4 , NJUPOINT4  , NGAKPOINT5 , NJUPOINT5
+			 , MGAKWEIGHT , MJUWEIGHT  , LGAKWEIGHT , LJUWEIGHT  , NGAKWEIGHT1
+			 , NJUWEIGHT1 , NGAKWEIGHT2, NJUWEIGHT2 , NGAKWEIGHT3, NJUWEIGHT3
+			 , NGAKWEIGHT4, NJUWEIGHT4 , NGAKWEIGHT5, NJUWEIGHT5 , REPORTPOINT
+			 , STEPPOINT  , QUIZPOINT  , TOTPOINT   , GRAQUIZ
+		  FROM TB_SUBJSEQ
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{prevGrseq}
+	]]>
+	</insert>
+	
+	<insert id="insertSubjClassByPrevGrseq" parameterType="Map">
+	<![CDATA[
+		-- 이전기수의 반구성 복사
+		INSERT INTO TB_SUBJCLASS (
+		       SUBJ     , GRCODE , GRSEQ      , CLASSNO, CLASSNM
+		     , LUSERNO  , LDATE  , LANG_SPOINT
+		) 
+		SELECT SUBJ     , GRCODE , #{grseq}   , CLASSNO, CLASSNM
+		     , #{userno}, SYSDATE, LANG_SPOINT
+		  FROM TB_SUBJCLASS
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{prevGrseq}
+	]]>
+	</insert>
+	
+	<select id="selectEdunoRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- eduno정보 가져오기
+ 		SELECT 
+			EDUNO
+ 		FROM TB_APP_INFO 
+ 		WHERE 1=1
+ 			AND USERNO = #{userno}
+ 			AND GRCODE = #{grcode}
+ 			AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<insert id="insertEvalInfoGrseqByPrevGrseq" parameterType="Map">
+	<![CDATA[
+		-- 이전 기수의 평가 마스터 정보 복사.
+		INSERT INTO TB_EVLINFO_GRSEQ (
+		       GRCODE , GRSEQ    , MEVAL_YN, LEVAL_YN, LUSERNO
+		     , LDATE  , NEVAL_CNT
+		) 
+		SELECT GRCODE , #{grseq} , MEVAL_YN, LEVAL_YN, #{userno}
+		     , SYSDATE, NEVAL_CNT
+		  FROM TB_EVLINFO_GRSEQ
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{prevGrseq}
+	]]>
+	</insert>
+	
+	<insert id="insertEvalInfoSubjByPrevGrseq" parameterType="Map">
+	<![CDATA[
+		-- 이전 기수의 평가 과목 정보 복사.
+		INSERT INTO TB_EVLINFO_SUBJ (
+		       GRCODE, GRSEQ   , SUBJ     , PTYPE    , DATES
+		     , PARTF , PARTT   , EVAL_TYPE, LUSERNO  , LDATE
+		) 
+		SELECT GRCODE, #{grseq}, SUBJ     , PTYPE    , DATES
+		     , PARTF , PARTT   , EVAL_TYPE, #{userno}, SYSDATE
+		  FROM TB_EVLINFO_SUBJ
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{prevGrseq}
+	]]>
+	</insert>
+	
+	<insert id="insertExPageByPrevGrseq" parameterType="Map">
+	<![CDATA[
+		-- 이전 기수의 문제지 정보 복사
+		INSERT INTO TB_EXPAGE (
+		       GRCODE   , GRSEQ    , SUBJ       , PTYPE      , DATES
+		     , EVAL_TYPE, PAGE_TYPE, ONOFF_TYPE , PARTF      , PARTT
+		     , GRBASE   , GRTOTAL  , ESTART_DATE, EEND_DATE  , DAB_YN
+		     , EXAM_TIME, EXAM_MIN , OPENST_DATE, OPENED_DATE, FINISH_YN
+		     , CNTTOTAL , CNTSINGLE, CNTMULTI   , CNTDESC    , PAGEDESC
+		     , LUSERNO  , LDATE    , TUSERNO    , ESAL_DATE  , SALARY_YN
+		) 
+		SELECT GRCODE   , #{grseq} , SUBJ       , PTYPE      , DATES
+		     , EVAL_TYPE, PAGE_TYPE, ONOFF_TYPE , PARTF      , PARTT
+		     , GRBASE   , GRTOTAL  , ESTART_DATE, EEND_DATE  , DAB_YN
+		     , EXAM_TIME, EXAM_MIN , OPENST_DATE, OPENED_DATE, FINISH_YN
+		     , CNTTOTAL , CNTSINGLE, CNTMULTI   , CNTDESC    , PAGEDESC
+		     , #{userno}, SYSDATE  , TUSERNO    , ESAL_DATE  , SALARY_YN
+		  FROM TB_EXPAGE
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{prevGrseq}
+	]]>
+	</insert>
+	
+	<update id="updateGrseqByEvlDate" parameterType="Map">
+	<![CDATA[
+		-- 과정 기수 정보 평가 일정 수정.
+		UPDATE TB_GRSEQ
+		   SET NEW_SEXAMPROPOSE = TO_DATE(#{evlSdate}, 'YYYYMMDD')
+		     , NEW_EEXAMPROPOSE = TO_DATE(#{evlEdate}, 'YYYYMMDD')
+		     , REPORT_CNT = (SELECT REPORT_CNT FROM TB_GRSEQ WHERE GRCODE = #{grcode} AND GRSEQ = #{prevGrseq})
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<update id="updateSubjSeqByEvlNull" parameterType="Map">
+	<![CDATA[
+		-- 과정 기수 정보 평가 항목 초기화 수정.
+		UPDATE TB_SUBJSEQ
+		   SET MGAKPOINT = NULL
+		     , MJUPOINT  = NULL
+		     , LGAKPOINT = NULL
+		     , LJUPOINT = NULL
+		     , NGAKPOINT1 = NULL
+		     , NJUPOINT1 = NULL
+		     , NGAKPOINT2 = NULL
+		     , NJUPOINT2 = NULL
+		     , NGAKPOINT3 = NULL
+		     , NJUPOINT3 = NULL
+		     , NGAKPOINT4 = NULL
+		     , NJUPOINT4 = NULL
+		     , NGAKPOINT5 = NULL
+		     , NJUPOINT5 = NULL
+		     , MGAKWEIGHT = NULL
+		     , MJUWEIGHT = NULL
+		     , LGAKWEIGHT = NULL
+		     , LJUWEIGHT = NULL
+		     , NGAKWEIGHT1 = NULL
+		     , NJUWEIGHT1 = NULL
+		     , NGAKWEIGHT2 = NULL
+		     , NJUWEIGHT2 = NULL
+		     , NGAKWEIGHT3 = NULL
+		     , NJUWEIGHT3 = NULL
+		     , NGAKWEIGHT4 = NULL
+		     , NJUWEIGHT4 = NULL
+		     , NGAKWEIGHT5 = NULL
+		     , NJUWEIGHT5 = NULL
+		     , REPORTPOINT = NULL
+		     , STEPPOINT = NULL
+		     , QUIZPOINT = NULL
+		     , TOTPOINT = NULL
+		     , GRAQUIZ = NULL
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<select id="selectGrInqTtlByGrseqSimpleList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기수의 속한 설문 title_no 리스트
+		SELECT TITLE_NO
+		  FROM TB_GRINQ_TTL
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<select id="selectGrInqTtlMaxTitleNo" resultType="int">
+	<![CDATA[
+		-- 과정 설문 최고 번호 가져 오기.
+		SELECT NVL(MAX(TITLE_NO), 0) + 1 AS MAX 
+		  FROM TB_GRINQ_TTL
+	]]>
+	</select>
+	
+	<insert id="insertGrInqTtlByPrevGrseq" parameterType="Map">
+	<![CDATA[
+		-- 이전 기수의 설문 리스트 복사.
+		INSERT INTO TB_GRINQ_TTL (
+		       TITLE_NO           , GRCODE    , GRSEQ        , TITLE       , TITLE_SEQ
+		     , START_PERIOD       , END_PERIOD, ISTART_DATE  , IEND_DATE   , AREA_PART
+		     , USE_DIFF           , USE_YN    , NEXT_TITLE_NO, GUBUN_ON_OFF, GUIDE_TEXT_NO
+		     , QUESTION_COMM_GUBUN
+		)
+		SELECT #{titleNo}         , GRCODE    , #{grseq}     , TITLE       , TITLE_SEQ
+		     , START_PERIOD       , END_PERIOD, ISTART_DATE  , IEND_DATE   , AREA_PART
+		     , USE_DIFF           , USE_YN    , NEXT_TITLE_NO, GUBUN_ON_OFF, GUIDE_TEXT_NO
+		     , QUESTION_COMM_GUBUN
+		  FROM TB_GRINQ_TTL
+		 WHERE 1=1
+		   AND TITLE_NO = #{prevTitleNo}
+	]]>
+	</insert>
+	
+	<insert id="insertGrInqQuestionSetByPrevGrseq" parameterType="Map">
+	<![CDATA[
+		-- 이전 기수의 설문 세트 복사.
+		INSERT INTO TB_GRINQ_QUESTION_SET (
+		       TITLE_NO  , SET_NO             , QUESTION_NO   , QUESTION_CHECKED_NO, QUESTION
+		     , ANSWER_CNT, CHECKBOX_CHECKED_NO, QUESTION_GUBUN, WUSERNO            , SAMP_CHECKED_NO
+		     , TUSERNO   , TSUBJ
+		) 
+		SELECT #{titleNo}, SET_NO             , QUESTION_NO   , QUESTION_CHECKED_NO, QUESTION
+		     , ANSWER_CNT, CHECKBOX_CHECKED_NO, QUESTION_GUBUN, #{userno}          , SAMP_CHECKED_NO
+		     , TUSERNO   , TSUBJ
+		  FROM TB_GRINQ_QUESTION_SET
+		 WHERE 1=1
+		   AND TITLE_NO = #{prevTitleNo}
+	]]>
+	</insert>
+	
+	<insert id="insertGrInqSampSetByPrevGrseq" parameterType="Map">
+	<![CDATA[
+		-- 이전 기수의 설문 보기 복사.
+		INSERT INTO TB_GRINQ_SAMP_SET (
+		       TITLE_NO   , SET_NO, QUESTION_NO, ANSWER_NO, ANSWER
+		     , ANSWER_KIND
+		) 
+		SELECT #{titleNo} , SET_NO, QUESTION_NO, ANSWER_NO, ANSWER
+		     , ANSWER_KIND
+		  FROM TB_GRINQ_SAMP_SET
+		 WHERE 1=1
+		   AND TITLE_NO = #{prevTitleNo}
+	]]>
+	</insert>
+	
+	<update id="updateGrseqByQuestionDate" parameterType="Map">
+	<![CDATA[
+		-- 과정 기수 정보 설문 일정 수정.
+		UPDATE TB_GRSEQ
+		   SET QUESTION_SDATE = TO_DATE(#{questionSdate}, 'YYYYMMDD')
+		     , QUESTION_EDATE = TO_DATE(#{questionEdate}, 'YYYYMMDD')
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<update id="updateGrseqByGroupFileNo" parameterType="Map">
+	<![CDATA[
+		-- 과정기수의 파일정보 수정
+		UPDATE TB_GRSEQ
+		   SET GROUPFILE_NO = #{groupfileNo}
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<select id="selectAppInfoByGrcodeYearCnt" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 해당년의 과정의 수강신청 인원 있는지 확인.
+		SELECT COUNT(1)
+		  FROM TB_APP_INFO
+		 WHERE 1=1
+		   AND GRCODE = #{grcode}
+		   AND SUBSTR(GRSEQ, 0,4) = #{year}
+	]]>
+	</select>
+	
+	<select id="selectMemberLecture" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 특정 사용자의 당해년도 수강신청 내역
+		SELECT A.GRCODE
+		     , A.GRCODENIKNM
+		     , A.GRSEQ
+		     , A.STARTED
+		     , A.ENDDATE
+		     , CASE WHEN (b.grchk = 'Y') THEN '승인'
+		            WHEN (b.grchk = 'N') THEN '미승인'
+		            WHEN (b.grchk IS NULL OR b.grchk = '')
+		                 THEN (CASE WHEN (TO_CHAR(SYSDATE, 'YYYY/MM/DD') < A.ENDAENT) THEN A.ENDAENT || ' 예정'  --승인마감일 이전인 경우
+		                            WHEN (TO_CHAR(SYSDATE, 'YYYY/MM/DD') > A.ENDAENT) THEN '미승인'                    --승인마감일 이후인 경우
+		                            ELSE '미승인'
+		                       END
+		                      )
+		            ELSE '미승인'
+		       END AS GRCHK
+		     , B.USERNO
+		     , SUBSTR(A.GRSEQ, 0, 4)||'-'||SUBSTR(A.GRSEQ, -2) AS GRSEQ_STR
+		  FROM (SELECT GRCODE
+		             , GRCODENIKNM
+		             , GRSEQ
+		             , TO_CHAR(STARTED, 'YYYY/MM/DD') AS STARTED
+		             , TO_CHAR(ENDDATE, 'YYYY/MM/DD') AS ENDDATE
+		             , TO_CHAR(EAPPLYST, 'YYYY/MM/DD') AS EAPPLYST
+		             , TO_CHAR(EAPPLYED, 'YYYY/MM/DD') AS EAPPLYED
+		             , TO_CHAR(ENDSENT, 'YYYY/MM/DD') AS ENDSENT
+		             , TO_CHAR(ENDAENT, 'YYYY/MM/DD') AS ENDAENT
+		          FROM TB_GRSEQ
+		         WHERE 1=1
+		           AND USE_YN='Y'
+		           --AND TO_CHAR(EAPPLYST, 'YYYY-MM-DD') <= TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+		           AND TO_CHAR(STARTED, 'YYYY') = TO_CHAR(SYSDATE, 'YYYY')
+		       ) A
+		     , (SELECT GRCODE
+		             , GRSEQ
+		             , USERNO
+		             , DEPTCHK
+		             , GRCHK
+		             , TO_CHAR(APPDATE, 'YYYY.MM.DD') AS APPDATE
+		          FROM TB_APP_INFO
+		         WHERE 1=1
+		           AND USERNO = #{userno}
+		       ) B
+		 WHERE 1=1
+		   AND A.GRCODE = B.GRCODE
+		   AND A.GRSEQ = B.GRSEQ
+	]]>
+	</select>
+	
+	<select id="findEvlinfoSubjByGrcodeAndGrseqAndSubj" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT SB.SUBJ
+		     , SB.LECNM
+		     , SJ.SUBJTYPE
+		     , SB.LEC_TYPE
+		     , NVL(SB.REF_SUBJ,0) AS REF_SUBJ
+		     , TO_NUMBER(SB.MGAKPOINT) AS MGAKPOINT
+		     , SB.MJUPOINT
+		     , SB.LGAKPOINT
+		     , SB.LJUPOINT
+		     , SB.NGAKPOINT1
+		     , SB.NJUPOINT1
+		     , SB.NGAKPOINT2
+		     , SB.NJUPOINT2
+		     , SB.NGAKPOINT3
+		     , SB.NJUPOINT3
+		     , SB.NGAKPOINT4
+		     , SB.NJUPOINT4
+		     , SB.NGAKPOINT5
+		     , SB.NJUPOINT5
+		     , SB.MGAKWEIGHT AS MGAKWEIGHT
+		     , SB.MJUWEIGHT AS MJUWEIGHT
+		     , SB.LGAKWEIGHT AS LGAKWEIGHT
+		     , SB.LJUWEIGHT AS LJUWEIGHT
+		     , SB.NGAKWEIGHT1 AS NGAKWEIGHT1
+		     , SB.NJUWEIGHT1 AS NJUWEIGHT1
+		     , SB.NGAKWEIGHT2 AS NGAKWEIGHT2
+		     , SB.NJUWEIGHT2 AS NJUWEIGHT2
+		     , SB.NGAKWEIGHT3 AS NGAKWEIGHT3
+		     , SB.NJUWEIGHT3 AS NJUWEIGHT3
+		     , SB.NGAKWEIGHT4 AS NGAKWEIGHT4
+		     , SB.NJUWEIGHT4 AS NJUWEIGHT4
+		     , SB.NGAKWEIGHT5 AS NGAKWEIGHT5
+		     , SB.NJUWEIGHT5 AS NJUWEIGHT5
+		     , SB.REPORTPOINT AS REPORTPOINT
+		     , SB.STEPPOINT AS STEPPOINT
+		     , SB.GRASTEP AS GRASTEP
+		     , SB.TOTPOINT AS TOTPOINT
+		     , EV.EVL_CNT
+		     , NVL(PM.STATE,0) AS PTYPEM
+		     , NVL(PT.STATE,0) AS PTYPET
+		     , NVL(P1.STATE,0) AS PTYPE1
+		     , NVL(P2.STATE,0) AS PTYPE2
+		     , NVL(P3.STATE,0) AS PTYPE3
+		     , NVL(P4.STATE,0) AS PTYPE4
+		     , NVL(P5.STATE,0) AS PTYPE5
+		  FROM TB_SUBJSEQ SB
+		     , TB_SUBJ SJ
+		     , (SELECT GRCODE,GRSEQ,SUBJ,COUNT(*) EVL_CNT FROM TB_EVLINFO_SUBJ GROUP BY GRCODE, GRSEQ, SUBJ) EV
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+		          FROM TB_EVLINFO_SUBJ EJ
+		             , TB_EXPAGE EP
+		         WHERE 1=1
+		           AND EJ.PTYPE = 'M'
+		           AND EJ.GRCODE = EP.GRCODE(+)
+		           AND EJ.GRSEQ = EP.GRSEQ(+)
+		           AND EJ.SUBJ = EP.SUBJ(+)
+		           AND EJ.PTYPE = EP.PTYPE(+)
+		       ) PM
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+		          FROM TB_EVLINFO_SUBJ EJ
+		             , TB_EXPAGE EP
+		         WHERE 1=1
+		           AND EJ.PTYPE = 'T'
+		           AND EJ.GRCODE = EP.GRCODE(+)
+		           AND EJ.GRSEQ = EP.GRSEQ(+)
+		           AND EJ.SUBJ = EP.SUBJ(+)
+		           AND EJ.PTYPE=EP.PTYPE(+)
+		       ) PT
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+		         FROM TB_EVLINFO_SUBJ EJ
+		            , TB_EXPAGE EP
+		        WHERE 1=1
+		          AND EJ.PTYPE = '1'
+		          AND EJ.GRCODE = EP.GRCODE(+)
+		          AND EJ.GRSEQ = EP.GRSEQ(+)
+		          AND EJ.SUBJ = EP.SUBJ(+)
+		          AND EJ.PTYPE = EP.PTYPE(+)
+		       ) P1
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+		         FROM TB_EVLINFO_SUBJ EJ
+		            , TB_EXPAGE EP
+		        WHERE 1=1
+		          AND EJ.PTYPE = '2'
+		          AND EJ.GRCODE = EP.GRCODE(+)
+		          AND EJ.GRSEQ = EP.GRSEQ(+)
+		          AND EJ.SUBJ = EP.SUBJ(+)
+		          AND EJ.PTYPE = EP.PTYPE(+)
+		       ) P2
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+		         FROM TB_EVLINFO_SUBJ EJ
+		            , TB_EXPAGE EP
+		        WHERE 1=1
+		          AND EJ.PTYPE = '3'
+		          AND EJ.GRCODE = EP.GRCODE(+)
+		          AND EJ.GRSEQ = EP.GRSEQ(+)
+		          AND EJ.SUBJ = EP.SUBJ(+)
+		          AND EJ.PTYPE = EP.PTYPE(+)
+		       ) P3
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+		         FROM TB_EVLINFO_SUBJ EJ
+		            , TB_EXPAGE EP
+		        WHERE 1=1
+		          AND EJ.PTYPE = '4'
+		          AND EJ.GRCODE = EP.GRCODE(+)
+		          AND EJ.GRSEQ = EP.GRSEQ(+)
+		          AND EJ.SUBJ = EP.SUBJ(+)
+		          AND EJ.PTYPE = EP.PTYPE(+)
+		       ) P4
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+		         FROM TB_EVLINFO_SUBJ EJ
+		            , TB_EXPAGE EP
+		        WHERE 1=1
+		          AND EJ.PTYPE = '5'
+		          AND EJ.GRCODE = EP.GRCODE(+)
+		          AND EJ.GRSEQ = EP.GRSEQ(+)
+		          AND EJ.SUBJ = EP.SUBJ(+)
+		          AND EJ.PTYPE = EP.PTYPE(+)
+		       ) P5
+		 WHERE 1=1
+		   AND SB.GRCODE = #{commGrcode}
+		   AND SB.GRSEQ = #{commGrseq}
+           AND SB.SUBJ = #{subj}
+		   AND SB.LEC_TYPE <> 'P'
+		   AND SB.SUBJ = SJ.SUBJ
+		   AND SJ.SUBJTYPE <> 'S'
+		   AND SB.SUBJ <> 'SUB1000025'
+		   AND SB.GRCODE = EV.GRCODE(+)
+		   AND SB.GRSEQ = EV.GRSEQ(+)
+		   AND SB.SUBJ = EV.SUBJ(+)
+		   AND (SB.REF_SUBJ IS NOT NULL OR EV.EVL_CNT > 0)
+		   AND PM.GRCODE(+) = SB.GRCODE
+		   AND PM.GRSEQ(+) = SB.GRSEQ
+		   AND PM.SUBJ(+) = SB.SUBJ
+		   AND PT.GRCODE(+) = SB.GRCODE
+		   AND PT.GRSEQ(+) = SB.GRSEQ
+		   AND PT.SUBJ(+) = SB.SUBJ
+		   AND P1.GRCODE(+) = SB.GRCODE
+		   AND P1.GRSEQ(+) = SB.GRSEQ
+		   AND P1.SUBJ(+) = SB.SUBJ
+		   AND P2.GRCODE(+) = SB.GRCODE
+		   AND P2.GRSEQ(+) = SB.GRSEQ
+		   AND P2.SUBJ(+) = SB.SUBJ
+		   AND P3.GRCODE(+) = SB.GRCODE
+		   AND P3.GRSEQ(+) = SB.GRSEQ
+		   AND P3.SUBJ(+) = SB.SUBJ
+		   AND P4.GRCODE(+) = SB.GRCODE
+		   AND P4.GRSEQ(+) = SB.GRSEQ
+		   AND P4.SUBJ(+) = SB.SUBJ
+		   AND P5.GRCODE(+) = SB.GRCODE
+		   AND P5.GRSEQ(+) = SB.GRSEQ
+		   AND P5.SUBJ(+) = SB.SUBJ
+		 ORDER BY DECODE(SB.LEC_TYPE, 'S', 1, 2), DECODE(SB.LEC_TYPE, 'S', DECODE(EV.EVL_CNT, NULL, 2, 1), 3), DECODE(SB.LEC_TYPE, 'S', SB.LECNM, SB.REF_SUBJ), DECODE(SB.LEC_TYPE, 'C', SB.LECNM)
+	 ]]> 
+	</select>
+	
+	<select id="findSubjseqJoinSubjJoinEvlinfoJoinEvlCntByGrcodeAndGrseqAndSubjAndPtype" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT   SB.SUBJ
+			 , SB.GRCODE
+		   	 , SB.GRSEQ
+		     , SB.LECNM
+             , NVL(P.STATE,0) AS PSTATE
+             , P.PTYPE
+         	 , CASE 
+		     		WHEN NVL(P.PTYPE,'') = 'T' THEN '중간'
+		     		WHEN NVL(P.PTYPE,'') = 'M' THEN '최종'
+		     		WHEN NVL(P.PTYPE,'') = '1' THEN '상시1회'
+		     		WHEN NVL(P.PTYPE,'') = '2' THEN '상시2회'
+		     		WHEN NVL(P.PTYPE,'') = '3' THEN '상시3회'
+		     		WHEN NVL(P.PTYPE,'') = '4' THEN '상시4회'
+		     		WHEN NVL(P.PTYPE,'') = '5' THEN '상시5회'
+		     		ELSE ''
+	     		END PTYPENM
+		     , SJ.SUBJTYPE
+		     , SB.LEC_TYPE
+		     , NVL(SB.REF_SUBJ,0) AS REF_SUBJ
+		     , TO_NUMBER(SB.MGAKPOINT) AS MGAKPOINT
+		     , SB.MJUPOINT
+		     , SB.LGAKPOINT
+		     , SB.LJUPOINT
+		     , SB.NGAKPOINT1
+		     , SB.NJUPOINT1
+		     , SB.NGAKPOINT2
+		     , SB.NJUPOINT2
+		     , SB.NGAKPOINT3
+		     , SB.NJUPOINT3
+		     , SB.NGAKPOINT4
+		     , SB.NJUPOINT4
+		     , SB.NGAKPOINT5
+		     , SB.NJUPOINT5
+		     , SB.MGAKWEIGHT AS MGAKWEIGHT
+		     , SB.MJUWEIGHT AS MJUWEIGHT
+		     , SB.LGAKWEIGHT AS LGAKWEIGHT
+		     , SB.LJUWEIGHT AS LJUWEIGHT
+		     , SB.NGAKWEIGHT1 AS NGAKWEIGHT1
+		     , SB.NJUWEIGHT1 AS NJUWEIGHT1
+		     , SB.NGAKWEIGHT2 AS NGAKWEIGHT2
+		     , SB.NJUWEIGHT2 AS NJUWEIGHT2
+		     , SB.NGAKWEIGHT3 AS NGAKWEIGHT3
+		     , SB.NJUWEIGHT3 AS NJUWEIGHT3
+		     , SB.NGAKWEIGHT4 AS NGAKWEIGHT4
+		     , SB.NJUWEIGHT4 AS NJUWEIGHT4
+		     , SB.NGAKWEIGHT5 AS NGAKWEIGHT5
+		     , SB.NJUWEIGHT5 AS NJUWEIGHT5
+		     , SB.REPORTPOINT AS REPORTPOINT
+		     , SB.STEPPOINT AS STEPPOINT
+		     , SB.GRASTEP AS GRASTEP
+		     , SB.TOTPOINT AS TOTPOINT
+		     , EV.EVL_CNT
+		     , TO_CHAR(GS.NEW_SEXAMPROPOSE, 'YYYYMMDD') AS NEW_SEXAMPROPOSE_DATE
+		     , TO_CHAR(GS.NEW_SEXAMPROPOSE, 'HH24MISS') AS NEW_SEXAMPROPOSE_TIME
+		     , TO_CHAR(GS.NEW_EEXAMPROPOSE, 'YYYYMMDD') AS NEW_EEXAMPROPOSE_DATE
+		     , TO_CHAR(GS.NEW_EEXAMPROPOSE, 'HH24MISS') AS NEW_EEXAMPROPOSE_TIME
+		  FROM TB_SUBJSEQ SB
+		     , TB_SUBJ SJ
+		     , (SELECT GRCODE,GRSEQ,SUBJ,COUNT(*) EVL_CNT FROM TB_EVLINFO_SUBJ GROUP BY GRCODE, GRSEQ, SUBJ) EV
+		     , (SELECT DECODE(EP.ESTART_DATE, NULL, '1', DECODE(SIGN(SYSDATE-EP.ESTART_DATE), -1, '2', '3')) AS STATE
+		             , EJ.GRCODE
+		             , EJ.GRSEQ
+		             , EJ.SUBJ
+                 , EJ.PTYPE
+		          FROM TB_EVLINFO_SUBJ EJ
+		             , TB_EXPAGE EP
+		         WHERE 1=1
+		           --AND EJ.PTYPE = 'T'
+		           AND EJ.GRCODE = EP.GRCODE(+)
+		           AND EJ.GRSEQ = EP.GRSEQ(+)
+		           AND EJ.SUBJ = EP.SUBJ(+)
+		           AND EJ.PTYPE=EP.PTYPE(+)
+		       ) P
+		     , TB_GRSEQ GS
+		 WHERE 1=1
+     -- PARAMS START --
+		   AND SB.GRCODE = #{commGrcode}
+		   AND SB.GRSEQ = #{commGrseq}
+           AND SB.SUBJ = #{subj}
+      	   AND P.PTYPE = #{ptype}
+     -- PARAMS END --       
+		   AND SB.LEC_TYPE <> 'P'
+		   AND SB.SUBJ = SJ.SUBJ
+		   AND SJ.SUBJTYPE <> 'S'
+		   AND SB.SUBJ <> 'SUB1000025'
+		   AND SB.GRCODE = EV.GRCODE(+)
+		   AND SB.GRSEQ = EV.GRSEQ(+)
+		   AND SB.SUBJ = EV.SUBJ(+)
+		   AND (SB.REF_SUBJ IS NOT NULL OR EV.EVL_CNT > 0)
+		   AND P.GRCODE(+) = SB.GRCODE
+		   AND P.GRSEQ(+) = SB.GRSEQ
+		   AND P.SUBJ(+) = SB.SUBJ
+		   AND GS.GRCODE = SB.GRCODE
+		   AND GS.GRSEQ = SB.GRSEQ
+	]]>
+	</select>
+	
+	<select id="findExamMJoinExamSubjectByGrcodeAndGrseqAndSubj" parameterType="Map" resultType="DataMap">
+		<![CDATA[
+			SELECT  M.ID_EXAM
+				        , M.ID_COURSE
+				        , M.COURSE_YEAR
+				        , M.COURSE_NO
+				        , M.COURSE_CLASS_NO
+				        , M.COURSE_STUDY_SEQ
+				        , M.EXAM_SEQ
+				        , M.TITLE
+				        , M.GUIDE
+				        , M.ID_EXAM_KIND
+				        , M.WEIGHT
+				        , M.YN_ENABLE
+				        , TO_CHAR(M.EXAM_START1, 'YYYYMMDD') EXAM_START1_DATE
+				        , TO_CHAR(M.EXAM_END1, 'YYYYMMDD') EXAM_END1_DATE
+				        , TO_CHAR(M.EXAM_START1, 'HH24MISS') EXAM_START1_TIME
+				        , TO_CHAR(M.EXAM_END1, 'HH24MISS') EXAM_END1_TIME
+				        , M.EXAM_START2
+				        , M.EXAM_END2
+				        , M.YN_OPEN_EXAM_DATE2
+				        , M.ID_EXAM_TYPE
+				        , M.ID_AUTH_TYPE
+				        , M.YN_FREE
+				        , M.YN_GROUP_RECEIPT
+				        , M.RECEIPT_START
+				        , M.RECEIPT_END
+				        , M.YN_STAT
+				        , M.STAT_START
+				        , M.STAT_END
+				        , M.YN_P_RANK
+				        , M.YN_P_RANK_PCT
+				        , M.YN_T_AVG
+				        , M.YN_T_U_AVG
+				        , M.U_AVG_BASIS
+				        , M.YN_T_MAX
+				        , M.YN_T_MIN
+				        , M.YN_T_USER_CNT
+				        , M.YN_SCORE_DIS
+				        , M.YN_OPT_SUBJ
+				        , M.ID_APPLY_ORDER
+				        , M.YN_OPEN_QA
+				        , M.YN_OPEN_SCORE_DIRECT
+				        , M.CAL_STAT_DATE
+				        , M.UP_DATE
+				        , M.Q_MAKER_TITLE
+				        , M.Q_MAKER_BODY
+				        , M.FAILURE_SCORE
+				        , M.SUCCESS_SCORE
+				        , M.YN_EXAM_RESULT_MSG
+				        , M.LOG_OPTION
+				        , M.WEB_WINDOW_MODE
+				        , M.SURVEY
+				        , M.YN_SAMETIME
+				        , M.LOGIN_START
+				        , M.LOGIN_END
+				        , M.YN_RECEIPT
+				        , M.ONOFF_TYPE
+				        , NVL(C.CNT, 0) AS ANS_CNT
+				FROM ETEST.EXAM_M M
+				   , (SELECT COUNT(0) AS CNT, ID_EXAM FROM ETEST.EXAM_ANS GROUP BY ID_EXAM) C
+				WHERE M.ID_COURSE = #{subj}  -- params subj --
+						   AND M.course_year = #{grcode}  -- params commGrcode --
+						   AND M.course_no = #{grseq}  -- params commGrseq --
+						   AND C.ID_EXAM(+) = M.ID_EXAM
+		]]>
+	</select>
+	
+	<select id="findExamUnitByIdExam" parameterType="Map" resultType="DataMap">
+		<![CDATA[
+			select 
+				        EU.ID_EXAM
+				        , EU.EXAM_UNIT
+				        , EU.TITLE
+				        , EU.GUIDE
+				        , EU.UNIT_START1
+				        , EU.UNIT_END1
+				        , EU.UNIT_START2
+				        , EU.UNIT_END2
+				        , UT.ID_UNIT_TYPE
+				        , EU.UNIT_TYPE
+				        , UT.UNIT_TYPE UNIT_TYPE_NM
+				        , UT.RMK
+				        , EU.USER_RPT_FORMAT
+				        , EU.ID_LTIMETYPE
+				        , L.LTIMETYPE
+				        , L.RMK
+				        , EU.ID_MOVEPAGE
+				        , M.MOVEPAGE
+				        , M.RMK
+				        , EU.YN_STARTSTOP
+				        , EU.YN_SAVETEMP
+				        , EU.YN_VIEWAS
+				        , EU.YN_VIEWHINT
+				        , EU.QCNTPERPAGE
+				        , EU.ID_EXLABEL
+				        , E.EXLABEL
+				        , E.RMK
+				        , EU.FONTNAME
+				        , EU.FONTSIZE
+				        , EU.PAPER_TYPE
+				        , EU.REGDATE
+				from ETEST.EXAM_UNIT EU
+				JOIN ETEST.R_UNIT_TYPE UT
+					ON EU.UNIT_TYPE = UT.ID_UNIT_TYPE
+				JOIN ETEST.R_LTIMETYPE L
+					ON EU.ID_LTIMETYPE = L.ID_LTIMETYPE
+				JOIN ETEST.R_MOVEPAGE M
+					ON EU.ID_MOVEPAGE = M.ID_MOVEPAGE
+				JOIN ETEST.R_EXLABEL E
+					ON EU.ID_EXLABEL = E.ID_EXLABEL
+				where id_exam = #{idExam}
+		]]>
+	</select>
+	
+	<select id="countExamQByIdExamAndIdSubject" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT RQ.ID_QTYPE, RQ.QTYPE, NVL(A.CNT, 0) CNT
+		FROM ETEST.R_QTYPE RQ
+		LEFT JOIN
+		    (
+		      select Q.ID_QTYPE, RQ.QTYPE, COUNT(*) CNT
+		      FROM ETEST.EXAM_Q EQ
+		      JOIN ETEST.Q
+		      ON EQ.ID_Q = Q.ID_Q
+		      JOIN ETEST.R_QTYPE RQ
+		      ON Q.ID_QTYPE = RQ.ID_QTYPE
+		      WHERE EQ.ID_EXAM = #{idExam}
+		      AND EQ.ID_SUBJECT = #{idSubject}
+		      GROUP BY Q.ID_QTYPE, RQ.QTYPE
+		    ) A
+		ON RQ.ID_QTYPE = A.ID_QTYPE
+	]]>
+	</select>
+	
+	<select id="findQAnsByKeyExceptNo" parameterType="Map" resultType="DataMap">
+		SELECT 
+			        GRCODE
+			        , GRSEQ
+			        , SUBJ
+			        , Q_TYPE
+			        , Q_NO
+			        , Q_ANS
+			        , Q_WEIGHT
+			        , USERNO
+			        , LUSERNO
+			        , RDATE
+			        , LDATE
+			FROM TB_Q_ANS
+			WHERE GRCODE = #{commGrcode}
+			      AND GRSEQ = #{commGrseq}
+			      AND SUBJ = #{subj}
+	</select>
+	
+	<select id="selectExamSubject" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT ID_EXAM
+		     , EXAM_UNIT
+		     , ID_SUBJECT
+		     , SUBJECT_ORDER
+		     , SUBJ_GROUP
+		     , LIMITTIME
+		     , QCOUNT
+		     , ALLOTTING
+		     , ID_RANDOMTYPE
+		     , SETCOUNT
+		     , YN_CHAPTER_STAT
+		     , SCORING_DATE
+		     , MAN_SCORING_END
+		     , ID_COMPANY
+		     , USERID
+		     , TO_CHAR(REGDATE, 'YYYYMMDD HH24:MI:SS') AS REGDATE
+		     , YN_DISPLAY_MSG
+		     , OX_CNT
+		     , OX_WEIGHT
+		     , OX_CALC
+		     , CHOICE_CNT
+		     , CHOICE_WEIGHT
+		     , CHOICE_CALC
+		     , MULTI_ANS_CNT
+		     , MULTI_ANS_WEIGHT
+		     , MULTI_ANS_CALC
+		     , SHORT_ANS_CNT
+		     , SHORT_ANS_WEIGHT
+		     , SHORT_ANS_CALC
+		     , ESSAY_CNT
+		     , ESSAY_WEIGHT
+		     , ESSAY_CALC
+		     , AFILE
+		     , AFILE_RN
+		  FROM ETEST.EXAM_SUBJECT
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+		   AND EXAM_UNIT = #{examUnit}
+		   AND ID_SUBJECT = #{idSubject}
+	]]>
+	</select>
+	
+	<select id="selectQCount" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT Q.ID_QTYPE, COUNT(0) AS QCNT
+		  FROM ETEST.Q Q
+		     , ETEST.C_CHAPTER CH
+		 WHERE 1=1
+		   AND Q.ID_COURSE = CH.ID_COURSE
+		   AND Q.ID_SUBJECT = CH.ID_SUBJECT
+		   AND Q.ID_CHAPTER = CH.ID_CHAPTER
+		   AND Q.ID_VALID_TYPE = 0
+		   AND Q.USE_YN = 'Y'
+		   AND CH.COURSE_CODE = #{subj}
+		 GROUP BY Q.ID_QTYPE
+		 ORDER BY Q.ID_QTYPE
+	]]>
+	</select>
+	
+	<select id="selectExamPaper" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT ID_EXAM
+		     , EXAM_UNIT
+		     , ID_SUBJECT
+		     , NR_SET
+		     , NR_Q
+		     , ID_Q
+		     , EX_ORDER
+		     , ALLOTTING
+		     , PAGE
+		     , Q_NO1
+		     , Q_NO2
+		  FROM ETEST.EXAM_PAPER2
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+	]]>
+	</select>
+	
+	<select id="selectExamPaperSetCount" parameterType="String" resultType="int">
+	<![CDATA[
+		SELECT MAX(NR_SET) AS MAX_NR_SET
+		  FROM ETEST.EXAM_PAPER2
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+	]]>
+	</select>
+	
+	<select id="selectIdExamFromDual" parameterType="String" resultType="String">
+	<![CDATA[
+		SELECT 'E'||#{idCompany}||TO_CHAR(SYSDATE, 'YYMMDDHH24MISS')||DBMS_RANDOM.STRING('U', 2) AS ID_EXAM
+		  FROM DUAL
+	]]>
+	</select>
+	
+	<insert id="insertExamM" parameterType="Map">
+	<![CDATA[
+		INSERT INTO ETEST.EXAM_M (
+		       ID_EXAM      , ID_COURSE   , COURSE_YEAR         , COURSE_NO    , TITLE
+		     , ID_EXAM_KIND , EXAM_START1                               , EXAM_END1
+		     , ID_AUTH_TYPE , ID_COMPANY, YN_OPEN_QA, YN_OPEN_SCORE_DIRECT, USERID       , REGDATE
+		     , UP_DATE      , LOG_OPTION  , ONOFF_TYPE
+		) VALUES (
+			   #{idExam}    , #{idCourse} , #{courseYear}       , #{courseNo}  , #{title}
+			 , #{idExamKind}, TO_DATE(#{examStart1}, 'YYYYMMDDHH24MISS'), TO_DATE(#{examEnd1}, 'YYYYMMDDHH24MISS')
+			 , #{idAuthType}, #{idCompany}, #{ynOpenQa}, #{ynOpenScoreDirect}, #{userid}    , SYSDATE
+			 , SYSDATE      , #{logOption}, #{onoffType}
+		)
+    ]]>
+	</insert>
+	
+	<insert id="insertExamUnit" parameterType="Map">
+	<![CDATA[
+		INSERT INTO ETEST.EXAM_UNIT (
+		       ID_EXAM       , EXAM_UNIT     , TITLE         , USER_RPT_FORMAT
+		     , ID_LTIMETYPE  , ID_MOVEPAGE   , YN_STARTSTOP  , YN_SAVETEMP  , YN_VIEWAS
+		     , YN_VIEWHINT   , QCNTPERPAGE   , ID_EXLABEL    , FONTNAME     , FONTSIZE
+		     , PAPER_TYPE    , REGDATE
+		) VALUES (
+		       #{idExam}     , #{examUnit}   , #{title}      , #{userRptFormat}
+		     , #{idLtimetype}, #{idMovepage} , #{ynStartstop}, #{ynSavetemp}, #{ynViewas}
+		     , #{ynViewhint} , #{qcntperpage}, #{idExlabel}  , #{fontname}  , #{fontsize}
+		     , #{paperType}  , SYSDATE
+		)
+	]]>
+	</insert>
+	
+	<insert id="insertExamSubject" parameterType="Map">
+	<![CDATA[
+		INSERT INTO ETEST.EXAM_SUBJECT (
+		       ID_EXAM         , EXAM_UNIT        , ID_SUBJECT  , SUBJECT_ORDER  , SUBJ_GROUP
+		     , LIMITTIME       , QCOUNT           , ALLOTTING   , ID_RANDOMTYPE  , SETCOUNT
+		     , YN_CHAPTER_STAT , ID_COMPANY       , USERID      , REGDATE        , YN_DISPLAY_MSG
+		     , OX_CNT          , OX_WEIGHT        , OX_CALC
+		     , CHOICE_CNT      , CHOICE_WEIGHT    , CHOICE_CALC
+		     , MULTI_ANS_CNT   , MULTI_ANS_WEIGHT , MULTI_ANS_CALC
+		     , SHORT_ANS_CNT   , SHORT_ANS_WEIGHT , SHORT_ANS_CALC
+		     , ESSAY_CNT       , ESSAY_WEIGHT     , ESSAY_CALC
+		) VALUES (
+		       #{idExam}       , #{examUnit}      , #{idSubject}  , #{subjectOrder}, #{subjGroup}
+		     , #{limittime}    , #{qcount}        , #{allotting}  , #{idRandomtype}, #{setcount}
+		     , #{ynChapterStat}, #{idCompany}     , #{userid}     , SYSDATE        , #{ynDisplayMsg}
+		     , #{oxCnt}        , #{oxWeight}      , #{oxCalc}
+		     , #{choiceCnt}    , #{choiceWeight}  , #{choiceCalc}
+		     , #{multiAnsCnt}  , #{multiAnsWeight}, #{multiAnsCalc}
+		     , #{shortAnsCnt}  , #{shortAnsWeight}, #{shortAnsCalc}
+		     , #{essayCnt}     , #{essayWeight}   , #{essayCalc}
+		)
+	]]>
+	</insert>
+	
+	<select id="selectRandomQuestions" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT ROWNUM AS NR_Q, ID_Q, EX_ORDER, ID_QTYPE FROM (
+			-- OX
+			SELECT ID_Q
+			     , '1,2' AS EX_ORDER
+			     , ID_QTYPE
+	          FROM (SELECT ID_Q
+	                     , EXCOUNT
+	                     , ID_QTYPE
+	                  FROM ETEST.Q
+	                 WHERE 1=1
+	                   AND ID_QTYPE = 1
+	                   AND ID_VALID_TYPE = 0
+	                   AND ID_COURSE = #{idCourse}
+	                   AND ID_SUBJECT = #{idSubject}
+	                   AND ID_CHAPTER = #{idChapter}
+	                   AND USE_YN = 'Y'
+	                 ORDER BY DBMS_RANDOM.VALUE
+	               )
+	         WHERE 1=1
+	           AND ROWNUM <= #{oxCnt}
+	        
+	         UNION ALL
+	        -- 선다형
+	        SELECT ID_Q
+			     , CASE EXCOUNT WHEN 1 THEN '1'
+			                    WHEN 2 THEN '1,2'
+			                    WHEN 3 THEN '1,2,3'
+			                    WHEN 4 THEN '1,2,3,4'
+			                    WHEN 5 THEN '1,2,3,4,5'
+			                    ELSE '' 
+			       END AS EX_ORDER
+			     , ID_QTYPE
+	          FROM (SELECT ID_Q
+	                     , EXCOUNT
+	                     , ID_QTYPE
+	                  FROM ETEST.Q
+	                 WHERE 1=1
+	                   AND ID_QTYPE = 2
+	                   AND ID_VALID_TYPE = 0
+	                   AND ID_COURSE = #{idCourse}
+	                   AND ID_SUBJECT = #{idSubject}
+	                   AND ID_CHAPTER = #{idChapter}
+	                   AND USE_YN = 'Y'
+	                 ORDER BY DBMS_RANDOM.VALUE
+	               )
+	         WHERE 1=1
+	           AND ROWNUM <= #{choiceCnt}
+	        
+	         UNION ALL
+	        -- 복수 답안형
+	        SELECT ID_Q
+			     , CASE EXCOUNT WHEN 1 THEN '1'
+			                    WHEN 2 THEN '1,2'
+			                    WHEN 3 THEN '1,2,3'
+			                    WHEN 4 THEN '1,2,3,4'
+			                    WHEN 5 THEN '1,2,3,4,5' ELSE '' 
+			       END AS EX_ORDER
+			     , ID_QTYPE
+	          FROM (SELECT ID_Q
+	                     , EXCOUNT
+	                     , ID_QTYPE
+	                  FROM ETEST.Q
+	                 WHERE 1=1
+	                   AND ID_QTYPE = 3
+	                   AND ID_VALID_TYPE = 0
+	                   AND ID_COURSE = #{idCourse}
+	                   AND ID_SUBJECT = #{idSubject}
+	                   AND ID_CHAPTER = #{idChapter}
+	                   AND USE_YN = 'Y'
+	                 ORDER BY DBMS_RANDOM.VALUE
+	               )
+	         WHERE 1=1
+	           AND ROWNUM <= #{multiAnsCnt}
+	        
+	         UNION ALL
+	        -- 단답형
+	        SELECT ID_Q
+			     , '' AS EX_ORDER
+			     , ID_QTYPE
+	          FROM (SELECT ID_Q
+	                     , EXCOUNT
+	                     , ID_QTYPE
+	                  FROM ETEST.Q
+	                 WHERE 1=1
+	                   AND ID_QTYPE = 4
+	                   AND ID_VALID_TYPE = 0
+	                   AND ID_COURSE = #{idCourse}
+	                   AND ID_SUBJECT = #{idSubject}
+	                   AND ID_CHAPTER = #{idChapter}
+	                   AND USE_YN = 'Y'
+	                 ORDER BY DBMS_RANDOM.VALUE
+	               )
+	         WHERE 1=1
+	           AND ROWNUM <= #{shortAnsCnt}
+	        
+	         UNION ALL
+	        -- 논술형
+	        SELECT ID_Q
+			     , '' AS EX_ORDER
+			     , ID_QTYPE
+	          FROM (SELECT ID_Q
+	                     , EXCOUNT
+	                     , ID_QTYPE
+	                  FROM ETEST.Q
+	                 WHERE 1=1
+	                   AND ID_QTYPE = 5
+	                   AND ID_VALID_TYPE = 0
+	                   AND ID_COURSE = #{idCourse}
+	                   AND ID_SUBJECT = #{idSubject}
+	                   AND ID_CHAPTER = #{idChapter}
+	                   AND USE_YN = 'Y'
+	                 ORDER BY DBMS_RANDOM.VALUE
+	               )
+	         WHERE 1=1
+	           AND ROWNUM <= #{essayCnt}
+           )
+	]]>
+	</select>
+	
+	<insert id="insertQuestionIntoPaper" parameterType="Map">
+	<![CDATA[
+		INSERT INTO ETEST.EXAM_PAPER2 (
+		       ID_EXAM  , EXAM_UNIT  , ID_SUBJECT  , NR_SET  , NR_Q
+		     , ID_Q     , EX_ORDER   , ALLOTTING   , PAGE
+		) VALUES (
+		       #{idExam}, #{examUnit}, #{idSubject}, #{nrSet}, #{nrQ}
+		     , #{idQ}   , #{exOrder} , #{allotting}, #{page}
+		)
+	]]>
+	</insert>
+	
+	<insert id="insertQuestionIntoQ" parameterType="Map">
+	<![CDATA[
+		INSERT INTO ETEST.EXAM_Q (
+		       ID_EXAM  , ID_SUBJECT  , ID_Q
+		) VALUES (
+		       #{idExam}, #{idSubject}, #{idQ}
+		)
+	]]>
+	</insert>
+	
+	<select id="selectExamQCnt" parameterType="Map" resultType="int">
+	<![CDATA[
+		SELECT COUNT(0) AS QCNT
+		  FROM ETEST.EXAM_Q
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+		   AND ID_SUBJECT = #{idSubject}
+		   AND ID_Q = #{idQ}
+	]]>
+	</select>
+	
+	<select id="selectExamPaperBySet" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT P.NR_Q
+		     , Q.Q
+		     , Q.EX1
+		     , Q.EX2
+		     , Q.EX3
+		     , Q.EX4
+		     , Q.EX5
+		  FROM ETEST.EXAM_PAPER2 P
+		     , ETEST.Q Q
+		 WHERE 1=1
+		   AND P.ID_EXAM = #{idExam}
+		   AND P.ID_SUBJECT = #{idSubject}
+		   AND P.NR_SET = #{nrSet}
+		   AND Q.ID_Q = P.ID_Q
+		 ORDER BY P.NR_Q
+	]]>
+	</select>
+	
+	<select id="selectOffExamPaperBySet" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT P.NR_Q
+		     , DECODE(SB.SUBJNM, NULL, Q.Q, SB.SUBJNM) AS Q
+		     , DECODE(GC.GRCODENM, NULL, Q.EX1, GC.GRCODENM) AS EX1
+		     , Q.EX2
+		     , Q.EX3
+		     , Q.EX4
+		     , Q.EX5
+		     , Q.CA
+		  FROM ETEST.EXAM_PAPER2 P
+		     , ETEST.Q Q
+		     , TB_SUBJ SB
+		     , TB_GRCODE GC
+		 WHERE 1=1
+		   AND P.ID_EXAM = #{idExam}
+		   AND P.ID_SUBJECT = #{idSubject}
+		   AND P.NR_SET = #{nrSet}
+		   AND Q.ID_Q = P.ID_Q
+		   AND SB.SUBJ(+) = Q.Q
+		   AND GC.GRCODE(+) = Q.EX1
+		 ORDER BY P.NR_Q
+	]]>
+	</select>
+	
+	<update id="updateExamM" parameterType="Map">
+	<![CDATA[
+		UPDATE ETEST.EXAM_M
+		   SET TITLE = #{title}
+		     , EXAM_START1 = TO_DATE(#{examStart1}, 'YYYYMMDDHH24MISS')
+		     , EXAM_END1 = TO_DATE(#{examEnd1}, 'YYYYMMDDHH24MISS')
+		     , UP_DATE = SYSDATE
+		     , USERID = #{userid}
+		     , ONOFF_TYPE = #{onoffType}
+		 WHERE 1=1
+		   AND ID_EXAM =  #{idExam}
+	]]>
+	</update>
+	
+	<update id="updateExamUnit" parameterType="Map">
+	<![CDATA[
+		UPDATE ETEST.EXAM_UNIT
+		   SET TITLE = #{title}
+		     , QCNTPERPAGE =#{qcntperpage}
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+		   AND EXAM_UNIT = 1
+	]]>
+	</update>
+	
+	<update id="updateExamSubject" parameterType="Map">
+	<![CDATA[
+		UPDATE ETEST.EXAM_SUBJECT
+		   SET LIMITTIME = #{limittime}
+		     , QCOUNT = #{qcount}
+		     , ALLOTTING = #{allotting}
+		     , SETCOUNT = #{setcount}
+		     , USERID = #{userid}
+		     , OX_CNT = #{oxCnt}
+		     , OX_WEIGHT = #{oxWeight}
+		     , OX_CALC = #{oxCalc}
+		     , CHOICE_CNT = #{choiceCnt}
+		     , CHOICE_WEIGHT = #{choiceWeight}
+		     , CHOICE_CALC = #{choiceCalc}
+		     , MULTI_ANS_CNT = #{multiAnsCnt}
+		     , MULTI_ANS_WEIGHT = #{multiAnsWeight}
+		     , MULTI_ANS_CALC = #{multiAnsCalc}
+		     , SHORT_ANS_CNT = #{shortAnsCnt}
+		     , SHORT_ANS_WEIGHT = #{shortAnsWeight}
+		     , SHORT_ANS_CALC = #{shortAnsCalc}
+		     , ESSAY_CNT = #{essayCnt}
+		     , ESSAY_WEIGHT = #{essayWeight}
+		     , ESSAY_CALC = #{essayCalc}
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+		   AND ID_SUBJECT = #{idSubject}
+	]]>
+	</update>
+	
+	<delete id="deleteQuestionFromPaper" parameterType="Map">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.EXAM_PAPER2
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+		   AND ID_SUBJECT = #{idSubject}
+	]]>
+	</delete>
+	
+	<delete id="deleteQuestionFromQ" parameterType="Map">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.EXAM_Q
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+		   AND ID_SUBJECT = #{idSubject}
+	]]>
+	</delete>
+	
+	<update id="updateYNEnable" parameterType="Map">
+	<![CDATA[
+		UPDATE ETEST.EXAM_M
+		   SET YN_ENABLE = #{ynEnable}
+		     , USERID = #{userid}
+		     , UP_DATE = SYSDATE
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+	]]>
+	</update>
+	
+	<select id="selectSubjSeq" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT SS.GRCODE
+		     , GR.GRCODENM
+		     , SS.GRSEQ
+		     , SS.SUBJ
+		     , SS.LECNM
+		     , SS.PGRAD
+		     , SS.GRASTEP
+		     , SS.GRAQUIZ
+		     , SS.TSECTION
+		     , SS.LESSONTIME
+		     , SS.SILGITIME
+		     , SS.TORONTIME
+		     , SS.HYUNTIME
+		     , SS.MULTITIME
+		     , SS.ETCTIME
+		     , SS.TORONOPEN
+		     , SS.MGAKPOINT
+		     , SS.MJUPOINT
+		     , SS.LGAKPOINT
+		     , SS.LJUPOINT
+		     , SS.NGAKPOINT1
+		     , SS.NJUPOINT1
+		     , SS.NGAKPOINT2
+		     , SS.NJUPOINT2
+		     , SS.NGAKPOINT3
+		     , SS.NJUPOINT3
+		     , SS.NGAKPOINT4
+		     , SS.NJUPOINT4
+		     , SS.NGAKPOINT5
+		     , SS.NJUPOINT5
+		     , SS.MGAKWEIGHT
+		     , SS.MJUWEIGHT
+		     , SS.LGAKWEIGHT
+		     , SS.LJUWEIGHT
+		     , SS.NGAKWEIGHT1
+		     , SS.NJUWEIGHT1
+		     , SS.NGAKWEIGHT2
+		     , SS.NJUWEIGHT2
+		     , SS.NGAKWEIGHT3
+		     , SS.NJUWEIGHT3
+		     , SS.NGAKWEIGHT4
+		     , SS.NJUWEIGHT4
+		     , SS.NGAKWEIGHT5
+		     , SS.NJUWEIGHT5
+		     , SS.REPORTPOINT
+		     , SS.STEPPOINT
+		     , SS.QUIZPOINT
+		     , SS.TOTPOINT
+		     , SS.STARTED
+		     , SS.ENDDATE
+		     , SS.PREED
+		     , SS.CLOSING
+		     , SS.GRBDSEQ
+		     , SS.LUSERNO
+		     , SS.LDATE
+		     , SS.EXAMTIME
+		     , SS.LIMIT
+		     , SS.LEC_TYPE
+		     , SS.REF_SUBJ
+		     , SS.LIMIT_TIME
+		     , SS.PROG_TIME
+		  FROM TB_SUBJSEQ SS
+		     , TB_GRCODE GR
+		 WHERE 1=1
+		   AND SS.GRCODE = #{grcode} 
+		   AND SS.GRSEQ = #{grseq}
+		   AND SS.SUBJ = #{subj}
+		   AND GR.GRCODE = SS.GRCODE
+	]]>
+	</select>
+	
+	<update id="updateOffExamM" parameterType="Map">
+	<![CDATA[
+		UPDATE ETEST.EXAM_M
+		   SET TITLE = #{title}
+		     , USERID = #{userid}
+		     , UP_DATE = SYSDATE
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+	]]>
+	</update>
+	
+	<update id="updateOffExamSubject" parameterType="Map">
+	<![CDATA[
+		UPDATE ETEST.EXAM_SUBJECT
+		   SET QCOUNT = #{qcount}
+		     , ALLOTTING = #{allotting}
+		     , SETCOUNT = #{setcount}
+		     , AFILE = DECODE(#{afile}, '', AFILE, #{afile})
+		     , AFILE_RN = DECODE(#{afileRn}, '', AFILE_RN, #{afileRn})
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+		   AND ID_SUBJECT = #{idSubject}
+	]]>
+	</update>
+	
+	<insert id="insertOffExamM" parameterType="Map">
+	<![CDATA[
+		INSERT INTO ETEST.EXAM_M (
+		       ID_EXAM    , ID_COURSE   , COURSE_YEAR  , COURSE_NO  , TITLE
+		     , EXAM_START1, EXAM_END1   , ID_COMPANY   , USERID     , REGDATE
+		     , UP_DATE    , ONOFF_TYPE
+		) VALUES (
+		       #{idExam}  , #{idCourse} , #{courseYear}, #{courseNo}, #{title}
+		     , SYSDATE    , SYSDATE     , #{idCompany} , #{userid}  , SYSDATE
+		     , SYSDATE    , #{onoffType}
+		)
+	]]>
+	</insert>
+	
+	<insert id="insertOffExamUnit" parameterType="Map">
+	<![CDATA[
+		INSERT INTO ETEST.EXAM_UNIT (
+		       ID_EXAM  , EXAM_UNIT, TITLE, QCNTPERPAGE, FONTNAME
+		     , FONTSIZE
+		) VALUES (
+		       #{idExam}, 1        , '1교시', 1          , '굴림'
+		     , 11
+		)
+	]]>
+	</insert>
+	
+	<insert id="insertOffExamSubject" parameterType="Map">
+	<![CDATA[
+		INSERT INTO ETEST.EXAM_SUBJECT (
+		       ID_EXAM     , EXAM_UNIT    , ID_SUBJECT  , LIMITTIME   , QCOUNT
+		     , ALLOTTING   , ID_RANDOMTYPE, SETCOUNT    , ID_COMPANY  , USERID
+		     , AFILE       , AFILE_RN
+		) VALUES (
+		       #{idExam}   , 1            , #{idSubject}, 60          , #{qcount}
+		     , #{allotting}, 'NN'         , #{setcount} , #{idCompany}, #{userid}
+		     , #{afile}    , #{afileRn}
+		)
+	]]>
+	</insert>
+	
+	<select id="selectOffExamQuestion" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT ID_Q, EX3, EX4
+		  FROM ETEST.Q
+		 WHERE 1=1
+		   AND ID_COURSE = #{idCourse}
+           AND ID_SUBJECT = #{idSubject}
+           AND EX1 = #{grcode}
+           AND EX2 = #{grseq}
+         ORDER BY EX3, EX4
+	]]>
+	</select>
+	
+	<select id="selectMaxCountByPType" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT COUNT(0) AS MAX_CNT
+		  FROM ETEST.Q
+		 WHERE 1=1
+		   AND ID_QTYPE = 1
+		   AND ID_VALID_TYPE = 0
+		   AND ID_COURSE = #{idCourse}
+		   AND ID_SUBJECT = #{idSubject}
+		   AND ID_CHAPTER = #{idChapter}
+		   AND USE_YN = 'Y'
+		   
+		 UNION ALL
+		
+		SELECT COUNT(0) AS MAX_CNT
+		  FROM ETEST.Q
+		 WHERE 1=1
+		   AND ID_QTYPE = 2
+		   AND ID_VALID_TYPE = 0
+		   AND ID_COURSE = #{idCourse}
+		   AND ID_SUBJECT = #{idSubject}
+		   AND ID_CHAPTER = #{idChapter}
+		   AND USE_YN = 'Y'
+		   
+		 UNION ALL
+		 
+		SELECT COUNT(0) AS MAX_CNT
+		  FROM ETEST.Q
+		 WHERE 1=1
+		   AND ID_QTYPE = 3
+		   AND ID_VALID_TYPE = 0
+		   AND ID_COURSE = #{idCourse}
+		   AND ID_SUBJECT = #{idSubject}
+		   AND ID_CHAPTER = #{idChapter}
+		   AND USE_YN = 'Y'
+		   
+		 UNION ALL
+		 
+		SELECT COUNT(0) AS MAX_CNT
+		  FROM ETEST.Q
+		 WHERE 1=1
+		   AND ID_QTYPE = 4
+		   AND ID_VALID_TYPE = 0
+		   AND ID_COURSE = #{idCourse}
+		   AND ID_SUBJECT = #{idSubject}
+		   AND ID_CHAPTER = #{idChapter}
+		   AND USE_YN = 'Y'
+		 
+		 UNION ALL
+		 
+		SELECT COUNT(0) AS MAX_CNT
+		  FROM ETEST.Q
+		 WHERE 1=1
+		   AND ID_QTYPE = 5
+		   AND ID_VALID_TYPE = 0
+		   AND ID_COURSE = #{idCourse}
+		   AND ID_SUBJECT = #{idSubject}
+		   AND ID_CHAPTER = #{idChapter}
+		   AND USE_YN = 'Y'
+	]]>
+	</select>
+	
+	<delete id="deleteExamPaper" parameterType="String">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.EXAM_PAPER2
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+	]]>
+	</delete>
+	
+	<delete id="deleteExamQ" parameterType="String">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.EXAM_Q
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+	]]>
+	</delete>
+	
+	<delete id="deleteExamSubject" parameterType="String">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.EXAM_SUBJECT
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+	]]>
+	</delete>
+	
+	<delete id="deleteExamUnit" parameterType="String">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.EXAM_UNIT
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+	]]>
+	</delete>
+	
+	<delete id="deleteExamM" parameterType="String">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.EXAM_M
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+	]]>
+	</delete>
+	
+	<select id="selectEvalSubjectList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT SB.SUBJ
+		     , SB.SUBJNM
+		 FROM TB_EVLINFO_SUBJ EV
+		    , TB_SUBJ SB
+		WHERE 1=1
+		  AND EV.GRCODE = #{grcode}
+		  AND EV.GRSEQ = #{grseq}
+		  AND SB.SUBJ = EV.SUBJ
+		ORDER BY SB.SUBJNM 
+	]]>
+	</select>
+	
+	<select id="selectMainChapterBySubj" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT ID_COURSE
+		     , ID_SUBJECT
+		     , ID_CHAPTER
+		     , CHAPTER
+		     , CHAPTER_ORDER
+		     , REGDATE
+		     , COURSE_CODE
+		  FROM ETEST.C_CHAPTER
+		 WHERE 1=1
+		   AND ID_COURSE = #{subj}
+		   AND ID_SUBJECT = #{subj}
+		   AND COURSE_CODE = #{subj}
+	]]>
+	</select>
+	
+	<select id="selectSubChapterBySubj" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT ID_COURSE
+		     , ID_SUBJECT
+		     , ID_CHAPTER
+		     , CHAPTER
+		     , CHAPTER_ORDER
+		     , REGDATE
+		     , COURSE_CODE
+		  FROM ETEST.C_CHAPTER
+		 WHERE 1=1
+		   AND ID_COURSE = #{mainSubj}
+		   AND ID_SUBJECT = #{mainSubj}
+		   AND ID_CHAPTER = #{idChapter}
+		   AND COURSE_CODE = #{subSubj}
+	]]>
+	</select>
+	
+	<select id="selectChapterByIdExam" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT ID_COURSE
+		     , ID_SUBJECT
+		     , ID_CHAPTER
+		     , CHAPTER
+		     , CHAPTER_ORDER
+		     , REGDATE
+		     , COURSE_CODE
+		  FROM ETEST.C_CHAPTER
+		 WHERE 1=1
+		   AND ID_CHAPTER IN (SELECT CH.ID_CHAPTER
+		                        FROM ETEST.EXAM_Q EQ
+		                           , ETEST.Q Q
+		                           , ETEST.C_CHAPTER CH
+		                       WHERE 1=1
+		                         AND EQ.ID_EXAM = #{idExam}
+		                         AND Q.ID_Q = EQ.ID_Q
+		                         AND CH.ID_COURSE = Q.ID_COURSE
+		                         AND CH.ID_SUBJECT = Q.ID_SUBJECT
+		                         AND CH.ID_CHAPTER = Q.ID_CHAPTER
+		                         AND DECODE(#{subj}, '', '1', CH.COURSE_CODE) = DECODE(#{subj}, '', '1', #{subj})
+		                         GROUP BY CH.ID_CHAPTER
+		                     )
+	]]>
+	</select>
+	
+	<select id="selectSubjnm" parameterType="String" resultType="String">
+	<![CDATA[
+		SELECT SUBJNM
+		  FROM TB_SUBJ
+		 WHERE 1=1
+		   AND SUBJ = #{subj}
+	]]>
+	</select>
+	
+	<delete id="deleteOffQuestions" parameterType="Map">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.Q
+		 WHERE 1=1
+		   AND ID_COURSE = #{idCourse}
+		   AND ID_SUBJECT = #{idSubject}
+		   AND ID_CHAPTER = #{idChapter}
+		   AND EX3 = LPAD(#{nrSet}, 2, '0')
+	]]>
+	</delete>
+	
+	<delete id="deleteOffExamQ" parameterType="Map">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.EXAM_Q
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+	]]>
+	</delete>
+	
+	<delete id="deleteOffExamPaper" parameterType="Map">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.EXAM_PAPER2
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+	]]>
+	</delete>
+	
+	<delete id="deleteOffExamSubject" parameterType="Map">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.EXAM_SUBJECT
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+	]]>
+	</delete>
+	
+	<delete id="deleteOffExamUnit" parameterType="Map">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.EXAM_UNIT
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+	]]>
+	</delete>
+	
+	<delete id="deleteOffExamM" parameterType="Map">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.EXAM_M
+		 WHERE 1=1
+		   AND ID_EXAM = #{idExam}
+	]]>
+	</delete>
+	
+	<delete id="deleteOffQ" parameterType="Map">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.Q
+		 WHERE 1=1
+		   AND ID_CHAPTER = #{idChapter}
+	]]>
+	</delete>
+	
+	<delete id="deleteOffChapter" parameterType="Map">
+	<![CDATA[
+		DELETE
+		  FROM ETEST.C_CHAPTER
+		 WHERE 1=1
+		   AND ID_CHAPTER = #{idChapter}
+	]]>
+	</delete>
+</mapper>

@@ -1,0 +1,298 @@
+@charset "euc-kr";
+/* ¸®¼Â
+----------------*/
+/* Noto Sans KR (korean) http://www.google.com/fonts/earlyaccess */
+@font-face { font-family: 'Noto Sans KR'; font-style: normal; font-weight: 100; src: url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Thin.woff2) format("woff2"), url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Thin.woff) format("woff"), url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Thin.otf) format("opentype"); }
+
+@font-face { font-family: 'Noto Sans KR'; font-style: normal; font-weight: 300; src: url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Light.woff2) format("woff2"), url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Light.woff) format("woff"), url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Light.otf) format("opentype"); }
+
+@font-face { font-family: 'Noto Sans KR'; font-style: normal; font-weight: 400; src: url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Regular.woff2) format("woff2"), url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Regular.woff) format("woff"), url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Regular.otf) format("opentype"); }
+
+@font-face { font-family: 'Noto Sans KR'; font-style: normal; font-weight: 500; src: url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Medium.woff2) format("woff2"), url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Medium.woff) format("woff"), url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Medium.otf) format("opentype"); }
+
+@font-face { font-family: 'Noto Sans KR'; font-style: normal; font-weight: 700; src: url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Bold.woff2) format("woff2"), url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Bold.woff) format("woff"), url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Bold.otf) format("opentype"); }
+
+@font-face { font-family: 'Noto Sans KR'; font-style: normal; font-weight: 900; src: url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Black.woff2) format("woff2"), url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Black.woff) format("woff"), url(https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Black.otf) format("opentype"); }
+
+/*
+ * Nanum Gothic (Korean) http://www.google.com/webfonts/earlyaccess
+ */
+
+@font-face {
+    font-family: 'Nanum Gothic';
+    font-style: normal;
+    font-weight: 400;
+    src: url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-Regular.eot);
+    src: local('NanumGothic'), url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-Regular.eot?#iefix) format('embedded-opentype'),
+    url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-Regular.woff2) format('x-woff2'),
+    url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-Regular.woff) format('woff'),
+    url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-Regular.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Nanum Gothic';
+    font-style: normal;
+    font-weight: 700;
+    src: url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-Bold.eot);
+    src: local('NanumGothicBold'), url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-Bold.eot?#iefix) format('embedded-opentype'),
+    url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-Bold.woff2) format('x-woff2'),
+    url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-Bold.woff) format('woff'),
+    url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-Bold.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Nanum Gothic';
+    font-style: normal;
+    font-weight: 800;
+    src: url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-ExtraBold.eot);
+    src: local('NanumGothicExtraBold'), url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-ExtraBold.eot?#iefix) format('embedded-opentype'),
+    url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-ExtraBold.woff2) format('x-woff2'),
+    url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-ExtraBold.woff) format('woff'),
+    url(//themes.googleusercontent.com/static/fonts/earlyaccess/nanumgothic/v3/NanumGothic-ExtraBold.ttf) format('truetype');
+}
+
+@import url(//fonts.googleapis.com/earlyaccess/nanummyeongjo.css);
+/*@import url(http://fonts.googleapis.com/earlyaccess/nanumgothic.css); */
+
+
+html body{ font-size:100%;}
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td {
+    font-family:'Nanum Gothic','µ¸¿ò', sans-serif;;
+    margin:0;
+    padding:0;
+    border:0;
+    vertical-align:baseline;
+	font-size:14px;
+}
+body {
+    color:black;
+    background-color:#f2f7fd;
+}
+em {
+    font-style:normal;
+}
+ol, ul {
+    list-style:none;
+}
+table {
+    border-collapse:separate;
+    border-spacing:0;
+}
+caption, th, td {
+    font-weight:normal;
+    vertical-align:middle;
+}
+blockquote:before, blockquote:after, q:before, q:after {
+    content:"";
+}
+blockquote, q {
+    quotes:"" "";
+}
+textarea {
+    overflow:auto;
+}
+hr, legend {
+    display:none;
+}
+a {
+    color:#484848;
+    text-decoration:none;
+    display: block;
+}
+select {
+    font-family:"AppleGothic", Verdana, Tahoma, Arial, sans-serif;
+    vertical-align:middle;
+}
+input,
+textarea {
+    font-family:"AppleGothic", Verdana, Tahoma, Arial, sans-serif;
+    vertical-align:middle;
+}
+
+img{
+    vertical-align:top;
+}
+table img{
+    vertical-align:middle;
+}
+button,
+html input[type='button'],
+input[type='reset'],
+input[type='submit'] {-webkit-appearance:button; cursor:pointer;}
+button::-moz-focus-inner,
+input::-moz-focus-inner {border:0; padding:0;}
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {height:auto;}
+input[type='search'] {-webkit-appearance:textfield; -moz-box-sizing:content-box; -webkit-box-sizing:content-box; box-sizing:content-box;}
+input[type='search']::-webkit-search-cancel-button,
+input[type='search']::-webkit-search-decoration {-webkit-appearance:none;}
+a:focus {outline:thin dotted; outline:5px auto -webkit-focus-ring-color; outline-offset:-2px;}
+
+/*
+-----------*/
+.in_length30{width:30px;}
+.in_length40{width:40px;}
+.in_length50{width:50px;}
+.in_length60{width:60px;}
+.in_length70{width:70px;}
+.in_length80{width:80px;}
+.in_length90{width:90px;}
+.in_length100{width:100px;}
+.in_length110{width:110px;}
+.in_length120{width:120px;}
+.in_length130{width:130px;}
+.in_length140{width:140px;}
+.in_length150{width:150px;}
+.in_length160{width:160px;}
+.in_length170{width:170px;}
+.in_length180{width:180px;}
+.in_length190{width:190px;}
+.in_length200{width:200px;}
+.in_length250{width:250px;}
+.in_length300{width:300px;}
+.in_length350{width:350px;}
+.in_length400{width:400px;}
+.in_length450{width:450px;}
+.in_length500{width:500px;}
+.in_length600{width:600px;}
+
+.in_length98pro{width:98%;}
+
+.float_wrap:after{
+    content:' ';
+    clear:both;
+    display:block;
+    visibility:hidden;
+}
+*+ html .float_wrap{display:inline-block;}
+* html .float_wrap{height:1%;}
+.t_center{text-align:center;}
+.hidden_word{position:absolute;top:0;left:-9999px;text-indent:-9999px;display:block;font-size:0;}
+.mgb_10{margin-bottom:10px;}
+.mgb_20{margin-bottom:20px;}
+.mgb_30{margin-bottom:30px;}
+.mgb_50{margin-bottom:50px;}
+
+.left_10{padding-left:10px;}
+.left_15{padding-left:15px;}
+.left_20{padding-left:20px;}
+.left_30{padding-left:30px;}
+.left_40{padding-left:40px;}
+.left_50{padding-left:50px;}
+.left_100{padding-left:100px;}
+.left_150{padding-left:150px;}
+.right_10{padding-right:10px;}
+.right_20{padding-right:20px;}
+.right_30{padding-right:30px;}
+.right_50{padding-right:50px;}
+.right_100{padding-right:100px;}
+.right_150{padding-right:150px;}
+.col_brown{color:#996630;}
+.line_14{line-height:1.4;}
+.line_16{line-height:1.6;}
+.line_18{line-height:1.8;}
+
+.col_red{color:#8b1b2b;}
+.col_gold{color:#CD883D;}
+.col_black{color:#000000;}
+.col_org{color:#f05914;}
+.col_gray{color:#818283;}
+.col_black{color:#000;}
+.col_pul{color:#3c5e80;}
+.col_blue{color:#21539b;}
+.col_d_green{color:#0ba3ac}
+.col_l_green{color:#5d9b21;}
+.col_gold{color:#999900;}
+.col_yellow{color:#fff585}
+
+.t_bold{font-weight:bold;}
+.t_size_16{font-size:16px;}
+.t_size_30{font-size:30px;}
+
+
+.chk_box{height:13px;margin:0;}
+.chk_box,label{vertical-align:middle;}
+
+h1,h2,h3,h4,h5,h6{font-size:100%;}
+
+
+article {width:100%;}
+.cont_in{width:100%;}
+.cont_in_wrap{width:1000px;margin:0px auto;background-color:#ffffff;border:1px solid #9e9e9e;padding:10px;}
+
+
+@media screen and (max-width: 1000px) and (min-width: 1px){
+	.cont_in .cont_in_wrap {
+		width: 100%;
+	}
+}
+.cont_in h2{font-size:30px;text-align:center;margin:20px 0;}
+h3{font-weight:bold;font-size:20px;margin:10px 0}
+
+
+
+.point_box {width: 100%; border: 1px solid #d6d6d6; background-color: #efefef;}
+.box_img {position: relative; left: 25px; top: 16px;}
+.box_img span {
+    position: absolute;
+    left: -10px;
+    top: 0;
+}
+.point_box .list {padding: 17px 20px 14px 52px;}
+
+.con_box {border: 1px solid #d6d6d6; background-color: #efefef;padding:20px;}
+
+.list_style {
+    margin: 0;
+    padding-left: 15px;
+    padding-bottom: 10px;
+    clear: both;
+}
+.list_style li {
+    padding-left: 15px;
+    background: url(https://hrd.incheon.go.kr/homepage_new/images/common/list_icon1.gif) no-repeat 0 4px;
+    text-align: left;
+    vertical-align: middle;
+    margin-top: 5px;
+    font-weight: bold;
+	margin-bottom:20px;
+}
+.list_style li li {
+    font-weight: normal;
+    padding-left: 13px;
+    background: url(https://hrd.incheon.go.kr/homepage_new/images/common/arrow2.gif) no-repeat 0 3px;
+    text-align: left;
+	margin-bottom:10px;
+}
+.list_style li li li {
+
+    padding-left: 10px;
+    background: url(https://hrd.incheon.go.kr/homepage_new/images/common/list_icon3.gif) no-repeat 0 6px;
+}
+
+.list_table {width:100%;}
+
+.list_table table{border-top : 1px solid #d6d6d6;border-left : 1px solid #d6d6d6; border-right : 1px solid #d6d6d6; text-align:left; width:100%; margin-bottom:30px;border-spacing: 0px;}
+.list_table table th{font-weight:bold; vertical-align:top; border-right: 1px solid #d6d6d6; border-bottom: 1px solid #d6d6d6; padding:5px;font-size: 14px;}
+.list_table table td{vertical-align:top; border-bottom: 1px solid #d6d6d6; padding:5px;font-size: 14px;}
+.list_table table td p{margin-bottom:10px;}
+.list_table table td div{width:100%;display:inline-block;margin-bottom:10px;}
+.list_table table td div:last-child{margin-bottom:0px;}
+.list_table table td ul li{float:left;margin-right:10px;}
+
+.survey{text-align:center;}
+.survey .submit{
+    padding: 30px 30px;
+    color: #ffffff;
+    background: #0079ba;
+    text-align:center;
+	display:inline-block;
+	font-weight:bold;
+}
+.survey .cancel{
+    padding: 30px 30px;
+    color: #ffffff;
+    background: #777777;
+    text-align:center;
+	display:inline-block;
+	font-weight:bold;
+}

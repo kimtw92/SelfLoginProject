@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	
+	<bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+    <property name="defaultErrorView" value="common/err/error" />
+    <property name="defaultStatusCode" value="200" />
+    <property name="exceptionAttribute" value="exception" />
+    <property name="excludedExceptions"   value="com.tistory.pentode.exception.UncheckException" />    
+    <property name="exceptionMappings">
+        <props>
+            <prop key="com.tistory.pentode.exception.DatabaseException">common/err/error_database</prop>
+            <prop key="com.tistory.pentode.exception.SecurityException">common/err/error_security</prop>
+            <prop key="com.tistory.pentode.exception.BusinessException">common/err/error_business</prop>
+            <prop key="com.tistory.pentode.exception.AjaxException">common/err/error_ajax</prop>
+        </props>
+    </property>
+    <property name="statusCodes">
+        <props>
+            <prop key="common/err/error_database">500</prop>
+            <prop key="common/err/error_security">403</prop>
+            <prop key="common/err/error_business">500</prop>
+            <prop key="common/err/error_ajax">200</prop> 
+        </props>
+    </property>
+</bean>
+
+	
+	
+	
+		
+</beans>

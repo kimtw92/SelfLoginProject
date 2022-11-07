@@ -1,0 +1,23 @@
+@charset	"euc-kr";
+/* Page Definition */
+
+
+body{ margin:0; padding:0;color:#666;font-size:12px;font-family:Dotum, "µ¸¿ò",sans-serif; background:#F8F8F8 }
+div, p, h1, h2, h3, h4, h5, h6, span, th, td, li, dt, dd, form { margin:0; padding:0; }
+select, input, textarea	{font-family:Dotum, "µ¸¿ò", sans-serif; color:#666;}
+form, div, p, fieldset, ol, ul, dl {margin:0; padding:0;}
+legend, hr {display:none;}
+ul, ol	   {list-style:none;}
+
+img	{border:0;}
+a, 	a:link, a:visited {color:#666; text-decoration:none; cursor:pointer;}
+a:hover, a:active {color:#666; text-decoration:underline; cursor:pointer;}
+a.lkOr, a.lkOr:link, a.lkOr:visited {color:#FF6600; text-decoration:underline; cursor:pointer;}
+a.lkOr:hover, a.lkOr:active {color:#FF6600; text-decoration:underline; cursor:pointer;}
+
+
+
+
+
+
+

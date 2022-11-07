@@ -1,0 +1,2 @@
+1월 03 04:06:58.778 오후 INFO - [[ACTIVE] ExecuteThread: '219' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(133) | START
+1월 03 04:07:00.361 오후 INFO - [[ACTIVE] ExecuteThread: '219' for queue: 'weblogic.kernel.Default (self-tuning)']SAMLMessageHandler.makeAuthRequest(173) | END

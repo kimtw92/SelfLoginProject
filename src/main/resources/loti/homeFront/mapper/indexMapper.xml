@@ -1,0 +1,1078 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="loti.homeFront.mapper.IndexMapper">
+
+<!-- 	<resultMap type="Map" id="noticeList"> -->
+<!-- 		<result property="classroomNo" column="CLASSROOM_NO"/> -->
+<!--   		<result property="classroomName" column="CLASSROOM_NAME"/> -->
+<!--   		<result property="classroomPlace" column="CLASSROOM_PLACE"/> -->
+<!--   		<result property="classroomFloor" column="CLASSROOM_FLOOR"/> -->
+<!--   		<result property="classroomMember" column="CLASSROOM_MEMBER"/> -->
+<!-- 	</resultMap> -->
+
+	<select id="getNoticeList" resultType="DataMap">
+	<![CDATA[
+		SELECT 	
+					SEQ seq
+					, TITLE title
+					, to_char(REGDATE,'YYYY-MM-DD') regdate
+					, round(SYSDATE - REGDATE) as dateDiff 
+		FROM (SELECT * FROM TB_BOARD_NOTICE ORDER BY DECODE(STEP, '356', 1), STEP DESC) 
+		WHERE title != '삭제된 글입니다' 
+		AND ROWNUM < 8
+	]]>
+	</select>
+	
+	<select id="getCyberList" resultType="DataMap">
+	<![CDATA[
+		SELECT 	
+					rownum
+					, to_char(started,'mm.dd') as started
+					, to_char(enddate,'mm.dd') as enddate
+					, to_char(eapplyst,'mm.dd') as eapplyst
+					, to_char(eapplyed,'mm.dd') as eapplyed
+					, grcodeniknm
+					, a.f_cyber fCyber
+					, a.tdate tdate
+					, a.tseat tseat
+					, a.grcode grcode
+					, a.grseq grseq
+					, b.grtime grtime
+		FROM TB_GRSEQ a, TB_GRCODE b
+		WHERE a.grcode=b.grcode AND to_char(eapplyst,'YYYY/MM/DD')<=to_char(sysdate,'YYYY/MM/DD') AND to_char(eapplyed,'YYYY/MM/DD')>=to_char(sysdate,'YYYY/MM/DD')
+		AND b.USE_YN = 'Y'
+		AND b.GRSUBCD = '03'
+		AND b.GRGUBUN = 'C'
+		--AND F_CYBER='Y' 
+		--AND rownum < 8
+		--ORDER BY eapplyst DESC
+		ORDER BY grcodeniknm
+	]]>
+	</select>	
+	
+	<select id="getNonCyberList" resultType="DataMap">
+	<![CDATA[
+		SELECT rownum,
+			to_char(started,'mm.dd') as started,
+			to_char(enddate,'mm.dd') as enddate,
+			to_char(eapplyst,'mm.dd') as eapplyst,
+			to_char(eapplyed,'mm.dd') as eapplyed,
+			grcodeniknm, a.f_cyber, a.tdate, a.tseat, a.grcode, a.grseq, b.grtime
+		FROM TB_GRSEQ a, TB_GRCODE b
+		WHERE a.grcode=b.grcode 
+		AND to_char(eapplyst,'YYYY/MM/DD')<=to_char(sysdate,'YYYY/MM/DD') 
+		AND to_char(eapplyed,'YYYY/MM/DD')>=to_char(sysdate,'YYYY/MM/DD')
+		AND b.USE_YN = 'Y'
+		AND b.GRSUBCD <> '03'
+		AND b.GRGUBUN <> 'C'
+		--AND F_CYBER='N' 
+		--AND rownum < 8 
+		ORDER BY grcodeniknm
+
+	]]>
+	</select>
+	
+	<select id="getMonthList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT * FROM 
+		(
+		    SELECT
+		    			CASE 	B.grtype 
+		    				WHEN '1' THEN '기본'
+                            WHEN 'K' THEN '국정가치'
+                            WHEN '5' THEN '시책'
+                            WHEN 'J' THEN '리더십역량'
+		    				WHEN '2' THEN 	
+							
+						CASE B.grsubcd 
+							WHEN '02' THEN '전문' 
+							WHEN '03' THEN '사이버' 
+													END
+							WHEN '7' THEN '장기'
+							WHEN '8' THEN '기타'
+							WHEN 'G' THEN 	
+							
+						CASE B.grsubcd  
+							WHEN '01' THEN '가치' 
+												END
+							WHEN 'H' THEN '역량'
+                            WHEN 'I' THEN '소통' 
+							END AS gubun
+						, B.grtype
+						, B.grsubcd
+						, A.grcode
+						, grseq
+						, grcodeniknm
+						, to_char(started,'YYYY-MM-DD') as started
+						, to_char(enddate,'YYYY-MM-DD') as enddate 
+		    FROM (
+		        SELECT 
+		        			grcode
+		        			, grseq
+		        			, grcodeniknm
+		        			, started
+		        			, enddate 
+		        FROM 
+		        			tb_GRSEQ
+		        WHERE 
+		        			to_char(sysdate,'YY')=to_char(started,'YY') 
+        			and 	to_char(started,'mm') = #{month, jdbcType=VARCHAR}
+        			AND USE_YN = 'Y' AND CAFE_YN ='N'
+		        ORDER BY STARTED, ENDDATE ASC
+		    ) A, tb_grcode B 
+		    WHERE A.grcode = B.grcode
+			order by started asc
+		)
+		order by started
+	]]>
+	</select>	
+	
+	<select id="getWeekList" resultType="DataMap">
+	<![CDATA[
+		SELECT 
+					to_char(started, 'MM') AS mm
+					, to_char(started, 'dd') AS dd
+					, grcodeniknm || ' 교육시작일 입니다.' AS title  
+		FROM 	tb_grseq 
+		WHERE 	to_char(started, 'YYYY') = to_char(sysdate, 'YYYY') 
+		AND 		to_char(started, 'IW') = to_char(sysdate, 'IW')
+		 
+		UNION ALL
+		 
+		SELECT 	
+					to_char(enddate, 'MM') AS mm
+					, to_char(enddate, 'DD') AS dd
+					, grcodeniknm || ' 교육종료일 입니다.' AS title  
+		FROM 	tb_grseq 
+		WHERE 	to_char(started, 'YYYY') = to_char(sysdate, 'YYYY') 
+		AND 		to_char(enddate, 'IW') = to_char(sysdate, 'IW')
+		 
+		UNION ALL
+		  
+		SELECT 
+					to_char(eapplyst, 'MM') AS mm
+					, to_char(eapplyst, 'DD') AS dd
+					, grcodeniknm || ' 교육신청시작일 입니다.' AS title  
+		FROM 	tb_grseq 
+		WHERE 	to_char(started, 'YYYY') = to_char(sysdate, 'YYYY') and to_char(eapplyst, 'IW') = to_char(sysdate, 'IW') 
+		ORDER BY mm, dd 
+	]]>
+	</select>	
+	
+	<select id="getPopupList" resultType="DataMap">
+	<![CDATA[	
+		SELECT 		* 
+		FROM 		TB_POPUP 
+		WHERE 		to_char(pstr_date,'YYYY/MM/DD')<=to_char(sysdate,'YYYY/MM/DD') 
+		AND 			to_char(pend_date,'YYYY/MM/DD')>=to_char(sysdate,'YYYY/MM/DD')	
+	]]>
+	</select>
+	
+	<select id="getPhotoList" resultType="DataMap">
+	<![CDATA[
+		SELECT 
+		    		rownum
+		    		, PHOTO_NO	
+		    		, IMG_PATH	
+		    		, IMG_NAME	
+		    		, WCOMMENTS	
+		FROM 
+		    		TB_WEBZIN_PHOTO_GALLERY
+		WHERE 	rownum < 3    
+		ORDER BY 
+		    		PHOTO_NO DESC
+	]]>
+	</select>    
+	
+	<select id="getGrseqPlanList" resultType="DataMap">
+	<![CDATA[	
+		SELECT
+					rownum
+					, grcodeniknm 
+					, file_path 
+					, file_name 
+					, a.groupfile_no 
+		FROM 	
+					tb_grseq a
+					, tb_upload b
+		WHERE
+		    		a.groupfile_no=b.groupfile_no
+    		AND 	a.groupfile_no is not null
+		    AND     a.started BETWEEN sysdate-7 AND sysdate 
+		    AND     a.cafe_yn ='N' 
+		    and rownum <= 10
+		ORDER BY 
+					regdate desc
+	]]>
+	</select>	
+	
+	<insert id="insertLoginStats" parameterType="DataMap">
+	<![CDATA[
+		INSERT INTO TB_LOGINSTATIS
+		(
+			STATS_YEAR
+			, SEQ
+			, REG_DATE
+			, TY_GUBUN
+			, USERNO
+		)
+		VALUES
+		(
+			( SELECT TO_CHAR(SYSDATE,'yyyy') FROM DUAL )
+			, (
+				SELECT 		NVL(MAX(SEQ),0) + 1
+		    	FROM			TB_LOGINSTATIS
+		        WHERE		STATS_YEAR = ( SELECT TO_CHAR(SYSDATE,'yyyy') FROM DUAL )
+		    )
+		    , SYSDATE
+		    , #{tyGubun}
+		    , #{userNo}
+		)
+	]]>
+	</insert>
+	
+	<select id="pageingSample" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+			SELECT	USERNO, SCP.DEC_B64('KEY1',HOME_TEL) AS HOME_TEL, NAME
+			FROM	 tb_member
+			WHERE	ROWNUM < 200
+		) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="getExistIdValue" parameterType="String" resultType="DataMap">
+	<![CDATA[	
+		SELECT 
+					user_id 
+		FROM 	
+					tb_member 
+		WHERE 	SCP.DEC_B64('KEY1',resno)=#{value}	
+	]]>
+	</select>
+	
+	<select id="getAllNonCyberList" resultType="DataMap">
+	<![CDATA[
+		SELECT 	
+					rownum
+					, to_char(started,'mm.dd') as started
+					, to_char(enddate,'mm.dd') as enddate
+					, to_char(eapplyst,'mm.dd') as eapplyst
+					, to_char(eapplyed,'mm.dd') as eapplyed
+					, grcodeniknm
+					, a.f_cyber
+					, a.tdate
+					, a.tseat
+					, a.grcode
+					, a.grseq
+					, b.grtime
+		FROM 	
+					TB_GRSEQ a
+					, TB_GRCODE b
+		WHERE 	
+					a.grcode=b.grcode 
+			AND 	to_char(eapplyst,'YYYY/MM/DD')<=to_char(sysdate,'YYYY/MM/DD') 
+			AND 	to_char(eapplyed,'YYYY/MM/DD')>=to_char(sysdate,'YYYY/MM/DD')
+			AND 	b.USE_YN = 'Y'
+			AND 	b.GRSUBCD <> '03'
+			AND 	b.GRGUBUN <> 'C'
+		--AND F_CYBER='N' 
+		--AND rownum < 8 
+		ORDER BY 
+					grcodeniknm
+
+	]]>
+	</select>	
+	
+	<select id="getAllCyberList" resultType="DataMap">
+	<![CDATA[
+		SELECT rownum,
+			to_char(started,'mm.dd') as started,
+			to_char(enddate,'mm.dd') as enddate,
+			to_char(eapplyst,'mm.dd') as eapplyst,
+			to_char(eapplyed,'mm.dd') as eapplyed,
+			grcodeniknm, a.f_cyber, a.tdate, a.tseat, a.grcode, a.grseq, b.grtime
+		FROM TB_GRSEQ a, TB_GRCODE b
+		WHERE a.grcode=b.grcode AND to_char(eapplyst,'YYYY/MM/DD')<=to_char(sysdate,'YYYY/MM/DD') AND to_char(eapplyed,'YYYY/MM/DD')>=to_char(sysdate,'YYYY/MM/DD')
+		AND b.USE_YN = 'Y'
+		AND b.GRSUBCD = '03'
+		AND b.GRGUBUN = 'C'
+		--AND F_CYBER='Y' 
+		--AND rownum < 8
+		--ORDER BY eapplyst DESC
+		ORDER BY grcodeniknm
+	]]>
+	</select>
+	
+	<select id="getPopupView" parameterType="String" resultMap="common.clobContent">
+	<![CDATA[	
+		SELECT
+					content
+					, title 
+		FROM 	tb_popup 
+		WHERE 	no=#{value, jdbcType=INTEGER}
+	]]>
+	</select>
+	
+	<select id="getEducationMonthAJAXListCount" parameterType="Map" resultType="Integer">
+		SELECT 
+						COUNT(*)
+			FROM (
+			    SELECT 
+			    			grcode
+			    			, grseq
+			    			, grcodeniknm
+			    			, started
+			    			, enddate 
+			    			, eapplyst
+			    			, eapplyed
+			    			, tseat
+			    			, tdate
+			    FROM 	tb_GRSEQ
+			    WHERE 	to_char(sysdate,'YY')=to_char(started,'YY') 
+			    	AND 	to_char(started,'mm') = #{monthajax}
+			    ORDER BY 
+			    			STARTED
+			    			, ENDDATE ASC
+			) A
+			, tb_grcode B 
+			WHERE A.grcode = B.grcode
+	</select>
+	<select id="getEducationMonthAJAXList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+			SELECT 
+								CASE B.GRTYPE 	WHEN '1' THEN '기본' 
+												WHEN '2' THEN			
+						
+							    CASE B.GRSUBCD 	WHEN '02' THEN '전문' 
+												WHEN '03' THEN '사이버'								
+												
+																		END
+												WHEN '5' THEN '시책'						
+												WHEN '7' THEN '장기'
+												WHEN '8' THEN '기타'
+												
+												WHEN 'J' THEN '리더십'
+												WHEN 'K' THEN '국정가치'
+												WHEN 'G' THEN
+																								
+								CASE B.GRSUBCD  WHEN '01' THEN '가치' END						
+												WHEN 'H' THEN '역량'
+                                                WHEN 'I' THEN '소통'  END AS gubun
+						, B.grtype
+						, B.grsubcd
+						, A.grcode
+						, grseq
+						, grcodeniknm
+						, to_char(started,'YYYY-MM-DD') as started
+						, to_char(enddate,'YYYY-MM-DD') as enddate
+						, to_char(eapplyst,'YYYY-MM-DD') as eapplyst
+						, to_char(eapplyed,'MM-DD') as eapplyed
+						, tseat
+						, tdate
+			FROM (
+			    SELECT 
+			    			grcode
+			    			, grseq
+			    			, grcodeniknm
+			    			, started
+			    			, enddate 
+			    			, eapplyst
+			    			, eapplyed
+			    			, tseat
+			    			, tdate
+			    FROM 	tb_GRSEQ
+			    WHERE 	to_char(sysdate,'YY')=to_char(started,'YY') 
+			    	AND 	to_char(started,'mm') = #{monthajax}
+			    	AND 	USE_YN = 'Y'
+			    ORDER BY 
+			    			STARTED
+			    			, ENDDATE ASC
+			) A
+			, tb_grcode B 
+			WHERE A.grcode = B.grcode
+		) nQuery WHERE ROWNUM <= #{end, jdbcType=INTEGER}) WHERE nPaging_rnum >= #{start, jdbcType=INTEGER}
+	]]>
+	</select>
+	
+	<select id="getTeamList" resultType="DataMap">
+	<![CDATA[
+	
+		SELECT
+				    member_part_team
+				    , decode	(	
+				    				member_jik
+				    				,'1' ,'원장실'
+				    				, '2'	,'과장'
+				    				, '3'	,'수석교수'
+				    				, '40'	,'교수'
+				    				, '41'	,'교수'
+				    				, '42'	,'교수'
+				    				, '43'	,'교수'
+				    				, '44'	,'교수'
+				    				, '45'	,'교수'
+				    				,'46'	,'교수'
+				    				,'5'	,'팀장'
+									,'76'	,'주무관'
+									,'77'	,'주무관'
+									,'78'	,'주무관'
+									,'79'	,'주무관'
+				    				,'80'	,'주무관'
+				    				, '81'	,'주무관'
+				    				,'82'	,'실무관'
+				    				, '83'	,'실무관'
+				    				, '84'	,'실무관'
+				    				, '85','실무관'
+				    				, '86','실무관'
+				    				,'87','실무관'
+				    				, '88','실무관'
+				    				, '89','실무관'
+				    				, '90','실무관'
+				    				, '91','실무관'
+				    				,'92','실무관'
+				    				, '93','실무관'
+				    				, '94','실무관'
+				    				, '95','실무관'
+				    				, '96','실무관'
+				    				,'97','실무관'
+				    				, '98','실무관'
+				    				, '99','공무직'
+		    	   ) member_jik_name
+		    	   , member_jik
+		    	   , username
+		    	   , phone_number
+		    	   , content
+		FROM 	tb_memberstats
+		ORDER BY 	member_jik asc
+		--order by member_part_team, member_jik
+	]]>
+	</select>	
+	
+	<select id="getTeamListByName" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		
+		SELECT
+		    member_part_team,
+		    decode(member_jik,
+		    		'1','원장실', '2','과장', '3','수석교수',
+		    		'40','교수', '41','교수', '42','교수', '43','교수', '44','교수', '45','교수', '46','교수',
+		    		'5','팀장','76','주무관','77','주무관','78','주무관','79','주무관',
+		    		'80','주무관', '81','주무관',
+		    		'82','실무관', '83','실무관', '84','실무관', '85','실무관', '86','실무관',
+		    		'87','실무관', '88','실무관', '89','실무관', '90','실무관', '91','실무관', 
+		    		'92','실무관', '93','실무관', '94','실무관', '95','실무관', '96','실무관', 
+		    		'97','실무관', '98','실무관', '99','공무직'
+		    	   ) member_jik_name,
+		    member_jik,
+		    username,
+		    phone_number,
+		    content
+		from tb_memberstats
+		where username like '%' || #{value, jdbcType=VARCHAR} || '%'
+		order by member_part_team,member_jik 
+	]]>
+	</select>
+	
+	<select id="getTeamListByWork" parameterType="String" resultType="DataMap">
+	<![CDATA[
+
+		select
+		    member_part_team,
+		    decode(member_jik,
+		    		'1','원장실', '2','과장', '3','수석교수',
+		    		'40','교수', '41','교수', '42','교수', '43','교수', '44','교수', '45','교수',
+		    		'5','팀장','76','주무관','77','주무관','78','주무관','79','주무관',
+		    		'80','주무관', '81','주무관',
+		    		'82','실무관', '83','실무관', '84','실무관', '85','실무관', '86','실무관',
+		    		'87','실무관', '88','실무관', '89','실무관', '90','실무관', '91','실무관', 
+		    		'92','실무관', '93','실무관', '94','실무관', '95','실무관', '96','실무관', 
+		    		'97','실무관', '98','실무관', '99','공무직'
+		    	   ) member_jik_name,
+		    member_jik,
+		    username,
+		    phone_number,
+		    content
+		from tb_memberstats
+		where content like '%' || #{value, jdbcType=VARCHAR} || '%'
+		order by member_part_team,member_jik
+			]]>
+	</select>
+	
+	<select id="getEatList" parameterType="Map" resultType="DataMap">
+	<![CDATA[		
+		select fyear,
+		       fmonth,
+		       fdate,
+		       total_date,
+		       content,
+		       substr(total_date, 5, 2) as todaymonth,
+		       CEIL((to_number(total_date-to_char(next_day(last_day(add_months(to_date(total_date, 'yyyymmdd'), -1)), '금요일'), 'yyyymmdd')))/7)+1 as week_order
+		from   tb_food_data
+		where  total_date between to_char(next_day(sysdate-#{weekCount}, '토요일')-5, 'yyyymmdd') 
+		        and to_char(next_day(sysdate-#{weekCount}, '토요일'), 'yyyymmdd')
+		        and gubun=#{day}
+		order by total_date
+	]]>
+	</select>
+	
+	<select id="existAlreadyReservation" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		
+		SELECT count(*) 
+        FROM TB_APPLICATION 
+        WHERE ta_rent_date = TO_DATE(#{resv_day}, 'YYYYMMDD')
+            AND ta_req_section = #{place}
+            AND TA_AGREEMENT != 'C'
+	]]>
+		<if test="gubun=='all'">
+			AND ta_rent_time IN ('am', 'pm', 'all')
+		</if>
+		<if test="'am' == gubun || 'pm' == gubun">
+			AND ta_rent_time IN ('am', 'pm', 'all')
+		</if>
+	</select>
+	
+	<select id="getReservationList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+
+		SELECT  
+			ta_pk,
+			ta_req_name,
+			ta_person,
+			ta_req_section,
+			ta_rent_time,
+			ta_agreement useryn,
+			TO_CHAR(ta_rent_date,'YYYYMMDD') AS ta_rent_date
+		FROM TB_APPLICATION 
+		WHERE ta_pk IS NOT NULL 
+			AND TO_CHAR(ta_rent_date,'YYYYMM') = #{date}
+			AND ta_req_section = #{place}
+			AND TA_AGREEMENT != 'C'
+	]]>
+	</select>
+	
+	<select id="getDuplicateReservationCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+
+		SELECT count(*)
+        FROM TB_APPLICATION 
+        WHERE SCP.DEC_B64('KEY1',TA_REQ_SERIAL_NO) = #{jumin}
+            AND TO_CHAR(ta_rent_date, 'YYYYMM') = substr(#{day}, 1, 6)
+            AND TA_AGREEMENT != 'C'
+	]]>
+	</select>
+	
+	<select id="getMaxApplication" resultType="Integer">
+	<![CDATA[
+
+		SELECT NVL(MAX(TA_PK),0) +1 FROM TB_APPLICATION
+	]]>
+	</select>
+	
+	<update id="setReservation" parameterType="Map">
+<!-- 		INSERT INTO TB_APPLICATION_DAMO -->
+	<![CDATA[
+		
+ 		INSERT INTO TB_APPLICATION 
+		( TA_PK, TA_REQ_NAME, TA_REQ_ADDRESS, TA_REQ_PHONE, TA_REQ_SERIAL_NO
+		  , TA_RENT_DATE, TA_RENT_START, TA_RENT_END, TA_RENT_NUMBER, TA_RENT_INTENTION
+		  , TA_DATE, TA_AGREEMENT, TA_PERSON, TA_REQ_GROUP, TA_REQ_SECTION, TA_RENT_TIME
+		  , TA_AGR_DATE, TA_RENT_SUM, TA_AGR_NO, ROOM50, ROOM100, STARTTIME, ENDTIME, SEXM, SEXF, STARTDATE, ENDDATE )		 
+		VALUES
+		( 
+			#{maxnum}
+			, #{resvname}
+			, #{homeaddr}
+			, #{tel}
+			, SCP.ENC_B64('KEY1',#{jumin})
+		  	, TO_DATE(#{resv_day}, 'YYYYMMDD')
+		  	, ''
+		  	, ''
+		  	, ''
+		  	, #{content}
+		  	, SYSDATE
+		  	, 'N'
+		  	, #{person}
+			, #{groupname}
+			, #{place}
+			, #{gubun}
+		  	, SYSDATE
+		  	, #{sum, jdbcType=VARCHAR}
+		  	, ''
+		  	, #{room50, jdbcType=VARCHAR}
+			, #{room100, jdbcType=VARCHAR}
+			, #{starttime, jdbcType=VARCHAR}
+			, #{endtime, jdbcType=VARCHAR}
+			, #{sexm, jdbcType=VARCHAR}
+			, #{sexf, jdbcType=VARCHAR}
+			, #{startdate, jdbcType=VARCHAR}
+			, #{enddate, jdbcType=VARCHAR}
+	  	) 
+	]]>
+	</update>
+	
+	<select id="getReservationConfirm" parameterType="Map" resultType="DataMap">
+	<![CDATA[	
+
+        SELECT    TA_PK, TA_REQ_NAME, TA_REQ_ADDRESS, TA_REQ_PHONE, SCP.DEC_B64('KEY1',TA_REQ_SERIAL_NO) AS TA_REQ_SERIAL_NO,to_char(ta_rent_date,'yyyy.mm.dd') as  TA_RENT_DATE,
+                TA_RENT_INTENTION, TA_AGREEMENT, TA_PERSON, TA_REQ_GROUP, TA_REQ_SECTION, TA_RENT_TIME, 
+                TO_CHAR(TA_AGR_DATE, 'YYYYMMDD') as ta_agr_date, TA_RENT_SUM, TA_AGR_NO, TO_CHAR(TA_DATE, 'YYYY.MM.DD hh24:mi:ss') AS TA_DATE,
+				STARTTIME, ENDTIME
+        FROM    TB_APPLICATION
+		WHERE TA_REQ_NAME = #{name} 
+		AND   TA_REQ_SERIAL_NO= #{jumin1} || #{jumin2}
+        AND   TO_CHAR(TA_RENT_DATE,'yyyymmdd') between to_char(sysdate, 'yyyymm') and to_char(add_months(to_date(to_char(sysdate, 'yyyymm'), 'yyyymm'), 2), 'yyyymm')
+        ORDER BY TA_RENT_DATE DESC
+	]]>
+	</select>
+	
+	<select id="getDeptList" resultType="DataMap">
+	<![CDATA[					
+		SELECT dept, deptnm FROM TB_DEPT WHERE USE_YN = 'Y' ORDER BY DEPT
+	]]>
+	</select>	
+	
+	<select id="getFileNo" resultType="Integer">
+	<![CDATA[	
+		select max(groupfile_no)+1 as max from tb_upload	
+	]]>
+	</select>
+	
+	<insert id="setJoinPicture" parameterType="Map">
+	<![CDATA[	
+		insert into tb_upload(groupfile_no, file_no, file_path, file_name, ldate)
+		values(#{fileNo},#{d},#{path},#{fileName},sysdate)
+	]]>
+	</insert>
+	
+	<select id="getJoinYn" parameterType="String" resultType="DataMap">
+	<![CDATA[	
+		select count(*) as count from tb_member where user_id=#{value}
+	]]>
+	</select>
+	
+	<select id="getEmailYn" parameterType="String" resultType="DataMap">
+	<![CDATA[	
+		select count(*) as count from tb_member where email=#{value}
+	]]>
+	</select>
+	
+	<select id="getZikList" parameterType="String" resultType="DataMap">
+	<![CDATA[					
+		SELECT rownum, a.jik as jik,a.jiknm as jiknm,
+		    (select codenm from tb_jikgubun where jikgubun = 'jikj' and code = a.jikj) as jikj,
+		    (select codenm from tb_jikgubun where jikgubun = 'jikr' and code = a.jikr) as jikr,
+		    (select codenm from tb_jikgubun where jikgubun = 'dogs' and code = a.dogs) as dogs, 
+		    (select codenm from tb_jikgubun where jikgubun = 'jikl' and code = a.jikl) as jikl,
+		    JIK_GUBUN
+		FROM TB_JIK a WHERE JIKNM LIKE '%' || #{value} || '%'	
+	]]>
+	</select>	
+	
+	<select id="getUserNo" resultType="DataMap">
+	<![CDATA[			
+		select 'A' || to_char(lpad(nvl(max(substr(USERNO,2,12))+1, 1), 12, '0')) as userno FROM tb_member where userno like 'A%'		
+	]]>
+	</select>
+	
+	<update id="joinMemberRnG" parameterType="Map">
+						
+		INSERT INTO  
+			tb_member (	USERNO, USER_ID, PWD, PWD_QUS, 
+						PWD_ANS, NAME, EMAIL, HOME_TEL, OFFICE_TEL,
+						HP, HOME_POST1, HOME_POST2, HOME_ADDR, 
+						DEPT, DEPTNM, JIKWI, JIK, MJIKNM, SCHOOL, 
+						MAILYN, SMS_YN, FIDATE, UPSDATE, PIC_FILE_NO, 
+						DEPTSUB,
+						REGTYPE, BIRTHDATE, SEX, DUPINFO, VIRTUALNO, 
+						AGE, NATIONALINFO, AUTHINFO, LDAPCODE, LDAPNAME, AGREEMENT_YN, AGREEMENT_DATE, INDATE,
+						NEWHOMEPOST, NEWADDR1, NEWADDR2
+					 )
+			VALUES(		
+						#{userno}
+						, #{user_id}
+						, SCP.ENC_B64('KEY1',#{pwd})
+						, #{pwd_qus}
+						, #{pwd_ans}
+						, #{name}
+						, #{email}
+						, SCP.ENC_B64('KEY1',#{home_tel})
+						, SCP.ENC_B64('KEY1',#{office_tel})
+						, SCP.ENC_B64('KEY1',#{hp})
+						, #{home_post1, jdbcType=NUMERIC}
+						, #{home_post2, jdbcType=NUMERIC}
+						, #{home_addr, jdbcType=VARCHAR}
+						, #{dept}
+						, #{deptnm}
+						, #{jikwi}
+						, #{jik}
+						, #{mjiknm}
+						, #{school, jdbcType=VARCHAR}
+						, #{mailyn}
+						, #{sms_yn}
+									
+						, to_date(#{fidate}, 'YYYYMMDD')			
+						, to_date(#{upsdate}, 'YYYYMMDD')			
+						
+						, #{fileno}
+						, #{deptsub}
+					
+						, #{regtype}
+						
+						, #{birthdate}
+						, #{sex}
+						
+						, #{dupinfo}
+						, #{virtualno}
+						, #{age}
+						, #{nationalinfo}
+						, #{authinfo}
+						, #{ldapcode}
+						<choose>
+							<when test="ldapcode == '' or ldapcode == null">
+								, null
+							</when>
+							<otherwise>
+								, #{deptsub}
+							</otherwise>
+						</choose>
+						, 'Y'
+						, sysdate
+						, sysdate
+						, #{newHomePost, jdbcType=NUMERIC}
+						, #{newAddr1, jdbcType=VARCHAR}
+						, #{newAddr2, jdbcType=VARCHAR}
+				   )
+	</update>
+	
+	<update id="updateDamoMemberRnG" parameterType="Map">
+		
+		UPDATE tb_member 
+			   set pwd_date = sysdate	
+		 where user_id = #{user_id}
+	</update>	
+	
+	<select id="getZipcodeList" parameterType="String" resultType="DataMap">
+	<![CDATA[	
+		-- 우편번호 검색 .
+		SELECT * 
+		FROM TB_ZIPCODE 
+		WHERE ADDR3 LIKE '%' || #{value} || '%'
+	]]>
+	</select>
+	
+	<select id="findPasswordByEmail" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+					
+		select userno, name, email, SCP.DEC_B64('KEY1',hp) AS HP, user_id
+		from tb_member 
+		where name=#{username} and email=#{email}
+	]]>
+	</select>
+	
+	<select id="findPassword" parameterType="Map" resultType="DataMap">
+	<![CDATA[			
+		select userno, name, email, SCP.DEC_B64('KEY1',hp) AS HP, nvl(user_id, 'nullid') user_id
+		from tb_member 
+		where name=#{username} and email=#{email, jdbcType=VARCHAR}
+	]]>
+	</select>
+	
+	<select id="findUserPassword" parameterType="Map" resultType="DataMap">
+	<![CDATA[			
+        select userno, name, email, SCP.DEC_B64('KEY1',hp) AS HP, user_id
+        from tb_member
+        where name = #{username}
+          and user_id = #{userid} 
+          and email = #{email}  
+	]]>
+	</select>
+	
+	<select id="iPinfindUserPassword" parameterType="Map" resultType="DataMap">
+	<![CDATA[			
+        select userno, name, email, SCP.DEC_B64('KEY1',hp) AS HP, user_id
+        from tb_member
+        where name = #{username}
+          and dupinfo = #{dupinfo}
+	]]>
+	</select>
+	
+	<select id="findQuestion" parameterType="Map" resultType="DataMap">
+	<![CDATA[			
+		select user_id, userno, pwd_qus, pwd_ans
+		from tb_member
+		where user_id = #{userid}
+	]]>
+	</select>
+	
+	<update id="updatePasswd" parameterType="Map">
+	<![CDATA[			
+		update tb_member
+		set pwd = SCP.ENC_B64('KEY1',#{pwd})
+		where user_id = #{userid}
+	]]>
+	</update>
+	
+	<select id="finddupinfo" parameterType="Map" resultType="DataMap">
+	<![CDATA[			
+		select userno, name, email, SCP.DEC_B64('KEY1',hp) AS HP, user_id
+		from tb_member 
+		where name=#{username} and dupinfo=#{dupinfo}
+	]]>
+	</select>	
+	
+	<update id="setPassword" parameterType="Map" >
+	<![CDATA[		
+		UPDATE tb_member set PWD = SCP.ENC_B64('KEY1',#{password, jdbcType=VARCHAR}), LGFAILCNT = 0 WHERE USERNO = #{userno, jdbcType=VARCHAR}
+	]]>
+	</update>
+	
+	<select id="getMailSeq" resultType="String">
+	<![CDATA[		
+		select max(seq)+1 as max from TB_MAIL_SEND
+	]]>
+	</select>
+	
+	<select id="getPersonInfo" parameterType="String" resultType="loti.homeFront.vo.PersonVO">
+	<![CDATA[	
+		SELECT userno, user_id as id, name, pwd_qus, pwd_ans, email, SCP.DEC_B64('KEY1',hp) AS HP FROM tb_member WHERE USERNO =#{value}
+	]]>
+	</select>
+	
+	
+	<select id="getPersonInfoByhp" parameterType="Map" resultType="String">
+	<![CDATA[	
+		SELECT userno FROM tb_member WHERE replace(SCP.DEC_B64('KEY1',hp),'-','') = #{hp} and name = #{username} and rownum = 1
+	]]>
+	</select>
+	
+	<insert id="sendMail" parameterType="loti.homeFront.vo.PersonVO">
+	<![CDATA[		
+		INSERT INTO TB_MAIL_SEND (seq,key,username ,useremail ,userid,param1 ,input_date ) 
+		VALUES (#{seq},#{key},#{name},#{email, jdbcType=VARCHAR},#{id, jdbcType=VARCHAR},#{param1},sysdate)
+	]]>
+	</insert>
+
+	<insert id="sendSms" parameterType="Map" >
+	<![CDATA[	
+		INSERT INTO mmsmng.sms_msg(MSGKEY, PHONE, CALLBACK, STATUS, REQDATE, MSG, COMPKEY, ID)
+		VALUES(SMS_MSG_SEQ.nextVal, #{hp}, '0324407684', '0', sysdate,#{msg}, '052','edu00')
+	]]>
+	</insert>
+	
+	<select id="getGoodLectureList" resultType="DataMap">
+	<![CDATA[
+		select rownum, title, ldate, file_path, file_name, url, gubun
+		from TB_MOVELECT_DATA A, TB_UPLOAD B
+		where A.GROUPFILE_NO = B.GROUPFILE_NO and rownum < 3
+		order by seq desc
+			]]>
+	</select>
+	
+<!-- 	쿼리 수정 -->
+<!-- 	<select id="checkCmlmsJoin" parameterType="Map" resultType="String"> -->
+<!-- 	<![CDATA[ -->
+<!-- 		SELECT user_id FROM cmlms.CMTB_MEMBER WHERE EMAIL =? AND NAME=? -->
+<!-- 	]]> -->
+<!-- 	</select> -->
+	<select id="checkCmlmsJoin" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		SELECT count(*) FROM cmlms.CMTB_MEMBER WHERE EMAIL =#{email} AND NAME=#{name}
+	]]>
+	</select>
+	
+	<update id="updateCmlmsId" parameterType="Map">
+	<![CDATA[
+		UPDATE tb_member SET cm_id=#{cm_id} WHERE USER_ID=#{id}
+	]]>
+	</update>  	
+	
+<!-- 	쿼리 변경 -->
+<!-- 	<statement name="checkcmlmsidexist"> -->
+<!-- 	<![CDATA[ -->
+<!-- 		SELECT user_id FROM cmlms.CMTB_MEMBER WHERE user_id = ? -->
+<!-- 	]]> -->
+<!-- 	</statement>  -->
+	<select id="checkCmlmsIdExist" parameterType="String" resultType="Integer">
+	<![CDATA[
+		SELECT count(*) FROM cmlms.CMTB_MEMBER WHERE user_id = #{value}
+	]]>
+	</select> 
+	
+	<insert id="joinCmlmsMember" parameterType="Map">
+	<![CDATA[	
+		INSERT INTO cmlms.CMtb_member (USERNO, PWD, NAME, EMAIL, HOME_TEL, HOME_POST1, HOME_POST2, HOME_ADDR, DEPT, SCHOOL, SEX, 
+		            M_INDATE, MAILYN, SMSYN, PWD_QUS, PWD_ANS, JOB, USER_ID, CONFKEY, CONF_YN, HP)
+		VALUES (
+					#{userno}, SCP.ENC_B64('KEY1',#{pwd}), #{name}, #{email}, SCP.ENC_B64('KEY1',#{home_tel}), #{home_post1}, #{home_post2}, #{home_addr}, '1000', #{school}
+					, #{sex}, sysdate, #{mailyn}, #{sms_yn}, #{pwd_qus}, #{pwd_ans}, '공무원', #{id}, '', 'Y', SCP.ENC_B64('KEY1',#{hp})
+				)	
+	]]>
+	</insert>
+	
+	<select id="getCmlmsUserNo" resultType="String">
+	<![CDATA[	
+		select '1000' || to_char(lpad(nvl(max(substr(USERNO,4,12))+1, 1), 9, '0')) as userno 
+		FROM cmlms.CMTB_MEMBER 
+		WHERE USERNO NOT IN('kks0404','yunlee')
+	]]>
+	</select>
+	
+	<update id="setRejoin" parameterType="Map">
+	<![CDATA[	
+		update tb_member set user_id=#{id}, pwd=SCP.ENC_B64('KEY1',#{pw}) where resno=SCP.ENC_B64('KEY1',#{resno})
+	]]>
+	</update>
+	
+	<update id="modifyReservation" parameterType="Map">
+	<![CDATA[
+		UPDATE  TB_APPLICATION 
+		SET 	TA_REQ_NAME=#{resvname}
+				, TA_REQ_ADDRESS=#{homeaddr}
+				, TA_REQ_PHONE=#{tel}
+				, TA_RENT_DATE=TO_DATE(#{resv_day}, 'YYYYMMDDHH')
+				, TA_RENT_INTENTION=#{content}
+				, TA_PERSON=#{person}
+				, TA_REQ_GROUP=#{groupname}
+				, TA_REQ_SECTION=#{place}
+				, TA_RENT_TIME=#{gubun}
+				, TA_AGR_NO=#{agrno} 
+		WHERE 	TA_PK=#{taPk}
+	]]>	
+	</update>
+	
+	<select id="getReservationModify" parameterType="String" resultType="DataMap">
+	<![CDATA[
+
+		SELECT
+				TA_PK               
+				,TA_REQ_NAME         
+				,TA_REQ_ADDRESS      
+				,TA_REQ_PHONE        
+				,SCP.DEC_B64('KEY1',TA_REQ_SERIAL_NO) AS TA_REQ_SERIAL_NO
+				,to_char(TA_RENT_DATE, 'YYYY-MM-DD') TA_RENT_DATE
+				,TA_RENT_START       
+				,TA_RENT_END         
+				,TA_RENT_NUMBER      
+				,TA_RENT_INTENTION   
+				,TA_DATE             
+				,TA_AGREEMENT        
+				,TA_PERSON           
+				,TA_REQ_GROUP        
+				,TA_REQ_SECTION      
+				,TA_RENT_TIME        
+				,TA_AGR_DATE         
+				,TA_RENT_SUM         
+				,TA_AGR_NO           
+				,ROOM50              
+				,ROOM100             
+				,STARTTIME           
+				,ENDTIME             
+				,SEXM                
+				,SEXF                
+				,STARTDATE           
+				,ENDDATE              
+		FROM TB_APPLICATION WHERE TA_PK = #{value}
+	]]>
+	</select>
+	
+	<select id="updateAgreement" parameterType="String">
+	<![CDATA[	
+
+		UPDATE TB_APPLICATION SET TA_AGREEMENT = 'C', TA_AGR_DATE = SYSDATE
+		WHERE TA_PK = #{value}
+	]]>
+	</select>
+	
+	<select id="getReservationConfirmRev" parameterType="Map">
+	<![CDATA[	
+
+		SELECT	TA_PK, TA_REQ_NAME, TA_REQ_ADDRESS, TA_REQ_PHONE, SCP.DEC_B64('KEY1',TA_REQ_SERIAL_NO) AS TA_REQ_SERIAL_NO,to_char(ta_rent_date,'yyyy.mm.dd') as  TA_RENT_DATE,
+				TA_RENT_INTENTION, TA_AGREEMENT, TA_PERSON, TA_REQ_GROUP, TA_REQ_SECTION, TA_RENT_TIME, 
+				TO_CHAR(TA_AGR_DATE, 'YYYYMMDD') as ta_agr_date, TA_RENT_SUM, TA_AGR_NO 
+		FROM	TB_APPLICATION 
+		WHERE TA_REQ_NAME = #{name}
+		AND   TA_REQ_SERIAL_NO=#{jumin1} || #{jumin2}
+		AND   TO_CHAR(TA_RENT_DATE,'yyyymmdd') = #{revDate}
+	]]>
+	</select>
+	
+	<select id="getReservationSurvey" resultType="DataMap">
+	<![CDATA[
+		
+		SELECT 
+		   SUM(DECODE(CHECK1, 1, 1)) CNT1_1, SUM(DECODE(CHECK1, 2, 1)) CNT1_2, SUM(DECODE(CHECK1, 3, 1)) CNT1_3, SUM(DECODE(CHECK1, 4, 1)) CNT1_4,
+		   SUM(DECODE(CHECK2, 1, 1)) CNT2_1, SUM(DECODE(CHECK2, 2, 1)) CNT2_2, SUM(DECODE(CHECK2, 3, 1)) CNT2_3, SUM(DECODE(CHECK2, 4, 1)) CNT2_4, SUM(DECODE(CHECK2, 5, 1)) CNT2_5, SUM(DECODE(CHECK2, 4, 6)) CNT2_6,
+		   SUM(DECODE(CHECK4, 1, 1)) CNT4_1, SUM(DECODE(CHECK4, 2, 1)) CNT4_2, SUM(DECODE(CHECK4, 3, 1)) CNT4_3, SUM(DECODE(CHECK4, 4, 1)) CNT4_4, SUM(DECODE(CHECK4, 5, 1)) CNT4_5,
+		   SUM(DECODE(CHECK5, 1, 1)) CNT5_1, SUM(DECODE(CHECK5, 2, 1)) CNT5_2, SUM(DECODE(CHECK5, 3, 1)) CNT5_3, SUM(DECODE(CHECK5, 4, 1)) CNT5_4, SUM(DECODE(CHECK5, 5, 1)) CNT5_5,
+		   SUM(DECODE(CHECK6, 1, 1)) CNT6_1, SUM(DECODE(CHECK6, 2, 1)) CNT6_2, SUM(DECODE(CHECK6, 3, 1)) CNT6_3, SUM(DECODE(CHECK6, 4, 1)) CNT6_4, SUM(DECODE(CHECK6, 5, 1)) CNT6_5,
+		   SUM(DECODE(CHECK7, 1, 1)) CNT7_1, SUM(DECODE(CHECK7, 2, 1)) CNT7_2, SUM(DECODE(CHECK7, 3, 1)) CNT7_3, SUM(DECODE(CHECK7, 4, 1)) CNT7_4, COUNT(*) SUM_CNT
+		FROM TB_RESERVATIONSURVEY
+	    
+	]]>
+	</select>
+	
+	<select id="getReservationSurveyDetail" resultType="DataMap">
+	<![CDATA[
+		
+		SELECT 
+			SEQNO, DATEUSE, ETC, PRICE 
+		FROM TB_RESERVATIONSURVEY	    
+		ORDER BY SEQNO DESC
+	]]>
+	</select>
+	
+	<select id="getMemberSSOAgree" parameterType="Map" resultType="int">
+	<![CDATA[
+		SELECT 
+			COUNT(*) AS CNT 
+		FROM TB_SSO_INFO_AGREE	    
+		WHERE USERNO = #{userno}
+		AND SSO_COMPANY_CODE = #{ssocompany}
+	]]>
+	</select>
+	
+	<select id="checkMemberSSOAgree" parameterType="String" resultType="String">
+		SELECT SSO_COMPANY_CODE 
+		FROM TB_SSO_INFO_AGREE	    
+		WHERE USERNO = #{value}
+	</select>
+	
+	<insert id="insertSSOAgree" parameterType="Map">
+		INSERT INTO TB_SSO_INFO_AGREE (
+			SSO_COMPANY_CODE
+			,USERNO
+		)
+		VALUES (
+			#{ssocompany}
+			,#{userno}
+		)
+	</insert>
+	
+	<update id="changeNewPwd" parameterType="Map">
+		
+		UPDATE tb_member 
+			    set pwd = SCP.ENC_B64('KEY1',#{pwd})
+			   ,pwd_date = sysdate	
+		 where userno = #{userno}
+		 
+	</update>	
+	
+	<insert id="insertGrinqAnswer" parameterType="Map">
+	<![CDATA[
+		-- CoursePollDAO.java
+		--  설문의 응답 등록
+		INSERT INTO TB_GRINQ_ANSWER 
+			(TITLE_NO, QUESTION_NO, SET_NO, 
+			USERNO, ANS_NO) 
+		VALUES 
+			( '9999', #{questionNo}, '1',
+			  'Z1', #{ansNo})
+	]]>
+	</insert>
+	
+</mapper>

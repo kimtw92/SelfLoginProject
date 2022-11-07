@@ -1,0 +1,15 @@
+@charset "utf-8";
+/* CSS Document */
+html, body, div, p, img, h1, h2, h3, table, th, td, span, ul, li, a{margin:0px; padding:0px; font-family: "돋움", "나눔고딕", "맑은 고딕" ; font-size:12px; border:0px;}
+li{list-style:none;}
+#wrap{width:450px; height:264px;}
+#wrap h1{background:url('img/pop_id_01.gif') no-repeat 0px 0px; width:450px; height:42px; text-indent:-99999px;}
+#wrap h3{background:url('img/pop_id_02.gif') no-repeat 0px 0px; width:450px; height:32px; text-indent:-99999px;}
+#wrap .p_id_box{width:432px; height:50px; border:1px solid #ccc; margin:5px 0px 0px 7px;}
+#wrap .p_id_box label{width:321px;display:block; margin:0 auto; font-weight:bold; color:#3f3f3f; font-size:13px;clear:both; overflow:hidden; margin-top:10px;}
+#wrap .p_id_s{display:block; float:left; margin-top:8px;}
+#wrap .pop_id{display:block; float:left; width:231px; height:23px; border:1px solid #ccc; margin:0px 0px 0px 10px;}
+#wrap .pop_id_bt{display:block; float:left; width:113px; height:25px;margin:1px 0px 0px 5px;}
+#wrap .p_id_box2{width:390px; height:52px; border:1px solid #ccc;margin:5px 0px 0px 7px; font-size:13px; font-weight:bold; color:#6e6e6e; padding:13px 21px 10px 21px;}
+#wrap .p_id_s1{color:#008ce9;}
+#wrap .p_id_box3{text-align:center; margin-top:10px;}

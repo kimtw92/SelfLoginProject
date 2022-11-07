@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.poll.mapper.CyberPollMapper">
+
+	<sql id="selectCyberPollListCommon">
+		FROM 
+				TB_INQ_TTL
+		<if test="serchValue != ''">
+			WHERE TITLE = '%' || #{serchValue} || '%'
+		</if>
+		ORDER BY TITLE_NO DESC
+	</sql>
+	<select id="selectCyberPollListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount"></include>
+		<include refid="selectCyberPollListCommon"></include>
+	</select>
+	<select id="selectCyberPollList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<![CDATA[
+			-- Cyber Poll -> Cyber Poll 리스트
+			SELECT 	TITLE_NO, TITLE, 	ISTART_DATE, 	IEND_DATE, GUIDE_TEXT, 
+					USE_DIFF, USE_YN, 	NEXT_TITLE_NO, 	
+					TO_CHAR(ISTART_DATE,'YYYY-MM-DD HH24:MI') AS SDATE, TO_CHAR(IEND_DATE,'YYYY-MM-DD HH24:MI') AS EDATE 
+		]]>
+		<include refid="selectCyberPollListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<select id="selectCyberPollTitleRow" parameterType="Integer" resultType="DataMap">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 폼데이터	
+	SELECT 
+		TITLE_NO, TITLE, ISTART_DATE, IEND_DATE, GUIDE_TEXT, USE_DIFF, USE_YN, NEXT_TITLE_NO, 
+		TO_CHAR(ISTART_DATE,'YYYYMMDD') AS SDATE, TO_CHAR(IEND_DATE,'YYYYMMDD') AS EDATE, 
+		TO_CHAR(ISTART_DATE,'HH24') AS SDATE_HH, TO_CHAR(ISTART_DATE,'MI') AS SDATE_MM,
+		TO_CHAR(IEND_DATE,'HH24') AS EDATE_HH, TO_CHAR(IEND_DATE,'MI') AS EDATE_MM
+	FROM 
+		TB_INQ_TTL
+	WHERE 
+		TITLE_NO = #{value}
+	]]>
+	</select>
+	
+	<select id="selectCyberPollInqSampRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 질문항목 Row데이
+		SELECT 
+			TITLE_NO, QUESTION_NO, ANSWER_NO, ANSWER, ANSWER_KIND FROM TB_INQ_SAMP 
+		WHERE 
+			TITLE_NO = #{titleNo} AND  QUESTION_NO = #{questionNo}  
+		ORDER BY ANSWER_NO ASC
+		
+	]]>
+	</select>
+	
+	<select id="selectCyberPollQuestionNoRow" parameterType="Integer" resultType="DataMap">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll questionNo Row데이터
+		SELECT 
+			QUESTION_NO 
+		FROM 
+			TB_INQ_QUESTION 
+		WHERE 
+			TITLE_NO = #{value}
+		
+	]]>
+	</select>	
+	
+	<select id="selectCyberPollInqQustionList" parameterType="Integer" resultType="DataMap">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 질문정보 리스트
+		SELECT  
+			TITLE_NO, QUESTION_NO, QUESTION_CHECKED_NO, QUESTION, ANSWER_CNT, CHECKBOX_CHECKED_NO, SAMP_CHECKED_NO 
+		FROM 
+			TB_INQ_QUESTION 
+		WHERE 
+			TITLE_NO = #{value} AND QUESTION_CHECKED_NO = 0 AND SAMP_CHECKED_NO = 0 
+		ORDER BY QUESTION_NO
+		
+	]]>
+	</select>
+	
+	<select id="selectCyberPollInqQustionRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 질문 Row데이터
+		SELECT  
+			TITLE_NO, QUESTION_NO, QUESTION_CHECKED_NO, QUESTION, ANSWER_CNT, CHECKBOX_CHECKED_NO, SAMP_CHECKED_NO 
+		FROM 
+			TB_INQ_QUESTION 
+		WHERE 
+			TITLE_NO = #{titleNo} AND  QUESTION_NO = #{questionNo} AND QUESTION_CHECKED_NO = 0 AND SAMP_CHECKED_NO = 0 
+		ORDER BY QUESTION_NO
+		
+	]]>
+	</select>	
+	
+	<update id="insertCyberPollTitleInfo" parameterType="Map">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll TITLE 등록
+			INSERT INTO 
+				TB_INQ_TTL 
+					(TITLE_NO, TITLE, ISTART_DATE, IEND_DATE, GUIDE_TEXT)
+				VALUES
+			        ( #{titleNo}, #{title}, TO_DATE(#{fullIstartDate},'YYYYMMDDHH24MI'),  TO_DATE(#{fullIendDate},'YYYYMMDDHH24MI'), #{namoContent})
+	]]>
+	</update>	
+	
+	<select id="selectAnswerNoCountRow" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 질문 답변 수 체크
+		SELECT 
+			COUNT(QUESTION_NO) AS COUNT 
+		FROM 
+			TB_INQ_ANSWER 
+		WHERE 
+			TITLE_NO = #{titleNo} AND QUESTION_NO = #{questionNo}
+	]]>
+	</select>
+	
+	<update id="deleteSampRow" parameterType="Map">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 보기 항목 삭제
+		DELETE FROM TB_INQ_SAMP
+		WHERE TITLE_NO = #{titleNo} AND QUESTION_NO = #{questionNo}
+	]]>
+	</update>	
+	
+	<update id="deleteQuestionRow" parameterType="Map">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 질문삭제
+		DELETE FROM TB_INQ_QUESTION 
+		WHERE TITLE_NO = #{titleNo} AND QUESTION_NO = #{questionNo}
+	]]>
+	</update>	
+	
+	<update id="insertCyberPollQuestion" parameterType="Map">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll QUESTION 등록
+		-- 설문제목입력시 QUESTION테이블에 등록번호와 내용을 입력한다. TITLE입력시 NO는 QUESTION의 NO와 QUESTION_NO에 입력한다.
+		INSERT INTO
+			TB_INQ_QUESTION
+				(TITLE_NO, QUESTION_NO, QUESTION_CHECKED_NO, QUESTION, ANSWER_CNT, CHECKBOX_CHECKED_NO, SAMP_CHECKED_NO)
+			VALUES
+				(#{titleNo},	#{questionNo}, 0, #{question}, #{answerCnt}, 0, 0)
+	]]>
+	</update>
+	
+	<update id="insertSamp" parameterType="Map">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 항목등록
+		INSERT INTO
+				TB_INQ_SAMP
+					(TITLE_NO, QUESTION_NO, ANSWER_NO, ANSWER, ANSWER_KIND)
+				VALUES
+					(#{titleNo}, #{questionNo}, #{answerNo}, #{answer}, #{answerKind})
+				
+	]]>
+	</update>
+	
+	<select id="selectMaxQuestionRow" resultType="Integer">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 질문 최대 번호 row데이타
+		SELECT	
+			MAX(QUESTION_NO)+1 AS MAXNO 
+		FROM 
+			TB_INQ_QUESTION	
+	]]>
+	</select>
+	
+	<select id="selectCyberPollMaxTitleNo" resultType="Integer">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll TITLE MAXNO
+		
+		SELECT MAX(TITLE_NO)+1 AS MAX FROM TB_INQ_TTL
+	]]>
+	</select>	
+	
+	<select id="selectCyberPollMaxQuestionNo" parameterType="Integer" resultType="Integer">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll QUESTION MAXNO
+		
+		SELECT nvl(MAX(QUESTION_NO), 0)+1 AS MAX FROM TB_INQ_QUESTION WHERE TITLE_NO = #{value}
+	]]>
+	</select>	
+	
+	<update id="modifyCyberPollTitleInfo" parameterType="Map">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 폼데이터	 수정
+	UPDATE 
+		TB_INQ_TTL 
+	SET 
+		TITLE = #{title}, 
+		ISTART_DATE = TO_DATE(#{fullIstartDate}, 'YYYYMMDDHH24MI'), 
+		IEND_DATE = TO_DATE(#{fullIendDate},'YYYYMMDDHH24MI'), 
+		GUIDE_TEXT = #{namoContent} 
+	WHERE 
+		TITLE_NO = #{titleNo}
+	]]>
+	</update>	
+	
+	<select id="selectQuestionNo" parameterType="Integer" resultType="DataMap">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 질문 번호 가져오기
+		SELECT 
+			QUESTION_NO 
+		FROM 
+			TB_INQ_QUESTION 
+		WHERE 
+			TITLE_NO = #{value}
+				
+	]]>
+	</select>
+	
+	<update id="deleteTtl" parameterType="Integer">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 타이틀글 삭제
+		DELETE FROM TB_INQ_TTL WHERE TITLE_NO = #{value}
+				
+	]]>
+	</update>
+	
+	<select id="selectPreviewPop" parameterType="Integer" resultType="DataMap">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 설문분석, 인쇄용 미리보기 
+         SELECT A.*
+          FROM
+              (
+                  SELECT    TITLE_NO,    QUESTION_NO,     QUESTION_NO ANSWER_NO, 
+                      QUESTION,    'A' PFLAG,        0 ANSWER_KIND, ANSWER_CNT
+                      
+                  FROM    TB_INQ_QUESTION
+                  WHERE    TITLE_NO    =    #{value}
+                  UNION ALL
+                  SELECT    TITLE_NO,   QUESTION_NO, ANSWER_NO,
+                         ANSWER,        'B' PFLAG,    ANSWER_KIND, 0 ANSWER_CNT
+                  FROM    TB_INQ_SAMP
+                  WHERE    TITLE_NO    =    #{value}
+               ) A
+          ORDER BY
+              A.TITLE_NO, A.QUESTION_NO, A.ANSWER_NO, A.PFLAG
+				
+	]]>
+	</select>	
+	
+	<select id="selectSubTitleCyberRow" parameterType="Integer" resultType="String">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 서브타이틀 Row
+		SELECT 
+			TITLE 
+		FROM 
+			TB_INQ_TTL
+		WHERE
+			TITLE_NO = #{value}
+	]]>
+	</select>	
+	
+	<select id="selectHtmlPreviewPop" parameterType="Integer" resultType="DataMap">
+	<![CDATA[
+		-- Cyber Poll -> Cyber Poll 설문분석, Html확인 
+        SELECT *
+         FROM
+             (
+                 SELECT    TITLE_NO,    QUESTION_NO,     QUESTION_NO ANSWER_NO, 
+                     QUESTION,    'A' PFLAG,        0 ANSWER_KIND, ANSWER_CNT
+                     
+                 FROM    TB_INQ_QUESTION
+                 WHERE    TITLE_NO    =    #{value}
+                 UNION ALL
+                 SELECT    TITLE_NO,   QUESTION_NO, ANSWER_NO,
+                        ANSWER,        'B' PFLAG,    ANSWER_KIND, 0 ANSWER_CNT
+
+                 FROM    TB_INQ_SAMP
+                 WHERE    TITLE_NO    =    #{value}
+              ) A
+         ORDER BY
+             A.TITLE_NO, A.QUESTION_NO, A.ANSWER_NO, A.PFLAG
+				
+	]]>
+	</select>
+	
+	<select id="selectResultCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 답변등록확인
+		SELECT 
+			COUNT(QUESTION_NO) AS COUNT 
+		FROM 
+			TB_INQ_ANSWER
+		WHERE 
+			TITLE_NO =#{titleNo} AND QUESTION_NO = #{questionNo} AND USERNO = #{userNo}
+				
+	]]>
+	</select>	
+	
+	<update id="resultInsert" parameterType="Map">
+	<![CDATA[
+		-- 답변등록
+		INSERT INTO TB_INQ_ANSWER (
+   			TITLE_NO, QUESTION_NO, USERNO, ANS_NO, ANSWER_TXT) 
+		VALUES ( #{titleNo}, #{questionNo}, #{userNo}, #{answerNo}, #{answerText})
+				
+	]]>
+	</update>
+	
+	<select id="selectAnswerInNoCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 답변응답카운터
+		SELECT 
+			COUNT(*) 
+		FROM 
+			TB_INQ_ANSWER 
+		WHERE 
+			TITLE_NO = #{titleNo} AND QUESTION_NO = #{questionNo} AND ANS_NO = #{ansNo}
+				
+	]]>
+	</select>
+	
+	<select id="selectAnswerTotalNoCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 전체 답변 카운트
+		SELECT 
+			COUNT(*) 
+		FROM 
+			TB_INQ_ANSWER 
+		WHERE 
+			TITLE_NO = #{titleNo} AND QUESTION_NO = #{questionNo}
+				
+	]]>
+	</select>
+	
+</mapper>

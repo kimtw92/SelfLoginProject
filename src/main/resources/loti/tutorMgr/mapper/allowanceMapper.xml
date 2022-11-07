@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.tutorMgr.mapper.AllowanceMapper">
+
+	<select id="selectAllowanceList" resultType="DataMap">
+	<![CDATA[
+		-- 강사 등급 리스트 쿼리
+		SELECT  
+			A.TLEVEL,  A.G_DEFAULT_AMT,  A.G_OVER_AMT, 
+			A.C_DEFAULT_AMT,  A.C_OVER_AMT, B.LEVEL_NAME
+		FROM 
+			TB_TUTOR_ALLOWANCE A , TB_TUTOR_LEVEL B
+		WHERE 
+			A.TLEVEL = B.TLEVEL ORDER BY A.TLEVEL
+		
+	]]>
+	</select>
+	
+	<select id="selectAllowanceRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 강사레벨 ROW 데이터
+		SELECT  
+			A.TLEVEL,  A.G_DEFAULT_AMT,  A.G_OVER_AMT, 
+        	A.C_DEFAULT_AMT,  A.C_OVER_AMT, B.LEVEL_NAME
+		FROM 
+			TB_TUTOR_ALLOWANCE A , TB_TUTOR_LEVEL B
+		WHERE 
+			A.TLEVEL = B.TLEVEL AND A.TLEVEL = #{value}
+		
+	]]>
+	</select>	
+	
+	<select id="selectLevelgruList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- TUTOR_LEVELGRU리스트 강사대상 설정 리스트
+		SELECT 
+		    TLEVEL, GRU_CODE, GRU_NAME
+		FROM
+		    TB_TUTOR_LEVELGRU
+		WHERE 
+		    TLEVEL = #{value} ORDER BY GRU_CODE
+	]]>
+	</select>
+	
+	<select id="selectLevelName" parameterType="String" resultType="String">
+	<![CDATA[
+		-- 강사 등급 리스트 쿼리
+		SELECT  
+			LEVEL_NAME
+		FROM 
+			TB_TUTOR_LEVEL 
+		WHERE 
+			TLEVEL = #{value}
+		
+	]]>
+	</select>
+	
+	<select id="selectLevelgruRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--강사지정 Row
+		SELECT 
+		    GRU_CODE, GRU_NAME 
+		FROM 
+		    TB_TUTOR_LEVELGRU 
+		WHERE 
+		    TLEVEL = #{tlevel} AND GRU_CODE = #{gruCode}
+	]]>
+	</select>
+	
+	<update id="insertLevelgru" parameterType="Map">
+	<![CDATA[
+		--강사대상 설정 등록
+		INSERT INTO TB_TUTOR_LEVELGRU 
+                   (TLEVEL, GRU_CODE, GRU_NAME) 
+           	VALUES 
+           		(#{tlevel}, LTRIM(TO_CHAR((SELECT NVL(MAX(TO_NUMBER(GRU_CODE)),0)+1	 AS GRU_CODE FROM TB_TUTOR_LEVELGRU WHERE TLEVEL = #{tlevel}), '00')), #{gruName})
+	]]>
+	</update>
+	
+	<update id="modifyLevelgru" parameterType="Map">
+	<![CDATA[
+		--강사 대상 설정 수정
+		UPDATE 
+		    TB_TUTOR_LEVELGRU 
+		SET 
+		    GRU_NAME = #{gruName} 
+		WHERE 
+		    TLEVEL = #{tlevel} AND GRU_CODE = #{gruCode}
+	]]>
+	</update>
+	
+	<update id="deleteLevelgru" parameterType="Map">
+	<![CDATA[
+		--강사 대상 설정 삭제
+		DELETE FROM 
+			TB_TUTOR_LEVELGRU 
+		WHERE 
+    		TLEVEL = #{tlevel} AND GRU_CODE = #{gruCode}
+	]]>
+	</update>
+		
+	<select id="selectAllowanceCount" parameterType="String" resultType="Integer">
+	<![CDATA[
+		-- 강사레벨 중복 체크
+		SELECT COUNT(TLEVEL) AS COUNT 
+		FROM TB_TUTOR_LEVEL
+		WHERE TLEVEL = #{value}
+		
+	]]>
+	</select>
+	
+	<update id="insertAllowance" parameterType="Map">
+	<![CDATA[
+		-- 강사레벨 TUTOR_ALLOWANCE 등록
+		INSERT INTO 
+			TB_TUTOR_ALLOWANCE 
+				( TLEVEL, G_DEFAULT_AMT, G_OVER_AMT, C_DEFAULT_AMT, C_OVER_AMT) 
+			VALUES 
+				( #{tlevel}, #{gDefaultAmt}, #{gOverAmt}, #{cDefaultAmt}, #{cOverAmt})
+		
+	]]>
+	</update>	
+	
+	<update id="insertLevel" parameterType="Map">
+	<![CDATA[
+		-- 강사레벨 TUTOR_LEVEL 테이블에 등록
+		INSERT INTO TB_TUTOR_LEVEL 
+						( TLEVEL, LEVEL_NAME ) 
+					VALUES 
+						( #{tlevel}, #{levelName})
+	]]>
+	</update>
+	
+	<update id="modifyAllowance" parameterType="Map">
+	<![CDATA[
+		-- TUTOR_ALLOWANCE  수정
+		UPDATE 
+			TB_TUTOR_ALLOWANCE
+		SET
+			G_DEFAULT_AMT = #{gDefaultAmt},
+			G_OVER_AMT    = #{gOverAmt},
+			C_DEFAULT_AMT = #{cDefaultAmt},
+			C_OVER_AMT    = #{cOverAmt}
+		WHERE  
+			TLEVEL        = #{tlevel}
+	]]>
+	</update>
+	
+	<update id="modifyLevel" parameterType="Map">
+	<![CDATA[
+		-- TUTOR_LEVEL 수정
+		UPDATE 
+			TB_TUTOR_LEVEL
+		SET
+			LEVEL_NAME = #{levelName}
+		WHERE
+			TLEVEL     = #{tlevel}
+	]]>
+	</update>
+	
+</mapper>

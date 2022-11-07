@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.webzine.mapper.WebzineMapper">
+
+	<select id="selectComplateListCount" parameterType="Map" resultType="Integer">
+	<![CDATA[
+		-- 사진 리스트
+			SELECT 
+				count(*) 
+			FROM 
+				TB_WEBZIN_PHOTO_GALLERY
+			${where} 
+			ORDER BY 
+				PHOTO_NO DESC
+	]]>
+	</select>
+
+	<select id="selectComplateList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 사진 리스트
+		SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+			SELECT 
+				PHOTO_NO, IMG_PATH, IMG_NAME, WCOMMENTS 
+			FROM 
+				TB_WEBZIN_PHOTO_GALLERY
+			${where} 
+			ORDER BY 
+				PHOTO_NO DESC
+		) nQuery WHERE ROWNUM <= #{end}) WHERE nPaging_rnum >= #{start}
+	]]>
+	</select>
+	
+	<select id="selectComplateRow" parameterType="Integer" resultType="DataMap">
+	<![CDATA[
+		-- 사진 ROW데이터
+			SELECT 
+				PHOTO_NO, IMG_PATH, IMG_NAME, WCOMMENTS 
+			FROM 
+				TB_WEBZIN_PHOTO_GALLERY
+			WHERE
+				PHOTO_NO = #{value}
+	]]>
+	</select>
+	
+	<select id="selectNewYearList" resultType="DataMap">
+	<![CDATA[
+		-- 신규동기 년도 웹진관리 공통으로 쓰는 년도
+			SELECT 
+				DISTINCT SUBSTR(GRSEQ,1,4) AS YEAR 
+			FROM 
+				TB_GRSEQ 
+			WHERE 
+				USE_YN = 'Y' 
+			ORDER BY YEAR DESC
+	]]>
+	</select>
+	
+	<update id="insertPhotoUpload" parameterType="Map">
+	<![CDATA[
+		-- 사진 등록
+	        INSERT INTO 
+            TB_WEBZIN_PHOTO_GALLERY 
+                (PHOTO_NO, IMG_PATH, IMG_NAME, WCOMMENTS, GRSEQ)
+            VALUES
+                ((SELECT NVL(MAX(PHOTO_NO), 0) + 1 AS MAX FROM TB_WEBZIN_PHOTO_GALLERY),#{filePath} , #{fileName}, #{wcomments}, #{date})
+	]]>
+	</update>
+	
+	<update id="deleteComplate" parameterType="Integer">
+	<![CDATA[
+		-- 사진관리 삭제
+		DELETE  FROM 
+					TB_WEBZIN_PHOTO_GALLERY
+				WHERE
+					PHOTO_NO = #{value}
+				
+	]]>
+	</update>
+	
+	<update id="modifyComplate" parameterType="Map">
+	<![CDATA[
+		-- 사진 수정
+		UPDATE TB_WEBZIN_PHOTO_GALLERY SET
+			IMG_PATH  = #{filePath},
+			IMG_NAME  = #{fileName},
+			WCOMMENTS = #{wcomments},
+			GRSEQ = #{date}
+		WHERE  
+			PHOTO_NO  = #{photoNo}
+	]]>
+	</update>
+	
+	<update id="modifyHoldComplate" parameterType="Map">
+	<![CDATA[
+		-- 기존사진정보를 쓸경우
+		UPDATE TB_WEBZIN_PHOTO_GALLERY SET
+			WCOMMENTS = #{wcomments},
+			GRSEQ = #{date}
+		WHERE  
+			PHOTO_NO  = #{photoNo}
+	]]>
+	</update>
+	
+	<sql id="selectEbookListCommon">
+		FROM
+			TB_WEBZINE_EBOOK_MNG
+		ORDER BY 
+			EBOOK_NO DESC
+	</sql>
+	<select id="selectEbookListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount"></include>
+		<include refid="selectEbookListCommon"></include>
+	</select>
+	<select id="selectEbookList" parameterType="Map" resultType="DataMap">
+	<include refid="page.pageHead"></include>
+	<![CDATA[
+		-- EBOOK LIST데이터
+		SELECT 
+			EBOOK_NO, EBOOK_TITLE, EBOOK_AUTH, IMG_PATH, IMG_NAME, EBOOK_LINK, GRSEQ, USE_YN, EBOOK_PAGE
+	]]>
+		<include refid="selectEbookListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<select id="selectEbookRow" parameterType="Integer" resultType="DataMap">
+	<![CDATA[
+		-- EBOOK ROW데이터
+		SELECT 
+			EBOOK_NO, EBOOK_TITLE, EBOOK_AUTH, IMG_PATH, IMG_NAME, EBOOK_LINK, GRSEQ, USE_YN, EBOOK_PAGE
+		FROM
+			TB_WEBZINE_EBOOK_MNG
+		WHERE
+			EBOOK_NO = #{value}
+	]]>
+	</select>
+	
+	<update id="insertEbook" parameterType="Map">
+	<![CDATA[
+		-- EBOOK등록
+		INSERT INTO
+			TB_WEBZINE_EBOOK_MNG
+				(EBOOK_NO, EBOOK_TITLE, EBOOK_AUTH, IMG_PATH, IMG_NAME, EBOOK_LINK, GRSEQ, EBOOK_PAGE, USE_YN)
+				
+			VALUES
+				( (SELECT NVL(MAX(EBOOK_NO), 0) + 1 AS MAX FROM TB_WEBZINE_EBOOK_MNG), #{ebookTitle}, #{ebookAuth}, #{filePath}, #{fileName}, #{ebookLink}, #{grseq}, #{ebookPage}, #{useYn})	
+				
+	]]>
+	</update>	
+	
+	<update id="deleteEbook" parameterType="Integer">
+	<![CDATA[
+		-- EBOOK삭제
+		DELETE FROM TB_WEBZINE_EBOOK_MNG WHERE EBOOK_NO = #{value}
+	]]>
+	</update>		
+	
+	<update id="modifyEbook" parameterType="Map">
+	<![CDATA[
+		-- EBOOK수정 파일내용이 다를게 수정이될때사용
+		UPDATE	TB_WEBZINE_EBOOK_MNG 
+					SET EBOOK_TITLE = #{ebookTitle} , 
+						 EBOOK_AUTH = #{ebookAuth}, 
+						 IMG_PATH = #{filePath},
+						 IMG_NAME = #{fileName},
+						 EBOOK_LINK = #{ebookLink}, 
+						 GRSEQ = #{grseq},
+						 EBOOK_PAGE = #{ebookPage},
+						 USE_YN = #{useYn}
+					WHERE EBOOK_NO = #{ebookNo}
+	]]>
+	</update>
+	
+	<update id="modifyHoldEbook" parameterType="Map">
+	<![CDATA[
+		-- EBOOK수정
+		UPDATE	TB_WEBZINE_EBOOK_MNG 
+					SET  EBOOK_TITLE = #{ebookTitle} , 
+						 EBOOK_AUTH = #{ebookAuth}, 
+						 EBOOK_LINK = #{ebookLink}, 
+						 GRSEQ = #{grseq},
+						 EBOOK_PAGE = #{ebookPage},
+						 USE_YN = #{useYn}
+					WHERE EBOOK_NO = #{ebookNo}
+				
+	]]>
+	</update>
+	
+</mapper>

@@ -1,0 +1,676 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.subjMgr.mapper.ClassMapper">
+
+	<select id="selectCountBySubjresult" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 입교자 반지정 여부
+		SELECT 	COUNT(*) AS CNT 
+		FROM	TB_SUBJRESULT 
+		WHERE 	GRCODE 	= 	#{commGrcode}
+		AND 	GRSEQ 	= 	#{commGrseq}
+		AND 	SUBJ	=	#{commSubj}
+		AND 	GRAYN 	= 	'Y'
+
+	]]>
+	</select>
+	
+	<select id="selectDeptClassList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기관별 입교자 리스트
+		SELECT	A.DEPT, B.DEPTNM, 
+				COUNT(C.USERNO) COUNT_USER,
+				C.CLASSNO
+		FROM
+		(
+		    SELECT 	DEPT, GRCODE, GRSEQ, SUBJ 
+		    FROM	TB_STU_LEC
+		    WHERE 	GRCODE 	=	#{commGrcode}
+		    AND 	GRSEQ 	=	#{commGrseq}
+		    AND 	SUBJ	=	#{commSubj}
+		    GROUP BY
+		    		DEPT, GRCODE, GRSEQ, SUBJ
+		            
+		) A LEFT OUTER JOIN TB_DEPT B
+		ON	A.DEPT = B.DEPT
+		
+		LEFT OUTER JOIN 
+		(
+		    SELECT	DEPT, USERNO, GRCODE, GRSEQ, SUBJ, CLASSNO
+		    FROM 	TB_STU_LEC
+		    WHERE 	GRCODE	= 	#{commGrcode}
+		    AND 	GRSEQ	=	#{commGrseq}
+		    AND 	SUBJ	=	#{commSubj}
+		) C
+		ON	A.DEPT 		= 	C.DEPT
+		AND	A.GRCODE	=	C.GRCODE
+		AND	A.GRSEQ		=	C.GRSEQ
+		AND A.SUBJ		=	C.SUBJ
+		
+		GROUP BY
+				A.DEPT, B.DEPTNM, C.CLASSNO
+		ORDER BY
+				A.DEPT
+
+	]]>
+	</select>
+	
+	<select id="selectClassList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 반 리스트
+		SELECT	A.CLASSNO, A.CLASSNM,
+				COUNT(B.USERNO) COUNT_USER				
+		FROM
+		(
+		    SELECT 	CLASSNO, CLASSNM, GRCODE, GRSEQ, SUBJ
+		    FROM 	TB_SUBJCLASS 
+		    WHERE 	GRCODE	=	#{commGrcode}
+		    AND 	GRSEQ	=	#{commGrseq}
+		    AND 	SUBJ	=	#{commSubj}
+		) A LEFT OUTER JOIN
+		(
+		    SELECT 	CLASSNO, USERNO, GRCODE, GRSEQ, SUBJ
+		    FROM	TB_STU_LEC     
+		    WHERE 	GRCODE	=	#{commGrcode}
+		    AND 	GRSEQ	=	#{commGrseq}
+		    AND 	SUBJ	=	#{commSubj}
+		) B
+		ON	A.CLASSNO	=	B.CLASSNO
+		AND	A.GRCODE	=	B.GRCODE
+		AND	A.GRSEQ		=	B.GRSEQ
+		AND	A.SUBJ		=	B.SUBJ
+		
+		GROUP BY
+				A.CLASSNO, A.CLASSNM
+		ORDER BY
+				A.CLASSNO, A.CLASSNM
+
+	]]>
+	</select>
+	
+	<select id="selectClassViewList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 반지정 현황보기
+		SELECT	P.EDUNO,	P.NAME,		P.SEX, 		P.SUBJ,
+				P.USERNO,	P.RESNO,	P.DEPTNM, 	P.JIKNM,
+				LEC.CLASSNO,SC.CLASSNM
+				
+		FROM
+		(        
+		    SELECT	F.EDUNO, A.NAME, 
+		    
+			DECODE (SUBSTR(SCP.DEC_B64('KEY1',E.RESNO),7,1),1,'남',2,'여') AS SEX, 
+			
+			A.SUBJ, A.USERNO, 
+			
+			SUBSTR(SCP.DEC_B64('KEY1',E.RESNO),1,6)||'-'||SUBSTR(SCP.DEC_B64('KEY1',E.RESNO),7,1)||'XXXXXX' AS RESNO,
+			
+			(SELECT DEPTNM	FROM TB_DEPT C	WHERE C.DEPT=	A.DEPT) AS DEPTNM, 
+			
+			(SELECT JIKNM	FROM TB_JIK D	WHERE D.JIK	=	A.JIK)	AS JIKNM,
+			
+			A.CLASSNO, A.GRCODE, A.GRSEQ
+		            
+		    FROM	TB_STU_LEC A	INNER JOIN	tb_member E
+		    ON		A.USERNO 	=	E.USERNO
+		
+		    INNER JOIN TB_APP_INFO F
+		    ON		E.USERNO 	=	F.USERNO
+		    AND 	A.GRCODE	=	F.GRCODE 
+		    AND 	A.GRSEQ		=	F.GRSEQ 
+		
+		    WHERE 	A.GRCODE 	=	#{commGrcode}
+		    AND 	A.GRSEQ 	=	#{commGrseq}
+		    AND 	A.SUBJ 		=	#{commSubj}
+		    
+		) P	
+		INNER JOIN
+		(
+		    -- 과목 수강 정보 
+		    SELECT 	CLASSNO, USERNO, GRCODE, GRSEQ, SUBJ
+		    FROM 	TB_STU_LEC     
+		    WHERE 	GRCODE 	=	#{commGrcode}
+		    AND 	GRSEQ 	=	#{commGrseq}
+		    AND 	SUBJ	=	#{commSubj}
+		) LEC
+		ON 	P.USERNO	=	LEC.USERNO
+		AND	P.GRCODE	=	LEC.GRCODE
+		AND	P.GRSEQ		=	LEC.GRSEQ
+		AND	P.SUBJ		=	LEC.SUBJ
+		
+		INNER JOIN TB_SUBJCLASS SC
+		ON	LEC.CLASSNO	=	SC.CLASSNO
+		AND	LEC.GRCODE	=	SC.GRCODE
+		AND	LEC.GRSEQ	=	SC.GRSEQ
+		AND	LEC.SUBJ	=	SC.SUBJ
+		
+		ORDER BY
+				LEC.CLASSNO, P.EDUNO		
+
+	]]>
+	</select>
+	
+	<select id="selectCountByStuLec" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 수강인원
+		SELECT	COUNT(SUBJ) AS CNT 
+		FROM 	TB_STU_LEC 
+		WHERE	GRCODE 	=	#{commGrcode}
+		AND		GRSEQ 	=	#{commGrseq}
+		AND		SUBJ	=	#{commSubj}
+	]]>
+	</select>
+	
+	<select id="selectStuLecList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 분반구성 리스트
+		SELECT	A.CLASSNO,	A.CLASSNM
+		FROM
+		(
+		    SELECT 	CLASSNM, CLASSNO
+		    FROM	TB_SUBJCLASS 
+		    WHERE	GRCODE 	=	#{commGrcode}
+		    AND		GRSEQ 	=	#{commGrseq}
+		    AND		SUBJ	=	#{commSubj}
+		    AND		CLASSNO	IN ( ${strClassNo1} )
+		) A	
+		RIGHT OUTER JOIN
+		(
+		    SELECT	TO_CHAR(NUM) NUM
+		    FROM	TB_COPYT
+		    WHERE	NUM	IN ( ${strClassNo2} )
+		) B
+		ON	A.CLASSNO = B.NUM
+		ORDER BY
+				TO_NUMBER(B.NUM)	
+	]]>
+	</select>
+	
+	<update id="deleteBySubjClass" parameterType="Map">
+	<![CDATA[
+		-- 반 구성 삭제
+		DELETE FROM TB_SUBJCLASS 
+		WHERE	GRCODE 	=	#{commGrcode}
+		AND		GRSEQ 	=	#{commGrseq}
+		AND		SUBJ	=	#{commSubj}
+	]]>
+	</update>
+	
+	<update id="insertBySubjClass" parameterType="Map">
+	<![CDATA[
+		-- 반 구성 등록
+		INSERT INTO TB_SUBJCLASS 
+		(	SUBJ, GRCODE, GRSEQ, CLASSNO, CLASSNM, LUSERNO, LDATE	)
+		VALUES
+		(	#{commSubj}, #{commGrcode}, #{commGrseq}, #{classNo}, #{classNm}, #{sessNo}, SYSDATE	)
+	]]>
+	</update>
+	
+	<update id="updateByStulec" parameterType="Map">
+	<![CDATA[
+		-- 과목수강정보 업데이트
+		UPDATE 	TB_STU_LEC	SET 
+				CLASSNO = 	'1' 
+		WHERE	GRCODE 	=	#{commGrcode}
+		AND		GRSEQ 	=	#{commGrseq}
+		AND		SUBJ	=	#{commSubj}
+	]]>
+	</update>
+	
+	<select id="selectCountBySubjClass" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 반 갯수 지정 카운트
+		SELECT 	COUNT(CLASSNO) AS CNT 
+		FROM	TB_SUBJCLASS
+		WHERE 	GRCODE 	= 	#{commGrcode}
+		AND 	GRSEQ 	= 	#{commGrseq}
+		AND 	SUBJ	=	#{commSubj}
+	]]>
+	</select>
+	
+	<update id="deleteBySubjClassToOne" parameterType="Map">
+	<![CDATA[
+		-- 단일 분반용      반 구성 삭제 단, class > 1 인것만
+		DELETE FROM TB_SUBJCLASS 
+		WHERE	GRCODE 	=	#{commGrcode}
+		AND		GRSEQ 	=	#{commGrseq}
+		AND		SUBJ	=	#{commSubj}
+		AND		CLASSNO	>	1
+	]]>
+	</update>
+	
+	<select id="selectSubjClass" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 분반 갯수 리스트
+		SELECT	CLASSNO,	CLASSNM 
+		FROM 	TB_SUBJCLASS 
+		WHERE	GRCODE 	=	#{commGrcode}
+		AND		GRSEQ 	=	#{commGrseq}
+		AND		SUBJ	=	#{commSubj}
+		ORDER BY
+				CLASSNO
+	]]>
+	</select>
+	
+	<select id="updateSubjClassByDept" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기관별 분반 업데이트
+		UPDATE	TB_STU_LEC SET 
+				CLASSNO =	#{classNo}
+		WHERE 	GRCODE	=	#{commGrcode}
+		AND 	GRSEQ 	=	#{commGrseq}
+		AND 	SUBJ 	=	#{commSubj}
+		AND 	DEPT	=	#{dept}
+	]]>
+	</select>
+	
+	<select id="selectSubjClassByDeptType2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기관별 분반 Type2 리스트
+		SELECT	Z.*,
+				SC.CLASSNM
+		FROM
+		(
+		    SELECT	A.DEPT, B.DEPTNM, 
+		            COUNT(C.USERNO) COUNT_USER,
+		            C.CLASSNO,
+		            A.GRCODE, A.GRSEQ, A.SUBJ
+		    FROM
+		    (
+		        SELECT 	DEPT, GRCODE, GRSEQ, SUBJ 
+		        FROM	TB_STU_LEC
+		        WHERE 	GRCODE 	=	#{commGrcode}
+		        AND 	GRSEQ 	=	#{commGrseq}
+		        AND 	SUBJ	=	#{commSubj}
+		        GROUP BY
+		                DEPT, GRCODE, GRSEQ, SUBJ
+		     		            
+		    ) A LEFT OUTER JOIN TB_DEPT B
+		    ON	A.DEPT = B.DEPT
+		     		
+		    LEFT OUTER JOIN 
+		    (
+		        SELECT	DEPT, USERNO, GRCODE, GRSEQ, SUBJ, CLASSNO
+		        FROM 	TB_STU_LEC
+		        WHERE 	GRCODE	= 	#{commGrcode}
+		        AND 	GRSEQ	=	#{commGrseq}
+		        AND 	SUBJ	=	#{commSubj}
+		    ) C
+		    ON	A.DEPT 		= 	C.DEPT
+		    AND	A.GRCODE	=	C.GRCODE
+		    AND	A.GRSEQ		=	C.GRSEQ
+		    AND A.SUBJ		=	C.SUBJ
+		     		
+		    GROUP BY
+		    		A.GRCODE, A.GRSEQ, A.SUBJ,
+		            A.DEPT, B.DEPTNM, C.CLASSNO
+		) Z                        
+		LEFT OUTER JOIN TB_SUBJCLASS SC
+		ON	Z.SUBJ		=	SC.SUBJ
+		AND	Z.GRCODE	=	SC.GRCODE
+		AND	Z.GRSEQ		=	SC.GRSEQ
+		AND	Z.CLASSNO	=	SC.CLASSNO
+		
+		ORDER BY
+		        Z.DEPT		
+	]]>
+	</select>
+	
+	<select id="selectFreeList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 자유분반 설정 리스트
+		SELECT	P.EDUNO,	P.NAME,		P.SEX, 		P.SUBJ,
+				P.USERNO,	P.RESNO,	P.DEPTNM, 	P.JIKNM,
+				LEC.CLASSNO,SC.CLASSNM
+				
+		FROM
+		(        
+		    SELECT	F.EDUNO, A.NAME, 
+		    
+			DECODE (SUBSTR(SCP.DEC_B64('KEY1',E.RESNO),7,1),1,'남',2,'여') AS SEX, 
+			
+			A.SUBJ, A.USERNO, 
+			
+			SUBSTR(SCP.DEC_B64('KEY1',E.RESNO),1,6)||'-'||SUBSTR(SCP.DEC_B64('KEY1',E.RESNO),7,1)||'XXXXXX' AS RESNO,
+			
+			(SELECT DEPTNM	FROM TB_DEPT C	WHERE C.DEPT=	A.DEPT) AS DEPTNM, 
+			
+			(SELECT JIKNM	FROM TB_JIK D	WHERE D.JIK	=	A.JIK)	AS JIKNM,
+			
+			A.CLASSNO, A.GRCODE, A.GRSEQ
+		            
+		    FROM	TB_STU_LEC A	INNER JOIN	tb_member E
+		    ON		A.USERNO 	=	E.USERNO
+		
+		    INNER JOIN TB_APP_INFO F
+		    ON		E.USERNO 	=	F.USERNO
+		    AND 	A.GRCODE	=	F.GRCODE 
+		    AND 	A.GRSEQ		=	F.GRSEQ 
+		
+		    WHERE 	A.GRCODE 	=	#{commGrcode}
+		    AND 	A.GRSEQ 	=	#{commGrseq}
+		    AND 	A.SUBJ 		=	#{commSubj}
+		    
+		) P	
+		INNER JOIN
+		(
+		    -- 과목 수강 정보 
+		    SELECT 	CLASSNO, USERNO, GRCODE, GRSEQ, SUBJ
+		    FROM 	TB_STU_LEC     
+		    WHERE 	GRCODE 	=	#{commGrcode}
+		    AND 	GRSEQ 	=	#{commGrseq}
+		    AND 	SUBJ	=	#{commSubj}
+		) LEC
+		ON 	P.USERNO	=	LEC.USERNO
+		AND	P.GRCODE	=	LEC.GRCODE
+		AND	P.GRSEQ		=	LEC.GRSEQ
+		AND	P.SUBJ		=	LEC.SUBJ
+		
+		INNER JOIN TB_SUBJCLASS SC
+		ON	LEC.CLASSNO	=	SC.CLASSNO
+		AND	LEC.GRCODE	=	SC.GRCODE
+		AND	LEC.GRSEQ	=	SC.GRSEQ
+		AND	LEC.SUBJ	=	SC.SUBJ
+		
+		ORDER BY
+				P.EDUNO		
+
+	]]>
+	</select>
+	
+	<select id="updateSubjClassByFreeOption" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 자유, 조건별  분반  업데이트
+		UPDATE	TB_STU_LEC SET 
+				CLASSNO =	#{classNo}
+		WHERE 	GRCODE	=	#{commGrcode}
+		AND 	GRSEQ 	=	#{commGrseq}
+		AND 	SUBJ 	=	#{commSubj}
+		AND 	USERNO	=	#{userno}
+	]]>
+	</select>
+	
+	<select id="selectOptionList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 조건별 분반  설정 리스트
+		SELECT	P.EDUNO,	P.NAME,		P.SEX, 		P.SUBJ,
+				P.USERNO,	P.RESNO,	P.DEPTNM, 	P.JIKNM,
+				LEC.CLASSNO,SC.CLASSNM
+				
+		FROM
+		(        
+		    SELECT	F.EDUNO, A.NAME, 
+		    
+			DECODE (SUBSTR(SCP.DEC_B64('KEY1',E.RESNO),7,1),1,'남',2,'여') AS SEX, 
+			
+			A.SUBJ, A.USERNO, 
+			
+			SUBSTR(SCP.DEC_B64('KEY1',E.RESNO),1,6)||'-'||SUBSTR(SCP.DEC_B64('KEY1',E.RESNO),7,1)||'XXXXXX' AS RESNO,
+			
+			(SELECT DEPTNM	FROM TB_DEPT C	WHERE C.DEPT	=	A.DEPT) AS DEPTNM, 
+			
+			(SELECT JIKNM	FROM TB_JIK D	WHERE D.JIK		=	A.JIK)	AS JIKNM,
+			
+			A.CLASSNO, A.GRCODE, A.GRSEQ
+		            
+		    FROM	TB_STU_LEC A	INNER JOIN	
+		    (
+		    	SELECT	USERNO, SCP.DEC_B64('KEY1',RESNO) AS RESNO
+		    	FROM	tb_member
+		    	
+		    	${orderby}
+		    	
+		    ) E
+		    ON		A.USERNO 	=	E.USERNO
+		
+		    INNER JOIN TB_APP_INFO F
+		    ON		E.USERNO 	=	F.USERNO
+		    AND 	A.GRCODE	=	F.GRCODE 
+		    AND 	A.GRSEQ		=	F.GRSEQ 
+		
+		    WHERE 	A.GRCODE 	=	#{commGrcode}
+		    AND 	A.GRSEQ 	=	#{commGrseq}
+		    AND 	A.SUBJ 		=	#{commSubj}
+		    		    		    					    
+		) P	
+		INNER JOIN
+		(
+		    -- 과목 수강 정보 
+		    SELECT 	CLASSNO, USERNO, GRCODE, GRSEQ, SUBJ
+		    FROM 	TB_STU_LEC     
+		    WHERE 	GRCODE 	=	#{commGrcode}
+		    AND 	GRSEQ 	=	#{commGrseq}
+		    AND 	SUBJ	=	#{commSubj}
+		) LEC
+		ON 	P.USERNO	=	LEC.USERNO
+		AND	P.GRCODE	=	LEC.GRCODE
+		AND	P.GRSEQ		=	LEC.GRSEQ
+		AND	P.SUBJ		=	LEC.SUBJ
+		
+		INNER JOIN TB_SUBJCLASS SC
+		ON	LEC.CLASSNO	=	SC.CLASSNO
+		AND	LEC.GRCODE	=	SC.GRCODE
+		AND	LEC.GRSEQ	=	SC.GRSEQ
+		AND	LEC.SUBJ	=	SC.SUBJ
+		
+
+	]]>
+	</select>
+	
+	<select id="selectOtherClassList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 타과목 동일반 구성하기 리스트
+		SELECT	A.SUBJ, B.LECNM
+		FROM
+		(
+		    SELECT	GRCODE, GRSEQ, SUBJ
+		    FROM	TB_SUBJCLASS	
+		    WHERE	GRCODE	=	#{commGrcode}
+		    AND		GRSEQ 	=	#{commGrseq}
+		    AND		SUBJ 	!=	#{commSubj}
+		    GROUP BY
+		            GRCODE, GRSEQ, SUBJ
+		) A
+		INNER JOIN	TB_SUBJSEQ B
+		ON		A.GRCODE	=	B.GRCODE
+		AND		A.GRSEQ		=	B.GRSEQ
+		AND		A.SUBJ		=	B.SUBJ
+		
+		WHERE	B.GRCODE	=	#{commGrcode}
+		AND		B.GRSEQ 	=	#{commGrseq}
+		AND		B.SUBJ 		!=	#{commSubj}
+		
+		ORDER BY
+				B.LECNM				
+	]]>
+	</select>
+	
+	<update id="otherClassStep1ByDelete" parameterType="Map">
+	<![CDATA[
+		-- 타 과목 동일반 구성하기용 Step 1
+		-- 선택한 과목정보를 초기화 한다
+		DELETE FROM TB_SUBJCLASS 
+		WHERE 	GRCODE	=	#{commGrcode}
+		AND 	GRSEQ 	=	#{commGrseq}
+		AND 	SUBJ 	IN ( ${rowBySubj} )		
+	]]>
+	</update>
+	
+	<update id="otherClassStep2ByInsert" parameterType="Map">
+	<![CDATA[
+		-- 타 과목 동일반 구성하기용 Step 2
+		-- 체크한 과목에 동일한 정보를 적용한다
+		INSERT INTO TB_SUBJCLASS (SUBJ,GRCODE,GRSEQ,CLASSNO,CLASSNM,LUSERNO,LDATE)
+		SELECT 	#{pSubj}, GRCODE,	GRSEQ,	CLASSNO,	CLASSNM,	LUSERNO,	LDATE 
+		FROM	TB_SUBJCLASS 
+		WHERE 	GRCODE	=	#{commGrcode} 
+		AND 	GRSEQ	= 	#{commGrseq}
+		AND 	SUBJ	=	#{commSubj}			
+	]]>
+	</update>
+	
+	<select id="selectStuLec" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 과목수강정보
+		SELECT 	USERNO, CLASSNO 
+		FROM 	TB_STU_LEC
+		WHERE	GRCODE	=	#{commGrcode}
+		AND		GRSEQ 	=	#{commGrseq}
+		AND		SUBJ 	=	#{commSubj}
+	]]>
+	</select>
+	
+	<update id="otherClassStep3ByUpdate" parameterType="Map">
+	<![CDATA[
+		-- 타 과목 동일반 구성하기용 Step 3
+		-- 과목수강정보 업데이트
+		UPDATE 	TB_STU_LEC SET 
+				CLASSNO	=	#{classNo}
+		WHERE 	USERNO	=	#{userNo}
+		AND 	GRCODE	=	#{commGrcode}
+		AND 	GRSEQ	=	#{commGrseq}
+		AND 	SUBJ	IN	( ${rowBySubj} )
+	]]>
+	</update>
+	
+	<select id="selectStuClassList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 입교자 반편성용 리스트
+						
+		SELECT	A.GRCODENM, A.GRSEQ, A.LECNM SEL_LECNM, B.LECNM REF_LECNM,
+		
+				(	
+					SELECT 	COUNT(SUBJ)
+		            FROM 	TB_STU_LEC 
+					WHERE 	GRCODE	=	B.GRCODE 
+		            AND 	GRSEQ 	= 	B.GRSEQ 
+		            AND 	SUBJ 	= 	B.SUBJ
+				) COUNT_STU_USER,
+		        (
+		        	SELECT 	COUNT(DISTINCT(USERNO)) 
+		            FROM 	TB_STU_LEC 
+					WHERE 	GRCODE	=	A.GRCODE
+		            AND 	GRSEQ	=	A.GRSEQ
+				) COUNT_TOTAL,
+		                
+		
+		        A.GRCODE,	A.SUBJ,
+		        
+		        CASE WHEN B.SUBJ = P.MIN_SUBJ THEN P.ROWSPAN
+		        ELSE	0
+		        END ROWSPAN
+		         
+		FROM
+		(
+		
+		    SELECT 	B.GRCODENM, A.GRSEQ, A.LECNM,
+		            A.GRCODE,	A.SUBJ
+		        		
+		    FROM 	TB_SUBJSEQ A INNER JOIN TB_GRCODE B
+		    ON		A.GRCODE	=	B.GRCODE
+		
+		    WHERE 	A.LEC_TYPE = 'P' 
+		    
+		    ${value}	
+		            
+		) A	INNER JOIN TB_SUBJSEQ B
+		ON	A.GRCODE	=	B.GRCODE
+		AND	A.GRSEQ		=	B.GRSEQ
+		AND	A.SUBJ		=	B.REF_SUBJ
+		AND	B.LEC_TYPE 	= 	'C'
+		
+		INNER JOIN
+		(
+			-- ROWSPAN 용 
+		    SELECT	B.GRCODE, B.GRSEQ, B.REF_SUBJ,
+		            COUNT(B.GRSEQ) ROWSPAN,
+		            MIN(B.SUBJ) MIN_SUBJ
+		    
+		    FROM
+		    (
+		        SELECT 	B.GRCODENM, A.GRSEQ, A.LECNM,
+		                A.GRCODE,	A.SUBJ
+		            		
+		        FROM 	TB_SUBJSEQ A INNER JOIN TB_GRCODE B
+		        ON		A.GRCODE	=	B.GRCODE
+		
+		        WHERE 	A.LEC_TYPE 	= 'P' 
+		        
+		        ${value}	
+		        		        
+		    ) A	INNER JOIN TB_SUBJSEQ B
+		    ON	A.GRCODE	=	B.GRCODE
+		    AND	A.GRSEQ		=	B.GRSEQ
+		    AND	A.SUBJ		=	B.REF_SUBJ
+		    AND	B.LEC_TYPE 	= 	'C'
+		    GROUP BY
+		            B.GRCODE, B.GRSEQ, B.REF_SUBJ                                    
+		            
+		) P
+		ON	A.GRCODE	=	P.GRCODE
+		AND	A.GRSEQ		=	P.GRSEQ
+		AND	A.SUBJ		=	P.REF_SUBJ
+		
+		ORDER BY 
+				A.GRCODE, A.GRSEQ, B.SUBJ
+
+	]]>
+	</select>
+	
+	<select id="selectStuClassTopSubj" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 입교자 지정 리스트 상단 과목 셀렉트박스
+		SELECT 	DISTINCT SUBJ, LECNM 
+		FROM 	TB_SUBJSEQ 
+		WHERE 	LEC_TYPE = 'C' 
+		AND 	REF_SUBJ = #{value}
+	]]>
+	</select>
+	
+	<select id="selectCheckGrayn" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 해당 과정기수의 이수처리가 완결되었는지 체크
+		SELECT 	COUNT(GRCODE) AS CNT 
+		FROM 	TB_SUBJRESULT 
+		WHERE 	GRCODE	=	#{grCode}
+		AND 	GRSEQ	=	#{grSeq}
+		AND 	SUBJ	=	#{s_refSubj}
+		AND 	GRAYN 	=	'Y'				
+	]]>
+	</select>
+	
+	<select id="selectStuClassListByDetail" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 입교자 반편성 선택과목에 해당하는 리스트
+		SELECT	C.EDUNO, A.NAME, A.SUBJ, A.USERNO, 
+		        (SELECT SCP.DEC_B64('KEY1',RESNO) FROM tb_member WHERE USERNO=A.USERNO) AS RESNO, 
+		        (SELECT DEPTNM FROM TB_DEPT WHERE DEPT=A.DEPT) AS DEPTNM, 
+		        (SELECT JIKNM FROM TB_JIK WHERE JIK=A.JIK) AS JIKNM 
+		FROM 	TB_STU_LEC A, TB_APP_INFO C 
+		WHERE 	A.USERNO	=	C.USERNO 
+		AND 	A.GRCODE	=	C.GRCODE 
+		AND 	A.GRSEQ		=	C.GRSEQ 
+		AND 	A.GRCODE	= 	#{grCode}
+		AND 	A.GRSEQ		= 	#{grSeq}
+		AND		A.SUBJ 		IN ( #{subj} , #{refSubj} )
+		AND 	C.GRCHK 	= 	'Y' 
+		ORDER BY 
+				C.EDUNO 		
+	]]>
+	</select>
+	
+	<update id="updateStuClassListByDetail" parameterType="Map">
+	<![CDATA[
+		-- 입교자 반편성 선택과목 과목수강정보에 업데이트
+		UPDATE 	TB_STU_LEC SET 
+				SUBJ	=	#{saveSubj}
+		WHERE	GRCODE	=	#{grCode}
+		AND		GRSEQ	=	#{grSeq}
+		AND		SUBJ	=	#{subj}
+		AND		USERNO	=	#{userNo} 		
+	]]>
+	</update>
+	
+</mapper>

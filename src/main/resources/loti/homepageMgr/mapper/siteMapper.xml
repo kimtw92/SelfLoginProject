@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.homepageMgr.mapper.SiteMapper">
+
+	<sql id="selectSiteListCommon">
+	<![CDATA[
+		-- 사이트관리 리스트
+		SELECT 
+			SITE_NO, SITE_TYPE, SITE_NAME,SITE_URL ,SITE_ZIP_CODE ,SITE_ADDR ,SITE_TEL
+		FROM
+			TB_REFERENCE_SITE
+	]]>
+		<choose>
+			<when test="siteType != ''">
+				WHERE SITE_TYPE = #{siteType}
+			</when>
+		</choose>
+		ORDER BY SITE_NO
+	</sql>
+	<select id="selectSiteListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount2"></include>
+		<include refid="selectSiteListCommon"></include>
+		<include refid="page.pageTotalCount2Foot"></include>
+	</select>
+	<select id="selectSiteList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<include refid="selectSiteListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<select id="selectSiteRow" parameterType="Integer" resultType="DataMap">
+	<![CDATA[
+		-- 사이트관리 수정 데이터
+		SELECT 
+			SITE_NO, SITE_TYPE, SITE_NAME ,SITE_URL ,SITE_ZIP_CODE ,SITE_ADDR ,SITE_TEL
+		FROM
+			TB_REFERENCE_SITE
+		WHERE
+			SITE_NO = #{value}
+	]]>
+	</select>
+	
+	<update id="insertSite" parameterType="Map">
+	<![CDATA[
+		-- 사이트관리 - > 사이트 등록
+		
+		INSERT INTO TB_REFERENCE_SITE 
+						(SITE_NO, SITE_TYPE, SITE_NAME, SITE_URL, SITE_ADDR, SITE_TEL, SITE_ZIP_CODE)
+					VALUES
+						((SELECT MAX(SITE_NO)+1 AS MAX FROM TB_REFERENCE_SITE), #{siteType}, #{siteName} , #{siteUrl}, #{siteZipAddr}, #{siteZipTel}, #{siteZipCode1} || '-' || #{siteZipCode2})
+		
+	]]>
+	</update>
+	
+	<update id="modifySite" parameterType="Map">
+	<![CDATA[
+		-- 사이트관리  -> 사이트수정
+		UPDATE 
+   			TB_REFERENCE_SITE 
+		SET 
+    		SITE_TYPE = #{siteType}, SITE_NAME = #{siteName}, SITE_URL = #{siteUrl}, SITE_ADDR = #{siteZipAddr}, SITE_TEL = #{siteZipTel}, SITE_ZIP_CODE = #{siteZipCode1} || '-' || #{siteZipCode2}
+		WHERE
+   			SITE_NO = #{siteNo}
+	]]>
+	</update>
+	
+	<update id="deleteSite" parameterType="Integer">
+	<![CDATA[
+		-- 사이트관리 -> 사이트 삭제
+		DELETE 
+			FROM 
+				TB_REFERENCE_SITE 
+			WHERE 
+				SITE_NO =#{value}
+	]]>
+	</update>
+			
+</mapper>

@@ -1,0 +1,15 @@
+@charset	"utf-8";
+
+#footerset1{clear:both;margin:auto;width:955px;height:111px;padding:0 0 0 0;background:#fff url(/images/footer/bg_dvfoot.gif) no-repeat 0 top;}/*sub page*/
+#footerLogo1{float:left;margin:25px 33px 0 50px;_margin:25px 33px 0 30px;padding:0;}/*sub page*/
+
+#footerCpyt{float:left;padding:0 0 0 0;margin:19px 0 0 0;}
+#footerCpyt div.bttMenu {float:left;padding:0;margin:0 0 12px 0;}
+#footerCpyt div.bttMenu ul			{padding:0;margin:0 0 0 0;}
+#footerCpyt div.bttMenu ul li		{float:left;display:inline;padding:0 9px 0 6px;margin:0;background:url(/images/footer/bg_hLine.gif) no-repeat right top;}
+#footerCpyt div.bttMenu ul li.end	{float:left;background:none;}
+
+#footerCpyt div.bttTxt	{clear:both;padding:0 0 0 0;margin:0 0 0 0;}
+#footerCpyt div.bttTxt p.txt{height:16px;padding:0 0 0 0;margin:0 0 0 0;font-size:11px;}
+#footerCpyt div.bttTxt p.txt span.txt_gr{color:#008282;}
+#footerCpyt div.bttTxt p.txt strong.txt_blue{color:#006294;}

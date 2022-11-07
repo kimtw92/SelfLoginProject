@@ -1,0 +1,24 @@
+﻿@charset	"utf-8";
+/* Page Definition */
+
+body{margin:10px; padding:0;color:#666;font-size:12px;font-family:Dotum, "돋움",sans-serif; background:#E3E3E3;}
+img	{border:0;}
+a, 	a:link, a:visited {color:#2992B2; text-decoration:none; cursor:pointer;}
+a:hover, a:active {color:#2992B2; text-decoration:underline; cursor:pointer;}
+
+table	{font-size:12px;border-collapse:collapse;margin:0;padding:0;}
+
+/*popup layout*/
+h2 {margin:0 0 15	px 0; padding:0 0 0 17px ; color:#414141; font-size:12px;font-weight:bold; background: url(/images/common/h1Bul.gif) no-repeat left 0;}
+
+
+/* div 자동스크롤 스타일 */
+div { 	
+	scrollbar-face-color:#fff;
+    scrollbar-shadow-color:#e4e4e4;
+    scrollbar-highlight-color:#e4e4e4;
+    scrollbar-3dlight-color:#fff;
+    scrollbar-darkshadow-color:#fff;
+    scrollbar-track-color:#e4e4e4;
+    scrollbar-arrow-color:#666;
+}

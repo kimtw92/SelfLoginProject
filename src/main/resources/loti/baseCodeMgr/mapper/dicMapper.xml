@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.baseCodeMgr.mapper.DicMapper">
+
+	<select id="selectDicTypeList" resultType="DataMap">
+	<![CDATA[
+		--  용어분류코드 리스트
+		SELECT	ROWNUM,	TYPES, TYPENM
+		FROM	TB_DICTYPE
+		ORDER BY
+				TYPES	
+	]]>
+	</select>
+	
+	<select id="selectDicTypeRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		--  용어분류코드 조회
+		SELECT	TYPES,	TYPENM
+		FROM	TB_DICTYPE
+		WHERE	TYPES	=	#{value}	
+	]]>
+	</select>
+	
+	<select id="selectDicTypesCheck" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		--  용어분류코드 중복체크
+		SELECT	COUNT(TYPES) COUNT_TYPES
+		FROM	TB_DICTYPE
+		WHERE	TYPES = #{value}
+	]]>
+	</select>
+	
+	<update id="insertDicType" parameterType="Map" >
+	<![CDATA[
+		--  용어분류코드 insert
+		INSERT INTO TB_DICTYPE
+		( TYPES, TYPENM )
+		VALUES
+		( #{types}, #{typenm})	
+	]]>
+	</update>	
+	
+	<update id="updateDicType" parameterType="Map">
+	<![CDATA[
+		--  용어분류코드 update
+		UPDATE	TB_DICTYPE
+		SET 	TYPENM 	= 	#{typenm}
+		WHERE	TYPES	=	#{types}	
+	]]>
+	</update>
+	
+	<sql id="selectDicListCommon">
+		FROM 	TB_DIC D, TB_SUBJ S, TB_DICTYPE T
+		WHERE 	D.SUBJ = S.SUBJ(+) 
+		AND 	D.TYPES = T.TYPES 
+		<if test="s_subj != null and s_subj != ''">
+			AND S.SUBJ = #{s_subj}
+		</if>		
+		<if test="s_groups != null and s_groups != ''">
+			AND D.GROUPS = #{s_groups}
+		</if>		
+		<if test="s_dicTypes != null and s_dicTypes != ''">
+			AND D.TYPES = #{s_dicTypes}
+		</if>		
+		<if test="s_searchTxt != null and s_searchTxt != ''">
+			AND D.WORDS LIKE '%' || #{s_searchTxt} || '%'
+		</if>		
+		
+	</sql>
+	<select id="selectDicListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount"></include>
+		<include refid="selectDicListCommon"></include>
+	</select>
+	<select id="selectDicList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<![CDATA[
+			--  용어사전 리스트
+			SELECT 	D.SUBJ, D.DIC_SEQ, D.WORDS, D.TYPES, D.DESCS, D.GROUPS, S.SUBJNM, T.TYPENM 
+		]]>
+		<include refid="selectDicListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<select id="selectDicRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  용어사전 수정시 데이타 조회
+		SELECT 	D.SUBJ, D.DIC_SEQ, D.WORDS, D.TYPES, D.DESCS, D.GROUPS, S.SUBJNM, T.TYPENM 
+		FROM 	TB_DIC D, TB_SUBJ S, TB_DICTYPE T
+		WHERE 	D.SUBJ 		= 	S.SUBJ(+) 
+		AND 	D.TYPES 	= 	T.TYPES 
+		AND		D.SUBJ		=	#{subj}
+		AND		D.DIC_SEQ	=	#{dicSeq}
+	]]>
+	</select>
+	
+	<update id="insertDic" parameterType="Map">
+	<![CDATA[
+		--  용어사전 등록
+		INSERT INTO TB_DIC
+		(
+			SUBJ, DIC_SEQ, WORDS, TYPES, DESCS, GROUPS
+		)
+		VALUES
+		(
+			#{subj}, (
+		            SELECT 	NVL(MAX(DIC_SEQ),0) + 1
+		            FROM	TB_DIC
+		            WHERE	SUBJ = #{subj}
+				),
+		    #{words}, #{types}, #{descs}, #{groups}
+		)				
+	]]>
+	</update>
+	
+	<update id="updateDic" parameterType="Map">
+	<![CDATA[
+		--  용어사전 수정
+		UPDATE	TB_DIC SET
+				WORDS 	= 	#{words},
+				TYPES 	= 	#{types},
+				DESCS 	= 	#{descs},
+				GROUPS 	=	#{groups}
+		
+		WHERE	SUBJ	=	#{subj}
+		AND		DIC_SEQ	=	#{dicSeq}
+	]]>
+	</update>
+	
+	<update id="deleteDic" parameterType="Map">
+	<![CDATA[
+		--  용어사전 삭제
+		DELETE	TB_DIC
+		WHERE	SUBJ	=	#{subj}
+		AND		DIC_SEQ	=	#{dicSeq}				
+	]]>
+	</update>
+	
+	<select id="selectDicTestList" resultType="DataMap">
+	<![CDATA[
+		--  용어사전 테스트화면 리스트
+		SELECT SUBJ, SUBJNM, 
+			(	SELECT	COUNT(*) 
+		    	FROM	TB_DIC
+		        WHERE 	SUBJ = S.SUBJ 
+			) DIC_COUNT 
+		FROM	TB_SUBJ S
+		ORDER BY
+				DIC_COUNT DESC				
+	]]>
+	</select>
+	
+	<select id="selectDicViewBySubj" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  용어사전용 과목명
+		SELECT SUBJNM FROM TB_SUBJ WHERE SUBJ = #{subj}				
+	]]>
+	</select>
+	
+	<select id="selectSearchDic" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		--  용어사전 검색 리스트
+		SELECT 	SUBJ, DIC_SEQ, WORDS, TYPES, DESCS, GROUPS 
+		FROM	TB_DIC
+		WHERE 	GROUPS 	=	#{groups}
+		AND 	SUBJ 	=	#{subj}
+	]]>
+		
+		<if test="searchTypes != null and searchTypes != ''">
+			AND TYPES = #{searchTypes}
+		</if>
+		<if test="searchTxt != null and searchTxt != ''">
+			AND WORDS LIKE '%' || #{searchTxt} || '%'
+		</if>
+		
+		ORDER BY 
+				WORDS 				
+	</select>
+	
+</mapper>

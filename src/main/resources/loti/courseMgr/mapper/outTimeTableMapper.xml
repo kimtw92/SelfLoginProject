@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.OutTimeTableMapper">
+
+	<select id="selectOutTimeTableByEtcRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 특정일의 시작일(일), 종료일(토), 특정날짜+-한 날짜 구하기 
+		SELECT 
+			GETCALDATE('S', #{date}, 0) WEEK_START_DATE,
+			GETCALDATE('E', #{date}, 0) WEEK_END_DATE,
+			GETCALDATE('C', #{date}, -7) PREV_WEEK_DATE,
+			GETCALDATE('C', #{date}, 7) NEXT_WEEK_DATE,
+			GETCALDATE('M', #{date}, -1) PREV_MONTH_DATE,
+			GETCALDATE('M', #{date}, 1) NEXT_MONTH_DATE
+		FROM DUAL
+	]]>
+	</select>
+	
+	<select id="selectOutTimeTableList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 외부 강사 시간표 한주의 내용
+		SELECT
+			A.CLASS_NO, TO_CHAR(A.STUDYDATE, 'YYYYMMDD') STUDYDATE, A.SEQ, 
+			A.CONTENTS,
+			getOutTimeGosiChar(A.SEQ) STUDYTIME_STR,
+			TO_CHAR (A.STUDYDATE, 'd') DAY_NO             -- 2:월요일, 1:일요일
+		FROM TB_OUTTIMETABLE_INFO A
+		WHERE 1=1
+			AND TO_CHAR(A.STUDYDATE, 'YYYYMMDD') BETWEEN #{weekSdate} AND #{weekEdate}
+		ORDER BY CLASS_NO, A.STUDYDATE
+	]]>
+	</select>
+	
+	<select id="selectOutTimeTableByWeekDateRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 특정 일요일의 한주 일자 구하기.
+		SELECT
+			TO_CHAR( TO_DATE(#{date}, 'YYYYMMDD') + 0, 'YYYYMMDD' ) DATE1,
+			TO_CHAR( TO_DATE(#{date}, 'YYYYMMDD') + 1, 'YYYYMMDD' ) DATE2,
+			TO_CHAR( TO_DATE(#{date}, 'YYYYMMDD') + 2, 'YYYYMMDD' ) DATE3,
+			TO_CHAR( TO_DATE(#{date}, 'YYYYMMDD') + 3, 'YYYYMMDD' ) DATE4,
+			TO_CHAR( TO_DATE(#{date}, 'YYYYMMDD') + 4, 'YYYYMMDD' ) DATE5,
+			TO_CHAR( TO_DATE(#{date}, 'YYYYMMDD') + 5, 'YYYYMMDD' ) DATE6,
+			TO_CHAR( TO_DATE(#{date}, 'YYYYMMDD') + 6, 'YYYYMMDD' ) DATE7
+		FROM DUAL
+	]]>
+	</select>
+	
+	<select id="selectClassRoomList" resultType="DataMap">
+	<![CDATA[
+		-- 강의실 리스트
+		SELECT 
+			CLASSROOM_NO, CLASSROOM_NAME 
+		FROM TB_CLASSROOM
+		ORDER BY CLASSROOM_NAME
+	]]>
+	</select>
+	
+	<select id="selectClassRoomRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 강의실 상세정보
+		SELECT 
+			CLASSROOM_NO, CLASSROOM_NAME 
+		FROM TB_CLASSROOM
+		WHERE CLASSROOM_NO = #{classNo}
+	]]>
+	</select>
+	
+	<select id="selectOutTimeTableRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 외부 강사 시간표 상세 정보
+		SELECT
+			A.CLASS_NO, B.CLASSROOM_NAME CLASS_NAME, TO_CHAR(A.STUDYDATE, 'YYYYMMDD') STUDYDATE,
+			A.SEQ, A.CONTENTS, 
+			getOutTimeGosiChar(A.SEQ) STUDYTIME_STR
+		FROM TB_OUTTIMETABLE_INFO A, TB_CLASSROOM B
+		WHERE 1=1
+			AND CLASS_NO = #{classNo}
+			AND TO_CHAR(STUDYDATE, 'YYYYMMDD') = #{studydate}
+			AND SEQ = #{seq}
+			AND A.CLASS_NO = B.CLASSROOM_NO(+)
+		ORDER BY CLASS_NO, A.STUDYDATE
+	]]>
+	</select>
+	
+	<select id="selectOutTimeTableByStudytimeChkList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 외부 강사 시간표 해당 요일,강의실이 사용가능한지 여부 내용을 포함한 교시 정보
+		SELECT
+			GOSINUM, TERM, 
+			DECODE( IA.CLASS_NO, NULL, 'N', '', 'N', 'Y') USE_YN,
+			DECODE( IB.CLASS_NO, NULL, 'N', '', 'N', 'Y') CHECK_YN
+		FROM TB_TIMEGOSI TS LEFT OUTER JOIN
+			(
+			SELECT
+				OI.CLASS_NO, TO_CHAR(OI.STUDYDATE, 'YYYYMMDD') STUDYDATE, O.STUDYTIME
+			FROM TB_OUTTIMETABLE_INFO OI, TB_OUTTIMETABLE O
+			WHERE 1=1
+				AND OI.CLASS_NO = #{classNo}
+				AND TO_CHAR(OI.STUDYDATE, 'YYYYMMDD') = #{studydate}
+				AND OI.SEQ <> #{seq}
+				AND OI.CLASS_NO = OI.CLASS_NO
+				AND OI.STUDYDATE = O.STUDYDATE
+				AND OI.SEQ = O.SEQ
+			UNION
+			SELECT 
+				CLASSROOM_NO CLASS_NO, TO_CHAR(TT.STUDYDATE, 'YYYYMMDD') STUDYDATE, STUDYTIME
+			FROM TB_TIMETABLE TT
+			WHERE 1=1
+				AND TT.CLASSROOM_NO = #{classNo}
+				AND TO_CHAR(TT.STUDYDATE, 'YYYYMMDD') = #{studydate}
+			) IA 
+				ON TS.GOSINUM = IA.STUDYTIME
+			LEFT OUTER JOIN 
+			(
+			SELECT
+				OI.CLASS_NO, TO_CHAR(OI.STUDYDATE, 'YYYYMMDD') STUDYDATE, O.STUDYTIME
+			FROM TB_OUTTIMETABLE_INFO OI, TB_OUTTIMETABLE O
+			WHERE 1=1
+				AND OI.CLASS_NO = #{classNo}
+				AND TO_CHAR(OI.STUDYDATE, 'YYYYMMDD') = #{studydate}
+				AND OI.SEQ = #{seq}
+				AND OI.CLASS_NO = OI.CLASS_NO
+				AND OI.STUDYDATE = O.STUDYDATE
+				AND OI.SEQ = O.SEQ 
+			) IB
+				ON TS.GOSINUM = IB.STUDYTIME
+		WHERE 1=1
+			AND GOSINUM BETWEEN 1 AND 9
+		ORDER BY GOSINUM
+			
+	]]>
+	</select>
+	
+	<delete id="deleteOutTimeTable" parameterType="Map">
+	<![CDATA[
+		-- 외부 강사 시간표 삭제 (강의실, 요일)
+		DELETE FROM TB_OUTTIMETABLE
+		WHERE CLASS_NO = #{classNo}
+			AND TO_CHAR(STUDYDATE, 'YYYYMMDD') = #{studydate}
+			AND SEQ = #{seq}
+	]]>
+	</delete>
+	
+	<delete id="deleteOutTimeTableInfo" parameterType="Map">
+	<![CDATA[
+		-- 외부 강사 시간표 삭제 (강의실, 요일)
+		DELETE FROM TB_OUTTIMETABLE_INFO
+		WHERE CLASS_NO = #{classNo}
+			AND TO_CHAR(STUDYDATE, 'YYYYMMDD') = #{studydate}
+			AND SEQ = #{seq}
+	]]>
+	</delete>
+	
+	<select id="selectOutTimeTableInfoMaxSeq" resultType="int">
+	<![CDATA[]
+		-- 외부 강사 시간표 MAX SEQ 가져오기
+		SELECT NVL(MAX(SEQ), 0) +1 FROM TB_OUTTIMETABLE_INFO
+	]]>
+	</select>
+	
+	<insert id="insertOutTimeTableInfo" parameterType="Map">
+	<![CDATA[
+		-- 외부 강사 시간표 등록
+		INSERT INTO TB_OUTTIMETABLE_INFO 
+			( CLASS_NO, STUDYDATE, SEQ, 
+			  CONTENTS, LUSERNO, LDATE ) 
+		VALUES 
+			( #{classNo}, #{studydate}, #{seq},
+			  #{contents}, #{userno}, SYSDATE )
+	]]>
+	</insert>
+	
+	<insert id="insertOutTimeTable" parameterType="Map">
+	<![CDATA[
+		-- 외부 강사 시간표 상세 등록
+		INSERT INTO TB_OUTTIMETABLE 
+			( SEQ, CLASS_NO, STUDYDATE, STUDYTIME )
+		VALUES 
+			( #{seq}, #{classNo}, #{studydate}, #{studytime})
+	]]>
+	</insert>
+	
+	<update id="updateOutTimeTableInfo" parameterType="Map">
+	<![CDATA[
+		-- 외부 강사 시간표 수정
+		UPDATE TB_OUTTIMETABLE_INFO SET
+			CONTENTS = #{contents},
+			LUSERNO = #{userno},
+			LDATE = SYSDATE
+		WHERE CLASS_NO = #{classNo}
+			AND TO_CHAR(STUDYDATE, 'YYYYMMDD') = #{studydate}
+			AND SEQ = #{seq}
+	]]>
+	</update>
+	
+</mapper>

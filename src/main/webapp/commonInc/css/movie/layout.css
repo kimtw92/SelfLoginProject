@@ -1,0 +1,81 @@
+@charset	"utf-8";
+/* Layout Definition */
+@import url('board.css');
+@import url('footer.css');
+
+body{ margin:0; padding:0;color:#666;font-size:12px;font-family:Dotum, "돋움",sans-serif;background:#fff url(/images/common/topBg.gif) repeat-x left top;}
+div, p, h1, h2, h3, h4, h5, h6, span, th, td, li, dt, dd, form { margin:0; padding:0; }
+select, input, textarea	{font-family:Dotum, "돋움", sans-serif; color:#666;}
+form, div, p, fieldset, ol, ul, dl {margin:0; padding:0;}
+legend, hr {display:none;}
+ul, ol	   {list-style:none;}
+
+img	{border:0;}
+a, 	a:link, a:visited {color:#666666; text-decoration:none; cursor:pointer;}
+a:hover, a:active {color:#333333; text-decoration:none; cursor:pointer;}
+.t11px {font-size:11px; font-family:돋움; }
+
+/* Input Type Set */
+input.radio {vertical-align:middle;}
+input.input01 { border:2px solid #516195;}
+.vm1 {vertical-align: -0.45em; }
+
+span.alignR {float:right;}
+
+/* div 자동스크롤 스타일 */
+div { 	
+	scrollbar-face-color:#fff;
+    scrollbar-shadow-color:#e4e4e4;
+    scrollbar-highlight-color:#e4e4e4;
+    scrollbar-3dlight-color:#fff;
+    scrollbar-darkshadow-color:#fff;
+    scrollbar-track-color:#e4e4e4;
+    scrollbar-arrow-color:#666;
+}
+
+/* 여백 */
+div.space01  {clear:both;height:10px;visibility:hidden;margin:0;padding:0;line-height:10px;}
+div.space03  {clear:both;height:15px;_height:16px;visibility:hidden;margin:0;padding:0;line-height:15px;}
+div.space_5  {clear:both;height:5px;visibility:hidden;margin:0;padding:0;line-height:5px;}
+
+/* title */
+h2.stit { margin:0; padding:0 0 10px 18px; background:url(/images/common/h2Bul.gif) no-repeat left 0; color:#254776; font-size:12px; font-weight:bold;}
+
+/*#dvwh*************************************/
+#wrapper{width:100%; margin:auto;padding:0 0 0 0; }
+
+/*#dvwh*************************************/
+#dvwhset{width:855px;margin:auto;padding:0 0 0 0;}
+
+/*dvheader*************************************/
+#header{ height:120px; margin:0; padding:0;}
+
+/*dvmiddle*************************************/
+#middle{clear:both; margin:20px 0 0 0; padding:0;}
+
+
+/*foot*************************************/
+#footerarea{clear:both;width:100%;margin:0 0 27px 0;padding:90px 0 0 0;}
+
+
+/* 로고 */
+
+div.topLogo{ width:855px; margin:0; padding:0;}
+
+div.gTopMenu{width:855px; margin:0 0 0 0; padding:0; }
+
+/*GNB메뉴*/
+div.gTopMenu ul li {float:left;}
+div.gTopMenu ul li a{ height:26px; float:left; margin:0; padding: 10px 50px 0 50px;  background:url('/images/common/1pxR.gif') no-repeat right 2px; font:12px 굴림; color:#C0D2EA; font-weight:bold; cursor:pointer;}
+div.gTopMenu ul li a:hover{background:url('../images/menu/menuOver.gif') left 0;}
+div.gTopMenu ul li a span{  
+		display:block; 
+		float:left; 
+		font-weight:bold;  
+		margin:0;
+		padding:0; 
+		height:16px;
+		overflow:hidden;
+		}
+div.gTopMenu ul li a:hover span{ color:#C0D2EA; font-weight:bold; color:#D2F9FF;} 
+

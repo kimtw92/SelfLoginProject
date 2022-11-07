@@ -1,0 +1,148 @@
+A:link   { font-family: ±¼¸², ±¼¸²Ã¼,verdana; font-size: 9pt; color: #595959; text-decoration: none}
+A:visited{ font-family: ±¼¸², ±¼¸²Ã¼,verdana; font-size: 9pt; color: #595959 ; text-decoration: none}
+A:active { font-family: ±¼¸², ±¼¸²Ã¼,verdana; font-size: 9pt; color: #595959 ; text-decoration: none}
+A:hover  { font-family: ±¼¸², ±¼¸²Ã¼,verdana; font-size: 9pt; color: #595959 ; text-decoration: none}
+
+
+IMG 	{border: none;}
+
+
+BODY        {FONT-SIZE: 9pt; COLOR: #595959; FONT-FAMILY: ±¼¸², ±¼¸²Ã¼,verdana;
+              scrollbar-face-color: #ffffff; scrollbar-shadow-color: #DCDCDC; 
+	         scrollbar-highlight-color: #ffffff; scrollbar-3dlight-color: #DCDCDC; 
+	         scrollbar-darkshadow-color: #F2F2F2; scrollbar-track-color: #ffffff;
+	        scrollbar-arrow-color: #F2F2F2; scrollbar-width: 30;SCROLLBAR-ARROW-COLOR: #AA7948   }
+TD          {FONT-SIZE: 9pt; COLOR: #595959; font-family: ±¼¸², ±¼¸²Ã¼,verdana   }
+
+
+
+textarea,select { background-color:white;border:1 solid #D0D0D0 ; font-family:±¼¸²;line-height:12pt; font-size:9pt;padding-top:5pt; padding-left:5pt;padding-right:5pt}
+
+.input01  { background-color:white;border:1 solid #848284 ; font-family:±¼¸²; font-size:9pt}
+
+.box  { background-color:white;border:1 solid #DDD1C2 ; font-family:±¼¸²; font-size:9pt}
+
+
+.list     {color: #666666 ; }
+.list   A:link   {color: #666666;}
+.list   A:visited{color: #666666 ; }
+.list  A:active {color: #FF7902; }
+.list   A:hover  {color: #FF7902 ;  }
+
+ .TableMargin{
+	padding-left:44px;
+}
+
+ .TableMargin01{
+	padding-left:5px;
+}
+
+ .TableMargin02{
+	padding-left:16px;
+}
+ .TableMargin03{
+	padding-top:5px;
+	padding-bottom:5px;
+}
+
+ .TablePicture{
+	padding-left:29px;
+	padding-top:27px;
+}
+
+ .TablePicture01{
+	padding-left:66px;
+	padding-top:30px;
+}
+
+ .BlueBig{
+	FONT-WEIGHT:bold;
+    FONT-SIZE: 12pt;
+	COLOR:  0072BC;
+	padding-top:17px;
+	padding-bottom:11px;
+	FONT-FAMILY: ±¼¸², ±¼¸²Ã¼,verdana;
+}
+
+ .BrownBig{
+	FONT-WEIGHT:bold;
+    FONT-SIZE: 10pt;
+	COLOR: 998675;
+	FONT-FAMILY: ±¼¸², ±¼¸²Ã¼,verdana;
+	line-height:17pt;
+}
+ .MTitle{
+   FONT-WEIGHT:bold;
+    FONT-SIZE: 12pt;
+	COLOR:  8E8E8E;
+	padding-top:15px;
+	FONT-FAMILY: ±¼¸², ±¼¸²Ã¼,verdana;
+}
+
+ .Text01{
+	  COLOR: 595959;
+	padding-top:25px;
+	line-height:14pt;
+}
+
+ .Text02{
+	  COLOR: 736357;
+	padding-top:24px;
+	padding-left:36px;
+	line-height:13pt;
+}
+
+ .Text03{
+	  COLOR: 736357;
+	 line-height:12pt;
+}
+
+.Text04{
+    COLOR: 787878;
+	padding-top:5px;
+	padding-right:5px;
+	padding-left:15px;
+	line-height:16pt;
+}
+
+ .Text05{
+	  COLOR: BE864F;
+	line-height:12pt;
+}
+
+ .Bold01{
+   padding-left:10px;
+   FONT-WEIGHT:bold;
+   COLOR: 084573;
+}
+
+ .Bold02{
+   FONT-WEIGHT:bold;
+   COLOR: A0410D;
+}
+
+
+ .Bold03{
+   FONT-WEIGHT:bold;
+   COLOR: 736357;
+}
+
+ .Bold04{
+   FONT-WEIGHT:bold;
+   COLOR: F26D7D;
+}
+
+ .Bold05{
+   FONT-WEIGHT:bold;
+   COLOR: BE864F;
+}
+
+ .Bold06{
+   FONT-WEIGHT:bold;
+   COLOR: 787878;
+}
+
+ .Bold07{
+   FONT-WEIGHT:bold;
+   COLOR: 000000;
+}

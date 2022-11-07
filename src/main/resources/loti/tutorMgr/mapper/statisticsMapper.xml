@@ -1,0 +1,612 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="loti.tutorMgr.mapper.StatisticsMapper">
+	
+	<select id="salaryStatsListType1" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사활용실적 : 인원별
+		SELECT	ZZ.GRCODE,	ZZ.GUBUN, 	ZZ.GUBUNNM, ZZ.GRCODENM,
+				ZZ.STU_CNT,	ZZ.GRSEQ_CNT,
+		        ZZ.TUTOR_TOTAL_CNT,
+		        (ZZ.A_TOTAL_CNT + ZZ.B_CNT + ZZ.C_TOTAL_CNT) TOTAL_1,
+		        
+		        ZZ.A_CNT, 	ZZ.A1_CNT, 	ZZ.A_TOTAL_CNT,
+		        ZZ.B_CNT,
+		        ZZ.C1_CNT,	ZZ.C2_CNT,	ZZ.C_TOTAL_CNT,
+		        ZZ.D_CNT,	ZZ.Z_CNT,
+		        ZZ.PFLAG
+		FROM
+		(
+		
+		    SELECT 	A.GRCODE,	A.GUBUN, A.GUBUNNM, A.GRCODENM, 
+		            COUNT(B.USERNO) AS STU_CNT, 
+		            A.GRSEQ_CNT, 
+		            A.TUTOR_TOTAL_CNT, A.A_CNT , A.A1_CNT , A.A_TOTAL_CNT, 
+		            A.B_CNT, 	A .B_TOTAL_CNT, 
+		            A.C1_CNT, 	A.C2_CNT , A.C_TOTAL_CNT, 
+		            A.D_CNT, 	A.D_TOTAL_CNT, 
+		            A.Z_CNT,
+		            'C' AS PFLAG
+		    FROM 
+		    (
+		        SELECT A.GRCODE, A.GUBUN, A.GUBUNNM, A.GRCODENM, 
+		                (
+		                    SELECT 	COUNT(DISTINCT GRSEQ) 
+		                    FROM 	TB_CLASSTUTOR 
+		                    WHERE 	GRCODE	=	A.GRCODE 
+		                    AND 	GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		                ) AS GRSEQ_CNT, 
+		                SUM(DECODE(E.TLEVEL, 'A', 1, 'A1', 1, 'B', 1, 'C1', 1, 'C2', 1, 'D', 0, 'Z', 1, 0)) AS TUTOR_TOTAL_CNT , 
+		                SUM(DECODE(E.TLEVEL, 'A', 1, 0))			AS A_CNT , 
+		                SUM(DECODE(E.TLEVEL, 'A1', 1, 0)) 			AS A1_CNT , 
+		                SUM(DECODE(E.TLEVEL, 'A1', 1, 'A', 1, 0)) 	AS A_TOTAL_CNT , 
+		                SUM(DECODE(E.TLEVEL, 'B', 1, 0)) 			AS B_CNT , 
+		                SUM(DECODE(E.TLEVEL, 'B', 1, 0)) 			AS B_TOTAL_CNT , 
+		                SUM(DECODE(E.TLEVEL, 'C1', 1, 0)) 			AS C1_CNT , 
+		                SUM(DECODE(E.TLEVEL, 'C2', 1, 0)) 			AS C2_CNT , 
+		                SUM(DECODE(E.TLEVEL, 'C1', 1, 'C2', 1, 0)) 	AS C_TOTAL_CNT , 
+		                SUM(DECODE(E.TLEVEL, 'D', 1, 0)) 			AS D_CNT , 
+		                SUM(DECODE(E.TLEVEL, 'D', 1, 0)) 			AS D_TOTAL_CNT , 
+		                SUM(DECODE(E.TLEVEL, 'Z', 1, 0)) 			AS Z_CNT 
+		        FROM 
+		        (
+		            SELECT 	C.GRCODE, 
+		                    (C.GRTYPE || C.GRSUBCD) AS GUBUN , 
+		                    (MC.MCODE_NAME || SC.SCODE_NAME || '교육') AS GUBUNNM , 
+		                    C.GRCODENM, E.USERNO 
+		            FROM	TB_MAINCODE MC, TB_SUBCODE SC, TB_GRCODE C, TB_CLASSTUTOR D, TB_TUTOR E 
+		            WHERE 	(MC.CD_GUBUN(+)='G' AND C.GRTYPE=MC.MAJOR_CODE(+)) 
+		            AND 	(SC.CD_GUBUN(+)='G' AND C.GRTYPE=SC.MAJOR_CODE(+) AND C.GRSUBCD=SC.MINOR_CODE(+)) 
+		            AND 	C.GRCODE	= D.GRCODE 
+		            AND 	D.TUSERNO 	= E.USERNO 
+		            AND 	D.GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		            GROUP BY C.GRCODE , (C.GRTYPE || C.GRSUBCD) , 
+		                    (MC.MCODE_NAME || SC.SCODE_NAME || '교육') , 
+		                    C.GRCODENM, E.USERNO
+		        ) A, TB_TUTOR E 
+		        WHERE	A.USERNO	=	E.USERNO 
+		        GROUP BY 
+		                A.GRCODE , A.GUBUN , A.GUBUNNM , A.GRCODENM
+		    ) A 
+		    , 
+		    ( 
+		        SELECT 	GRCODE, USERNO 
+		        FROM 	TB_GRRESULT 
+		        WHERE 	GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		    ) B 
+		    WHERE A.GRCODE = B.GRCODE(+) 
+		    GROUP BY
+		            A.GRCODE, 		A.GUBUN, 			A.GUBUNNM, 	A.GRCODENM, 
+		            A.GRSEQ_CNT, 	A.TUTOR_TOTAL_CNT, 	A.A_CNT , 	A.A1_CNT , A.A_TOTAL_CNT, 
+		            A.B_CNT , 		A.B_TOTAL_CNT, 		A.C1_CNT , 	A.C2_CNT , A.C_TOTAL_CNT, 
+		            A.D_CNT , 		A.D_TOTAL_CNT, 		A.Z_CNT 
+		            		            		
+		    UNION ALL
+						
+		    SELECT	'' GRCODE,
+		            Z.GUBUN,
+		            '소계' AS GUBUNNM,
+		            '소계' AS GRCODENM,
+		            SUM(Z.STU_CNT) 			AS 	STU_CNT,
+		            SUM(Z.GRSEQ_CNT)		AS	GRSEQ_CNT,
+		            SUM(Z.TUTOR_TOTAL_CNT)	AS	TUTOR_TOTAL_CNT,
+		            SUM(Z.A_CNT)			AS	A_CNT,
+		            SUM(Z.A1_CNT)			AS	A1_CNT,
+		            SUM(Z.A_TOTAL_CNT)		AS	A_TOTAL_CNT,
+		            SUM(Z.B_CNT)			AS	B_CNT, 	
+		            SUM(Z.B_TOTAL_CNT)		AS	B_TOTAL_CNT, 
+		            SUM(Z.C1_CNT)			AS	C1_CNT, 	
+		            SUM(Z.C2_CNT)			AS	C2_CNT, 
+		            SUM(Z.C_TOTAL_CNT)		AS	C_TOTAL_CNT, 
+		            SUM(Z.D_CNT)			AS	D_CNT, 	
+		            SUM(Z.D_TOTAL_CNT)		AS	D_TOTAL_CNT, 
+		            SUM(Z.Z_CNT)			AS	Z_CNT,
+		            
+		            'B' AS PFLAG
+		            				
+		    FROM
+		    (
+		        SELECT 	A.GRCODE,	A.GUBUN, A.GUBUNNM, A.GRCODENM, 
+		                COUNT(B.USERNO) AS STU_CNT, 
+		                A.GRSEQ_CNT, 
+		                A.TUTOR_TOTAL_CNT, A.A_CNT , A.A1_CNT , A.A_TOTAL_CNT, 
+		                A.B_CNT, 	A.B_TOTAL_CNT, 
+		                A.C1_CNT, 	A.C2_CNT , A.C_TOTAL_CNT, 
+		                A.D_CNT, 	A.D_TOTAL_CNT, 
+		                A.Z_CNT 
+		        FROM 
+		        (
+		            SELECT A.GRCODE, A.GUBUN, A.GUBUNNM, A.GRCODENM, 
+		                    (
+		                        SELECT 	COUNT(DISTINCT GRSEQ) 
+		                        FROM 	TB_CLASSTUTOR 
+		                        WHERE 	GRCODE	=	A.GRCODE 
+		                        AND 	GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		                    ) AS GRSEQ_CNT, 
+		                    SUM(DECODE(E.TLEVEL, 'A', 1, 'A1', 1, 'B', 1, 'C1', 1, 'C2', 1, 'D', 0, 'Z', 1, 0)) AS TUTOR_TOTAL_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'A', 1, 0))			AS A_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'A1', 1, 0)) 			AS A1_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'A1', 1, 'A', 1, 0)) 	AS A_TOTAL_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'B', 1, 0)) 			AS B_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'B', 1, 0)) 			AS B_TOTAL_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'C1', 1, 0)) 			AS C1_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'C2', 1, 0)) 			AS C2_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'C1', 1, 'C2', 1, 0)) 	AS C_TOTAL_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'D', 1, 0)) 			AS D_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'D', 1, 0)) 			AS D_TOTAL_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'Z', 1, 0)) 			AS Z_CNT 
+		            FROM 
+		            (
+		                SELECT 	C.GRCODE, 
+		                        (C.GRTYPE || C.GRSUBCD) AS GUBUN , 
+		                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육') AS GUBUNNM , 
+		                        C.GRCODENM, E.USERNO 
+		                FROM	TB_MAINCODE MC, TB_SUBCODE SC, TB_GRCODE C, TB_CLASSTUTOR D, TB_TUTOR E 
+		                WHERE 	(MC.CD_GUBUN(+)='G' AND C.GRTYPE=MC.MAJOR_CODE(+)) 
+		                AND 	(SC.CD_GUBUN(+)='G' AND C.GRTYPE=SC.MAJOR_CODE(+) AND C.GRSUBCD=SC.MINOR_CODE(+)) 
+		                AND 	C.GRCODE	= D.GRCODE 
+		                AND 	D.TUSERNO 	= E.USERNO 
+		                AND 	D.GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		                GROUP BY C.GRCODE , (C.GRTYPE || C.GRSUBCD) , 
+		                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육') , 
+		                        C.GRCODENM, E.USERNO
+		            ) A, TB_TUTOR E 
+		            WHERE	A.USERNO	=	E.USERNO 
+		            GROUP BY 
+		                    A.GRCODE , A.GUBUN , A.GUBUNNM , A.GRCODENM
+		        ) A 
+		        , 
+		        ( 
+		            SELECT 	GRCODE, USERNO 
+		            FROM 	TB_GRRESULT 
+		            WHERE 	GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		        ) B 
+		        WHERE A.GRCODE = B.GRCODE(+) 
+		        GROUP BY
+		                A.GRCODE, 		A.GUBUN, 			A.GUBUNNM, 	A.GRCODENM, 
+		                A.GRSEQ_CNT, 	A.TUTOR_TOTAL_CNT, 	A.A_CNT , 	A.A1_CNT , A.A_TOTAL_CNT, 
+		                A.B_CNT , 		A.B_TOTAL_CNT, 		A.C1_CNT , 	A.C2_CNT , A.C_TOTAL_CNT, 
+		                A.D_CNT , 		A.D_TOTAL_CNT, 		A.Z_CNT 
+		    ) Z
+		    GROUP BY
+		            Z.GUBUN
+		            
+		            
+		    UNION ALL
+		
+		    SELECT	'' GRCODE,
+		            '000' GUBUN,
+		            '총계' AS GUBUNNM,
+		            '총계' AS GRCODENM,
+		            SUM(Z.STU_CNT) 			AS 	STU_CNT,
+		            SUM(Z.GRSEQ_CNT)		AS	GRSEQ_CNT,
+		            SUM(Z.TUTOR_TOTAL_CNT)	AS	TUTOR_TOTAL_CNT,
+		            SUM(Z.A_CNT)			AS	A_CNT,
+		            SUM(Z.A1_CNT)			AS	A1_CNT,
+		            SUM(Z.A_TOTAL_CNT)		AS	A_TOTAL_CNT,
+		            SUM(Z.B_CNT)			AS	B_CNT, 	
+		            SUM(Z.B_TOTAL_CNT)		AS	B_TOTAL_CNT, 
+		            SUM(Z.C1_CNT)			AS	C1_CNT, 	
+		            SUM(Z.C2_CNT)			AS	C2_CNT, 
+		            SUM(Z.C_TOTAL_CNT)		AS	C_TOTAL_CNT, 
+		            SUM(Z.D_CNT)			AS	D_CNT, 	
+		            SUM(Z.D_TOTAL_CNT)		AS	D_TOTAL_CNT, 
+		            SUM(Z.Z_CNT)			AS	Z_CNT,
+		            
+		            'A' AS PFLAG
+		            				
+		    FROM
+		    (
+		        SELECT 	A.GRCODE,	A.GUBUN, A.GUBUNNM, A.GRCODENM, 
+		                COUNT(B.USERNO) AS STU_CNT, 
+		                A.GRSEQ_CNT, 
+		                A.TUTOR_TOTAL_CNT, A.A_CNT , A.A1_CNT , A.A_TOTAL_CNT, 
+		                A.B_CNT, 	A.B_TOTAL_CNT, 
+		                A.C1_CNT, 	A.C2_CNT , A.C_TOTAL_CNT, 
+		                A.D_CNT, 	A.D_TOTAL_CNT, 
+		                A.Z_CNT 
+		        FROM 
+		        (
+		            SELECT A.GRCODE, A.GUBUN, A.GUBUNNM, A.GRCODENM, 
+		                    (
+		                        SELECT 	COUNT(DISTINCT GRSEQ) 
+		                        FROM 	TB_CLASSTUTOR 
+		                        WHERE 	GRCODE	=	A.GRCODE 
+		                        AND 	GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		                    ) AS GRSEQ_CNT, 
+		                    SUM(DECODE(E.TLEVEL, 'A', 1, 'A1', 1, 'B', 1, 'C1', 1, 'C2', 1, 'D', 0, 'Z', 1, 0)) AS TUTOR_TOTAL_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'A', 1, 0))			AS A_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'A1', 1, 0)) 			AS A1_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'A1', 1, 'A', 1, 0)) 	AS A_TOTAL_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'B', 1, 0)) 			AS B_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'B', 1, 0)) 			AS B_TOTAL_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'C1', 1, 0)) 			AS C1_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'C2', 1, 0)) 			AS C2_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'C1', 1, 'C2', 1, 0)) 	AS C_TOTAL_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'D', 1, 0)) 			AS D_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'D', 1, 0)) 			AS D_TOTAL_CNT , 
+		                    SUM(DECODE(E.TLEVEL, 'Z', 1, 0)) 			AS Z_CNT 
+		            FROM 
+		            (
+		                SELECT 	C.GRCODE, 
+		                        (C.GRTYPE || C.GRSUBCD) AS GUBUN , 
+		                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육') AS GUBUNNM , 
+		                        C.GRCODENM, E.USERNO 
+		                FROM	TB_MAINCODE MC, TB_SUBCODE SC, TB_GRCODE C, TB_CLASSTUTOR D, TB_TUTOR E 
+		                WHERE 	(MC.CD_GUBUN(+)='G' AND C.GRTYPE=MC.MAJOR_CODE(+)) 
+		                AND 	(SC.CD_GUBUN(+)='G' AND C.GRTYPE=SC.MAJOR_CODE(+) AND C.GRSUBCD=SC.MINOR_CODE(+)) 
+		                AND 	C.GRCODE	= D.GRCODE 
+		                AND 	D.TUSERNO 	= E.USERNO 
+		                AND 	D.GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		                GROUP BY C.GRCODE , (C.GRTYPE || C.GRSUBCD) , 
+		                        (MC.MCODE_NAME || SC.SCODE_NAME || '교육') , 
+		                        C.GRCODENM, E.USERNO
+		            ) A, TB_TUTOR E 
+		            WHERE	A.USERNO	=	E.USERNO 
+		            GROUP BY 
+		                    A.GRCODE , A.GUBUN , A.GUBUNNM , A.GRCODENM
+		        ) A 
+		        , 
+		        ( 
+		            SELECT 	GRCODE, USERNO 
+		            FROM 	TB_GRRESULT 
+		            WHERE 	GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		        ) B 
+		        WHERE A.GRCODE = B.GRCODE(+) 
+		        GROUP BY
+		                A.GRCODE, 		A.GUBUN, 			A.GUBUNNM, 	A.GRCODENM, 
+		                A.GRSEQ_CNT, 	A.TUTOR_TOTAL_CNT, 	A.A_CNT , 	A.A1_CNT , A.A_TOTAL_CNT, 
+		                A.B_CNT , 		A.B_TOTAL_CNT, 		A.C1_CNT , 	A.C2_CNT , A.C_TOTAL_CNT, 
+		                A.D_CNT , 		A.D_TOTAL_CNT, 		A.Z_CNT 
+		    ) Z                                    
+		) ZZ                             
+		ORDER BY ZZ.GUBUN, ZZ.PFLAG, ZZ.GRCODENM
+	]]>
+	</select>
+	
+	<select id="salaryStatsListType2" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사활용실적 : 시간별
+		SELECT	ZZ.GRCODE,	ZZ.GUBUN, 	ZZ.GUBUNNM, ZZ.GRCODENM,
+				ZZ.STU_CNT,	ZZ.GRSEQ_CNT,
+		        ZZ.TUTOR_TOTAL_CNT,
+		        (ZZ.A_TOTAL_CNT + ZZ.B_CNT + ZZ.C_TOTAL_CNT) TOTAL_1,
+		        
+		        ZZ.A_CNT, 	ZZ.A1_CNT, 	ZZ.A_TOTAL_CNT,
+		        ZZ.B_CNT,
+		        ZZ.C1_CNT,	ZZ.C2_CNT,	ZZ.C_TOTAL_CNT,
+		        ZZ.D_CNT,	ZZ.Z_CNT,
+		        ZZ.PFLAG
+		FROM
+		(
+		    SELECT 	A.GRCODE, A.GUBUN, A.GUBUNNM, A.GRCODENM,
+		            COUNT(B.USERNO) AS STU_CNT,
+		            A.GRSEQ_CNT,	A.TUTOR_TOTAL_CNT,	A.A_CNT ,	A.A1_CNT ,	A.A_TOTAL_CNT,
+		            A.B_CNT ,		A.B_TOTAL_CNT,
+		            A.C1_CNT ,		A.C2_CNT ,			A.C_TOTAL_CNT,
+		            A.D_CNT ,		A.D_TOTAL_CNT,
+		            A.Z_CNT,
+		            'C' AS PFLAG
+		    FROM 
+		    (
+		        SELECT C.GRCODE AS GRCODE ,
+		            (C.GRTYPE || C.GRSUBCD) AS GUBUN ,
+		            (MC.MCODE_NAME || SC.SCODE_NAME || '교육') AS GUBUNNM ,
+		            C.GRCODENM AS GRCODENM ,
+		            COUNT(DISTINCT D.GRSEQ) AS GRSEQ_CNT ,
+		            SUM(DECODE(E.TLEVEL, 'A', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'A1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'B', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'C1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'C2', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'C3', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'Z', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS TUTOR_TOTAL_CNT ,
+		            SUM(DECODE(E.TLEVEL, 'A', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS A_CNT ,
+		            SUM(DECODE(E.TLEVEL, 'A1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS A1_CNT ,
+		            SUM(DECODE(E.TLEVEL, 'A1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'A', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS A_TOTAL_CNT ,
+		            SUM(DECODE(E.TLEVEL, 'B', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS B_CNT ,
+		            SUM(DECODE(E.TLEVEL, 'B', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS B_TOTAL_CNT ,
+		            SUM(DECODE(E.TLEVEL, 'C1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS C1_CNT ,
+		            SUM(DECODE(E.TLEVEL, 'C2', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS C2_CNT ,
+		            SUM(DECODE(E.TLEVEL, 'C1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'C2', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS C_TOTAL_CNT ,
+		            SUM(DECODE(E.TLEVEL, 'D', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS D_CNT ,
+		            SUM(DECODE(E.TLEVEL, 'D', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS D_TOTAL_CNT ,
+		            SUM(DECODE(E.TLEVEL, 'Z', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS Z_CNT
+		        FROM TB_MAINCODE MC,
+		            TB_SUBCODE SC,
+		            TB_GRCODE C,
+		            TB_CLASSTUTOR D,
+		            TB_TUTOR E,
+		            TB_SUBJSEQ F
+		        WHERE (MC.CD_GUBUN(+)='G' AND C.GRTYPE=MC.MAJOR_CODE(+))
+		        AND (SC.CD_GUBUN(+)='G' AND C.GRTYPE=SC.MAJOR_CODE(+) AND C.GRSUBCD=SC.MINOR_CODE(+))
+		        AND C.GRCODE = D.GRCODE
+		        AND D.TUSERNO = E.USERNO
+		        AND D.GRCODE = F.GRCODE
+		        AND D.GRSEQ = F.GRSEQ
+		        AND D.SUBJ = F.SUBJ
+		        AND D.GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		        GROUP BY C.GRCODE , (C.GRTYPE || C.GRSUBCD) , (MC.MCODE_NAME || SC.SCODE_NAME || '교육') , C.GRCODENM
+		            --ORDER BY GUBUN, GRCODE, GUBUNNM, GRCODENM 
+		    ) A ,
+		    (
+		        SELECT GRCODE, USERNO
+		        FROM TB_GRRESULT
+		        WHERE GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		    ) B
+		    WHERE A.GRCODE = B.GRCODE(+)
+		    GROUP BY 
+		            A.GRCODE, A.GUBUN, A.GUBUNNM, A.GRCODENM, 
+		            A.GRSEQ_CNT, A.TUTOR_TOTAL_CNT, A.A_CNT , A.A1_CNT , 
+		            A.A_TOTAL_CNT, A.B_CNT , A.B_TOTAL_CNT, A.C1_CNT , A.C2_CNT , 
+		            A.C_TOTAL_CNT, A.D_CNT , A.D_TOTAL_CNT, A.Z_CNT 
+		
+		
+		    UNION ALL
+		
+		
+		
+		    SELECT	'' GRCODE,
+		            Z.GUBUN,
+		            '소계' AS GUBUNNM,
+		            '소계' AS GRCODENM,
+		            SUM(Z.STU_CNT) 			AS 	STU_CNT,
+		            SUM(Z.GRSEQ_CNT)		AS	GRSEQ_CNT,
+		            SUM(Z.TUTOR_TOTAL_CNT)	AS	TUTOR_TOTAL_CNT,
+		            SUM(Z.A_CNT)			AS	A_CNT,
+		            SUM(Z.A1_CNT)			AS	A1_CNT,
+		            SUM(Z.A_TOTAL_CNT)		AS	A_TOTAL_CNT,
+		            SUM(Z.B_CNT)			AS	B_CNT, 	
+		            SUM(Z.B_TOTAL_CNT)		AS	B_TOTAL_CNT, 
+		            SUM(Z.C1_CNT)			AS	C1_CNT, 	
+		            SUM(Z.C2_CNT)			AS	C2_CNT, 
+		            SUM(Z.C_TOTAL_CNT)		AS	C_TOTAL_CNT, 
+		            SUM(Z.D_CNT)			AS	D_CNT, 	
+		            SUM(Z.D_TOTAL_CNT)		AS	D_TOTAL_CNT, 
+		            SUM(Z.Z_CNT)			AS	Z_CNT,
+		                        
+		            'B' AS PFLAG
+		                				
+		    FROM
+		    (
+		
+		        SELECT 	A.GRCODE, A.GUBUN, A.GUBUNNM, A.GRCODENM,
+		                COUNT(B.USERNO) AS STU_CNT,
+		                A.GRSEQ_CNT,	A.TUTOR_TOTAL_CNT,	A.A_CNT ,	A.A1_CNT ,	A.A_TOTAL_CNT,
+		                A.B_CNT ,		A.B_TOTAL_CNT,
+		                A.C1_CNT ,		A.C2_CNT ,			A.C_TOTAL_CNT,
+		                A.D_CNT ,		A.D_TOTAL_CNT,
+		                A.Z_CNT          
+		        FROM 
+		        (
+		            SELECT C.GRCODE AS GRCODE ,
+		                (C.GRTYPE || C.GRSUBCD) AS GUBUN ,
+		                (MC.MCODE_NAME || SC.SCODE_NAME || '교육') AS GUBUNNM ,
+		                C.GRCODENM AS GRCODENM ,
+		                COUNT(DISTINCT D.GRSEQ) AS GRSEQ_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'A', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'A1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'B', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'C1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'C2', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'C3', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'Z', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS TUTOR_TOTAL_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'A', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS A_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'A1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS A1_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'A1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'A', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS A_TOTAL_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'B', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS B_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'B', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS B_TOTAL_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'C1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS C1_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'C2', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS C2_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'C1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'C2', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS C_TOTAL_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'D', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS D_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'D', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS D_TOTAL_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'Z', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS Z_CNT
+		            FROM TB_MAINCODE MC,
+		                TB_SUBCODE SC,
+		                TB_GRCODE C,
+		                TB_CLASSTUTOR D,
+		                TB_TUTOR E,
+		                TB_SUBJSEQ F
+		            WHERE (MC.CD_GUBUN(+)='G' AND C.GRTYPE=MC.MAJOR_CODE(+))
+		            AND (SC.CD_GUBUN(+)='G' AND C.GRTYPE=SC.MAJOR_CODE(+) AND C.GRSUBCD=SC.MINOR_CODE(+))
+		            AND C.GRCODE = D.GRCODE
+		            AND D.TUSERNO = E.USERNO
+		            AND D.GRCODE = F.GRCODE
+		            AND D.GRSEQ = F.GRSEQ
+		            AND D.SUBJ = F.SUBJ
+		            AND D.GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		            GROUP BY C.GRCODE , (C.GRTYPE || C.GRSUBCD) , (MC.MCODE_NAME || SC.SCODE_NAME || '교육') , C.GRCODENM
+		                --ORDER BY GUBUN, GRCODE, GUBUNNM, GRCODENM 
+		        ) A ,
+		        (
+		            SELECT GRCODE,
+		            USERNO
+		            FROM TB_GRRESULT
+		            WHERE GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		        ) B
+		        WHERE A.GRCODE = B.GRCODE(+)
+		        GROUP BY 
+		                A.GRCODE, A.GUBUN, A.GUBUNNM, A.GRCODENM, 
+		                A.GRSEQ_CNT, A.TUTOR_TOTAL_CNT, A.A_CNT , A.A1_CNT , 
+		                A.A_TOTAL_CNT, A.B_CNT , A.B_TOTAL_CNT, A.C1_CNT , A.C2_CNT , 
+		                A.C_TOTAL_CNT, A.D_CNT , A.D_TOTAL_CNT, A.Z_CNT 
+		    ) Z
+		    GROUP BY
+		            Z.GUBUN
+		
+		
+		    UNION ALL
+		
+		    SELECT	'' GRCODE,
+		            '000' GUBUN,
+		            '총계' AS GUBUNNM,
+		            '총계' AS GRCODENM,
+		            SUM(Z.STU_CNT) 			AS 	STU_CNT,
+		            SUM(Z.GRSEQ_CNT)		AS	GRSEQ_CNT,
+		            SUM(Z.TUTOR_TOTAL_CNT)	AS	TUTOR_TOTAL_CNT,
+		            SUM(Z.A_CNT)			AS	A_CNT,
+		            SUM(Z.A1_CNT)			AS	A1_CNT,
+		            SUM(Z.A_TOTAL_CNT)		AS	A_TOTAL_CNT,
+		            SUM(Z.B_CNT)			AS	B_CNT, 	
+		            SUM(Z.B_TOTAL_CNT)		AS	B_TOTAL_CNT, 
+		            SUM(Z.C1_CNT)			AS	C1_CNT, 	
+		            SUM(Z.C2_CNT)			AS	C2_CNT, 
+		            SUM(Z.C_TOTAL_CNT)		AS	C_TOTAL_CNT, 
+		            SUM(Z.D_CNT)			AS	D_CNT, 	
+		            SUM(Z.D_TOTAL_CNT)		AS	D_TOTAL_CNT, 
+		            SUM(Z.Z_CNT)			AS	Z_CNT,
+		                
+		            'A' AS PFLAG
+		                				
+		    FROM
+		    (
+		
+		        SELECT 	A.GRCODE, A.GUBUN, A.GUBUNNM, A.GRCODENM,
+		                COUNT(B.USERNO) AS STU_CNT,
+		                A.GRSEQ_CNT,	A.TUTOR_TOTAL_CNT,	A.A_CNT ,	A.A1_CNT ,	A.A_TOTAL_CNT,
+		                A.B_CNT ,		A.B_TOTAL_CNT,
+		                A.C1_CNT ,		A.C2_CNT ,			A.C_TOTAL_CNT,
+		                A.D_CNT ,		A.D_TOTAL_CNT,
+		                A.Z_CNT          
+		        FROM 
+		        (
+		            SELECT C.GRCODE AS GRCODE ,
+		                (C.GRTYPE || C.GRSUBCD) AS GUBUN ,
+		                (MC.MCODE_NAME || SC.SCODE_NAME || '교육') AS GUBUNNM ,
+		                C.GRCODENM AS GRCODENM ,
+		                COUNT(DISTINCT D.GRSEQ) AS GRSEQ_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'A', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'A1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'B', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'C1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'C2', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'C3', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'Z', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS TUTOR_TOTAL_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'A', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS A_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'A1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS A1_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'A1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'A', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS A_TOTAL_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'B', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS B_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'B', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS B_TOTAL_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'C1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS C1_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'C2', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS C2_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'C1', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 'C2', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS C_TOTAL_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'D', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS D_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'D', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS D_TOTAL_CNT ,
+		                SUM(DECODE(E.TLEVEL, 'Z', NVL(F.LESSONTIME, 0)+NVL(F.SILGITIME, 0)+NVL(F.TORONTIME, 0)+NVL(F.HYUNTIME, 0)+NVL(F.MULTITIME, 0)+NVL(F.ETCTIME, 0), 0)) AS Z_CNT
+		            FROM TB_MAINCODE MC,
+		                TB_SUBCODE SC,
+		                TB_GRCODE C,
+		                TB_CLASSTUTOR D,
+		                TB_TUTOR E,
+		                TB_SUBJSEQ F
+		            WHERE (MC.CD_GUBUN(+)='G' AND C.GRTYPE=MC.MAJOR_CODE(+))
+		            AND (SC.CD_GUBUN(+)='G' AND C.GRTYPE=SC.MAJOR_CODE(+) AND C.GRSUBCD=SC.MINOR_CODE(+))
+		            AND C.GRCODE = D.GRCODE
+		            AND D.TUSERNO = E.USERNO
+		            AND D.GRCODE = F.GRCODE
+		            AND D.GRSEQ = F.GRSEQ
+		            AND D.SUBJ = F.SUBJ
+		            AND D.GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		            GROUP BY C.GRCODE , (C.GRTYPE || C.GRSUBCD) , (MC.MCODE_NAME || SC.SCODE_NAME || '교육') , C.GRCODENM
+		                --ORDER BY GUBUN, GRCODE, GUBUNNM, GRCODENM 
+		        ) A ,
+		        (
+		            SELECT GRCODE,
+		            USERNO
+		            FROM TB_GRRESULT
+		            WHERE GRSEQ BETWEEN #{yearMonthFrom} AND #{yearMonthTo}
+		        ) B
+		        WHERE A.GRCODE = B.GRCODE(+)
+		        GROUP BY 
+		                A.GRCODE, A.GUBUN, A.GUBUNNM, A.GRCODENM, 
+		                A.GRSEQ_CNT, A.TUTOR_TOTAL_CNT, A.A_CNT , A.A1_CNT , 
+		                A.A_TOTAL_CNT, A.B_CNT , A.B_TOTAL_CNT, A.C1_CNT , A.C2_CNT , 
+		                A.C_TOTAL_CNT, A.D_CNT , A.D_TOTAL_CNT, A.Z_CNT 
+		    ) Z
+		) ZZ
+		ORDER BY ZZ.GUBUN, ZZ.PFLAG, ZZ.GRCODENM
+	]]>
+	</select>
+	
+	<select id="tutorGradeStats" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 강사등급별 실적
+		SELECT	P.LEVEL_NAME, P.TUTOR_CNT, P.STU_SCNT, P.LECTIME, 
+				NVL(Q.GMONEY,0) AS GMONEY
+		FROM
+		(        
+		    -- 등급별 인원
+		    SELECT	A.TLEVEL, 
+		            MIN(A.LEVEL_NAME)	AS	LEVEL_NAME, 
+		            COUNT(TS.USERNO)	AS 	TUTOR_CNT, 
+		            SUM(TS.SUBJ_CNT)	AS 	LECTIME, 
+		            SUM(ST.STU_CNT)		AS 	STU_SCNT,
+		            MIN(TS.USERNO)		AS	MINUSERNO, 
+		            MAX(TS.USERNO)		AS	MAXUSERNO 
+		    FROM	TB_TUTOR_LEVEL A	INNER JOIN TB_TUTOR B
+		    ON		A.TLEVEL	=	B.TLEVEL
+		
+		    INNER JOIN
+		    (
+		        SELECT 	GRCODE, GRSEQ, USERNO, 
+		                COUNT(SUBJ) AS SUBJ_CNT 
+		        FROM 	TB_TIMETABLE_TU 
+		        WHERE 	STUDYDATE BETWEEN TO_DATE( #{sDate} , 'YYYYMMDD')	AND	TO_DATE( #{dateTo2} , 'YYYYMMDDHH24MISS') 
+		        GROUP BY 
+		                GRCODE, GRSEQ, USERNO
+		    ) TS
+		    ON		TS.USERNO	=	B.USERNO
+		
+		    INNER JOIN	TB_GRSEQ GS
+		    ON		TS.GRCODE	=	GS.GRCODE 
+		    AND 	TS.GRSEQ	=	GS.GRSEQ 
+		
+		    INNER JOIN
+		    (
+		        SELECT 	GRCODE, GRSEQ, COUNT(USERNO) STU_CNT 
+		        FROM 	TB_GRRESULT 
+		        GROUP BY 
+		                GRCODE, GRSEQ
+		    ) ST
+		    ON		ST.GRCODE	=	GS.GRCODE 
+		    AND 	ST.GRSEQ	=	GS.GRSEQ 
+		
+		    WHERE	GS.ENDDATE BETWEEN TO_DATE( #{sDate} , 'YYYYMMDD') AND TO_DATE( #{dateTo2} , 'YYYYMMDDHH24MISS') 
+		    GROUP BY 
+		            A.TLEVEL
+		) P
+		
+		LEFT OUTER JOIN
+		            
+		(                        
+		    -- 레벨별 금액
+		    SELECT	A.TLEVEL,
+		            SUM(C.GMONEY) AS GMONEY 
+		    FROM	TB_TUTOR_LEVEL A	INNER JOIN	TB_TUTOR B
+		    ON		A.TLEVEL	=	B.TLEVEL
+		
+		    INNER JOIN
+		    ( 
+		        SELECT	TS.GRCODE, TS.GRSEQ, TS.USERNO, 
+		                SUM(DECODE(AMT_GUBUN, '1', NVL(AMT1,0)+NVL(AMT2,0)+NVL(AMT3,0), AMT1)) AS GMONEY 
+		        FROM	TB_TUTOR_SALARY TS	INNER JOIN	TB_GRSEQ GS
+		        ON 		TS.SSTARTED >= TO_DATE( #{sDate} , 'YYYYMMDD') 
+		        AND 	TS.SENDDATE <= TO_DATE( #{eDate} , 'YYYYMMDD') 
+		        AND 	GS.ENDDATE 	BETWEEN TO_DATE( #{sDate} , 'YYYYMMDD') AND	TO_DATE( #{dateTo2} , 'YYYYMMDDHH24MISS') 
+		        AND 	TS.AMT_GUBUN IN ('1', '2')
+		        GROUP BY 
+		                TS.GRCODE, TS.GRSEQ, TS.USERNO 
+		    ) C
+		    ON		B.USERNO	=	C.USERNO
+		    GROUP BY
+		            A.TLEVEL
+		) Q
+		ON		P.TLEVEL	=	Q.TLEVEL
+		ORDER BY
+				P.TLEVEL
+	]]>
+	</select>
+	
+	<select id="tutorMemberList" parameterType="String" resultType="DataMap">
+	<![CDATA[
+        select b.name name, nvl(b.cname, '입력안함') cname,  to_char(b.ldate, 'yyyy-mm-dd') ldate, b.tlevel tlevel,  b.userno userno,
+        to_char(c.indate, 'yyyy-mm-dd') indate,  c.jikwi jikwi, b.tlevel tlevel, b.job job, b.tposition tposition
+        from (
+            select userno
+            from tb_timetable_tu
+            group by userno
+        ) a, tb_tutor b, tb_member c
+        where a.userno = b.userno(+)                
+          and b.userno = c.userno(+)
+          and to_char(c.indate,'yyyy') = #{value}
+        order by c.indate desc
+	]]>
+	</select>	
+	
+</mapper>

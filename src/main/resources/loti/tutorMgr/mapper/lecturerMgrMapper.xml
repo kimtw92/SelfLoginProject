@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.tutorMgr.mapper.LecturerMgrMapper">
+
+	<select id="getAjaxCheckYN" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+	  -- 출강현황리스트
+	  SELECT DECODE(CHECK_YN,'Y','ok','no') CHECKYN
+	  FROM TB_TUTOR_TEMP
+	  WHERE SEQNO = #{value}
+	]]>
+	</select>
+	
+	
+	<sql id="lecturerInfoList">
+		FROM TB_TUTOR_TEMP A
+		WHERE 1=1
+		<choose>
+			<when test="name != null and name != ''">
+				AND NAME like '%' || #{name} || '%'
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="checkyn != null and checkyn != ''">
+				AND CHECK_YN = #{checkyn}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		ORDER BY A.SEQNO DESC
+	</sql>
+	<select id="selectLecturerInfoListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount"></include>
+		<include refid="lecturerInfoList"></include>
+	</select>
+	<select id="selectLecturerInfoList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+	<![CDATA[
+		-- 출강현황리스트
+		SELECT 
+		  A.SEQNO SEQNO
+		  , A.NAME NAME
+		  , A.CNAME CNAME
+		  , DECODE(A.SEX,'M','남자','F','여자','오류') SEX
+		  , TO_CHAR(A.ENTERDATE,'YYYY.MM.DD.HH24:MI:SS') ENTERDATE
+		  , '[학력 : ' || (SELECT COUNT(SEQNO) FROM TB_TUTOR_HISTORY_TEMP WHERE SEQNO = A.SEQNO AND OCGUBUN = '1') || '건],' || 
+		   ' [전공분야 : ' || (SELECT COUNT(SEQNO) FROM TB_TUTOR_HISTORY_TEMP WHERE SEQNO = A.SEQNO AND OCGUBUN = '2')  || '건],' ||
+		   ' [경력사항 : ' || (SELECT COUNT(SEQNO) FROM TB_TUTOR_HISTORY_TEMP WHERE SEQNO = A.SEQNO AND OCGUBUN = '3')  || '건],' ||
+		   ' [저서 및 주요논문 : ' || (SELECT COUNT(SEQNO) FROM TB_TUTOR_HISTORY_TEMP WHERE SEQNO = A.SEQNO AND OCGUBUN = '4')  || '건]' INFO
+		  , DECODE(CHECK_YN,'Y','<font color="red">확인완료</font>','<font color="blue">미확인</font>') CHECKYN
+	]]>
+		<include refid="lecturerInfoList"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<update id="getAjaxUpdakYN" parameterType="Map" >
+	<![CDATA[
+	  -- 출강현황리스트
+	  UPDATE TB_TUTOR_TEMP SET CHECK_YN = #{checkyn}
+	  WHERE SEQNO = #{seqno}
+	]]>
+	</update>
+	
+</mapper>

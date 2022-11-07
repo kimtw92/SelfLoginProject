@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.homeFront.mapper.LecturerMapper">
+
+	<select id="nextLecturerSeqno" resultType="String">
+	<![CDATA[
+		SELECT TB_TUTOR_TEMP_SEQNO.NEXTVAL SEQNO FROM DUAL
+	]]>
+	</select>
+	
+	<insert id="insertLecturer" parameterType="Map">
+	<![CDATA[
+		Insert into TB_TUTOR_TEMP
+		   (SEQNO, PASSWD, NAME, CNAME, BIRTH, SEX, JOB, DEGREE, GUBUN, EMAIL, HP, HOME_TEL, HOME_POST1, HOME_POST2, HOME_ADDR, OFFICE_TEL, OFFICE_POST1, OFFICE_POST2, OFFICE_ADDR, CHECK_YN, GROUPFILE_NO, ENTERDATE)
+		 Values
+		   (
+		   		#{seqno}
+		   		, #{passwd_check}
+		   		, #{name}
+		   		, #{cname}
+		   		, #{birth1} || #{birth2} || #{birth3}
+		   		, #{sex}
+		   		, #{job}
+		   		, #{degree}
+		   		, #{gubun}
+		   		, #{txtEmailID} || '@' || #{email1}
+		   		, #{hp}
+		   		, #{home_tel}
+		   		, #{homePost1}
+		   		, #{homePost2}
+		   		, #{homeAddr}
+		   		, #{office_tel}
+		   		, #{officePost1}
+		   		, #{officePost2}
+		   		, #{officeAddr}
+		   		, 'N'
+		   		, #{groupfile_no}
+		   		, SYSDATE
+	   		)
+	]]>
+	</insert>
+	
+	<insert id="insertLecturerHistory" parameterType="Map">
+	<![CDATA[
+		Insert into TB_TUTOR_HISTORY_TEMP
+		   (SEQNO, OCGUBUN, OC_NO, OCINFO, ENTERDATE)
+		 Values
+		   (#{seqno}, #{ocno}, #{ocgubun}, #{ocinfo}, SYSDATE)
+	]]>
+	</insert>
+	
+	<update id="updateLecturer" parameterType="Map">
+         UPDATE TB_TUTOR_TEMP 
+           SET PASSWD = #{passwd_check}
+           , CNAME = #{cname}
+           , SEX = #{sex}
+           , JOB = #{job}
+           , DEGREE = #{degree}
+           , GUBUN = #{gubun}
+           , EMAIL = #{txtEmailID} || '@' || #{email1}
+           , HP = #{hp}
+           , HOME_TEL = #{home_tel}
+           , HOME_POST1 = #{homePost1}
+           , HOME_POST2 = #{homePost2}
+           , HOME_ADDR = #{homeAddr}
+           , OFFICE_TEL = #{office_tel}
+           , OFFICE_POST1 = #{officePost1}
+           , OFFICE_POST2 = #{officePost2}
+           , OFFICE_ADDR = #{officeAddr}
+           , CHECK_YN = 'N'
+           , UPDATEDATE = SYSDATE
+
+			<if test="groupfile_no == null or groupfile_no == ''">
+				, GROUPFILE_NO = #{groupfile_no}
+			</if>
+
+        WHERE SEQNO = #{seqno}
+           AND NAME = #{name}
+	</update>
+	
+	<delete id="deleteLecturerHistory" parameterType="String">
+	<![CDATA[
+		DELETE TB_TUTOR_HISTORY_TEMP
+		WHERE SEQNO = #{value}
+	]]>
+	</delete>	
+	
+	<select id="getLecturerSearch" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT
+		  SEQNO
+		  , NAME
+		  , CHECK_YN CHECKYN
+		  , DECODE(CHECK_YN,'Y','확인함','미확인') CHECKS
+		  , ENTERDATE
+		  , UPDATEDATE
+		  , CHECKDATE
+		FROM TB_TUTOR_TEMP
+		WHERE NAME = #{name}
+		  AND BIRTH = #{birth}
+		  AND PASSWD = #{password}
+	]]>
+	</select> 	   
+	 		
+	<select id="getLecturerView" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT
+		  SEQNO, PASSWD, NAME, CNAME, BIRTH, SEX, JOB, DEGREE, GUBUN, EMAIL, HP, HOME_TEL, HOME_POST1, HOME_POST2, HOME_ADDR, OFFICE_TEL, OFFICE_POST1, OFFICE_POST2, OFFICE_ADDR, CHECK_YN, GROUPFILE_NO, ENTERDATE
+		FROM TB_TUTOR_TEMP
+		WHERE SEQNO = #{seqno}
+		   AND NAME  = #{name}
+		  AND BIRTH = #{birth}
+		  AND PASSWD = #{password}
+	]]>
+	</select>  
+	
+	<select id="getLecturerView2" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT
+		  SEQNO, PASSWD, NAME, CNAME, BIRTH, SEX, JOB, DEGREE, GUBUN, EMAIL, HP, HOME_TEL, HOME_POST1, HOME_POST2, HOME_ADDR, OFFICE_TEL, OFFICE_POST1, OFFICE_POST2, OFFICE_ADDR, CHECK_YN, GROUPFILE_NO, ENTERDATE
+		FROM TB_TUTOR_TEMP
+		WHERE SEQNO = #{value}
+	]]>
+	</select>  
+	
+	<select id="getLecturerFileNo" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT
+		  GROUPFILE_NO GROUPFILENO
+		FROM TB_TUTOR_TEMP
+		WHERE SEQNO = #{seqno}
+		   AND NAME  = #{name}
+		  AND BIRTH = #{birth}
+		  AND PASSWD = #{password}
+	]]>
+	</select>  
+	
+	<select id="getLecturerFileNo2" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		SELECT
+		  GROUPFILE_NO GROUPFILENO
+		FROM TB_TUTOR_TEMP
+		WHERE SEQNO = #{value}
+	]]>
+	</select>  
+	
+	<select id="lecturerHistoryList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		SELECT * FROM TB_TUTOR_HISTORY_TEMP
+		WHERE SEQNO = #{seqno}
+		   AND OCGUBUN = #{ocgubun}
+		ORDER BY OC_NO ASC
+	]]>
+	</select>	
+	
+	<select id="deleteLecturer" parameterType="String" >
+	<![CDATA[
+		DELETE TB_TUTOR_TEMP
+		WHERE SEQNO = #{value}
+	]]>
+	</select>
+	
+</mapper>

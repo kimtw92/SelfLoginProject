@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="loti.homepageMgr.mapper.NoticeMapper">
+
+	<sql id="selectNotiPerGrpListCommon">
+		<![CDATA[
+			-- 개인 그룹 공지 관리 리스트
+			SELECT 
+				SEQ, TITLE, WUSERNO, USERNAME, 
+				REGDATE, VISIT, NOTI_GUBUN, GROUPFILE_NO, NOTI_PART
+			FROM TB_NOTI_PERGRP
+			WHERE 1=1
+		]]>
+				<if test="searchValue != ''">
+					<choose>
+						<when test="searchKey == ''">
+							AND TITLE LIKE '%' || #{searchValue} || '%' OR CONTENT LIKE '%' || #{searchValue} || '%'
+						</when>
+						<otherwise>
+							AND ${searchKey} LIKE '%' || #{searchValue} || '%' 
+						</otherwise>
+					</choose>
+				</if>
+				<if test="userNo != ''">
+					AND WUSERNO = #{userNo}
+				</if>
+			ORDER BY SEQ DESC
+	</sql>
+	<select id="selectNotiPerGrpListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount2"></include>
+		<include refid="selectNotiPerGrpListCommon"></include>
+		<include refid="page.pageTotalCount2Foot"></include>
+	</select>
+	<select id="selectNotiPerGrpList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<include refid="selectNotiPerGrpListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<select id="selectNotiPerGrpRow" parameterType="Integer" resultType="DataMap">
+	<![CDATA[
+		-- 개인 그룹 공지 관리 상세내용
+		SELECT 
+			SEQ, TITLE, CONTENT, WUSERNO, USERNAME, 
+			REGDATE, VISIT, NOTI_GUBUN, GROUPFILE_NO, NOTI_PART 
+		FROM TB_NOTI_PERGRP 
+		WHERE SEQ = #{value}
+
+	]]>
+	</select>
+	
+	<update id="updateNotiPerGrpVisitCnt" parameterType="Integer">
+	<![CDATA[
+		-- 개인 그룹 공지 관리 상세내용
+		UPDATE TB_NOTI_PERGRP SET 
+			VISIT= VISIT+1 
+		WHERE SEQ = #{value}
+	]]>
+	</update>
+	
+</mapper>

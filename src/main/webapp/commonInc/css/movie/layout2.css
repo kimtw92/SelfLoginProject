@@ -1,0 +1,43 @@
+@charset	"utf-8";
+/* Layout Definition */
+@import url('board.css');
+@import url('footer.css');
+
+body{text-align:center; margin:auto; padding:auto;color:#666;font-size:12px;font-family:Dotum, "µ¸¿ò",sans-serif;}
+div, p, h1, h2, h3, h4, h5, h6, span, th, td, li, dt, dd, form { margin:0; padding:0; }
+select, input, textarea	{font-family:Dotum, "µ¸¿ò", sans-serif; color:#666;}
+form, div, p, fieldset, ol, ul, dl {margin:0; padding:0;}
+legend, hr {display:none;}
+ul, ol	   {list-style:none;}
+
+img	{border:0;}
+a, 	a:link, a:visited {color:#666666; text-decoration:none; cursor:pointer;}
+a:hover, a:active {color:#333333; text-decoration:none; cursor:pointer;}
+.t11px {font-size:11px; font-family:µ¸¿ò; }
+
+/* Input Type Set */
+input.radio {vertical-align:middle;}
+input.input01 { border:2px solid #516195;}
+.vm1 {vertical-align: -0.45em; }
+
+span.alignR {float:right;}
+span.alignL {float:left;}
+
+/* div ÀÚµ¿½ºÅ©·Ñ ½ºÅ¸ÀÏ */
+div { 	
+	scrollbar-face-color:#fff;
+    scrollbar-shadow-color:#e4e4e4;
+    scrollbar-highlight-color:#e4e4e4;
+    scrollbar-3dlight-color:#fff;
+    scrollbar-darkshadow-color:#fff;
+    scrollbar-track-color:#e4e4e4;
+    scrollbar-arrow-color:#666;
+}
+
+/* title */
+h2.stit { margin:0; padding:0 0 10px 18px; background:url(/images/common/h2Bul.gif) no-repeat left 0; color:#254776; font-size:12px; font-weight:bold;}
+
+/*#dvwh*************************************/
+#wrapper{width:640px; margin:20px; padding:15 auto;}
+#wrapper .bList01{text-align:center; border:1px solid #f6f6f6; margin-top:10px;}
+

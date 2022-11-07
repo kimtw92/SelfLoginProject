@@ -1,0 +1,157 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+
+<%
+// prgnm 	: 입교안내
+// date		: 2008-08-07
+// auth 	: kang
+%>
+
+<%@ include file="/commonInc/include/commonImport.jsp" %>
+<%@ include file="/commonInc/include/comInclude.jsp" %>
+<jsp:include page="/commonInc/include/comHtmlTop.jsp" flush="false">
+	<jsp:param name="cssName" value="layout" />
+</jsp:include>
+
+<%
+// 공지사항 리스트
+	DataMap listMap = (DataMap)request.getAttribute("EAT_LIST");
+	listMap.setNullToInitialize(true);
+	
+	StringBuffer eatTitleHtml = new StringBuffer();
+	StringBuffer eatHeaderHtml = new StringBuffer();
+	StringBuffer eatContentsHtml = new StringBuffer();
+	
+	
+	eatTitleHtml.append(listMap.getString("fyear", 0)+"년 "+listMap.getString("fmonth", 0)+"월 "+String.valueOf(listMap.getInt("week_order", 0))+"째주 식단표");
+
+	eatHeaderHtml.append("<th class=\"bl0\">"+listMap.getString("fmonth", 0)+"."+listMap.getString("fdate", 0)+" (월)</th>");
+	eatHeaderHtml.append("<th>"+listMap.getString("fmonth", 1)+"."+listMap.getString("fdate", 1)+" (화)</th>");
+	eatHeaderHtml.append("<th>"+listMap.getString("fmonth", 2)+"."+listMap.getString("fdate", 2)+" (수)</th>");
+	eatHeaderHtml.append("<th>"+listMap.getString("fmonth", 3)+"."+listMap.getString("fdate", 3)+" (목)</th>");
+	eatHeaderHtml.append("<th>"+listMap.getString("fmonth", 4)+"."+listMap.getString("fdate", 4)+" (금)</th>");
+
+	eatContentsHtml.append("<td>"+listMap.getString("content", 0)+"</td>");
+	eatContentsHtml.append("<td>"+listMap.getString("content", 1)+"</td>");
+	eatContentsHtml.append("<td>"+listMap.getString("content", 2)+"</td>");
+	eatContentsHtml.append("<td>"+listMap.getString("content", 3)+"</td>");
+	eatContentsHtml.append("<td>"+listMap.getString("content", 4)+"</td>");
+
+	
+%>
+
+<body leftmargin="0" topmargin="0" marginwidth=0 marginheight="0" >
+
+<form id="pform" name="pform" method="post">
+
+<div id="wrapper">
+	<div id="dvwhset">
+		<div id="dvwh">
+		
+			<!--[s] header -->
+			<jsp:include page="/commonInc/include/comHeader.jsp" flush="false">
+				<jsp:param name="topMenu" value="7" />
+			</jsp:include>
+			<!--[e] header -->						
+			
+			<div id="middle">			
+				<!--[s] left -->
+				<jsp:include page="/commonInc/include/comLeftMenu.jsp" flush="false">
+					<jsp:param name="leftMenu" value="6" />
+					<jsp:param name="leftIndex" value="4" />
+				</jsp:include>
+				<!--[e] left -->
+
+
+
+				<!-- contentOut s ===================== -->
+				<div id="subContentArear">
+					<!-- content image -->
+					<div id="contImg"><img src="/images/<%= skinDir %>/sub/img_cont05.gif" alt="" /></div>
+					<!-- //content image -->
+			
+					<!-- title/location -->
+					<div id="top_title">
+						<h1 id="title"><img src="/images/<%= skinDir %>/title/tit_fdMenu.gif" alt="입교안내" /></h1>
+						<div id="location">
+						<ul> 
+							<li class="home"><a href="">HOME</a></li>
+							<li>교육원소개</li>
+							<li class="on">식단표</li>
+						</ul>
+						</div>
+					</div>
+					<!-- title/location -->
+					<div class="spaceTop"></div>
+
+		<!-- content s ===================== -->
+		<div id="content">
+			<!-- title --> 
+			<h2 class="h2Ltxt"><%=eatTitleHtml %></h2>
+			<!-- //title -->
+			<div class="h9"></div>
+
+			<!-- data -->
+			<table class="dataH04">	
+			<colgroup>
+				<col width="123" />
+				<col width="123" />
+				<col width="123" />
+				<col width="123" />
+				<col width="123" />
+			</colgroup>
+
+			<thead>
+			<tr>
+				<%=eatHeaderHtml %>
+			</tr>
+			</thead>
+
+			<tbody>
+			<tr>
+				<%=StringReplace.convertContentToWebEdit(eatContentsHtml.toString()) %>
+			</tr>
+			<!-- 
+			<tr class="total">
+				<td>총 700KCal</td>
+				<td>총 700KCal</td>
+				<td>총 700KCal</td>
+				<td>총 700KCal</td>
+				<td>총 700KCal</td>
+			</tr>
+			 -->
+			</tbody>
+			</table>
+			<!-- //data --> 
+			<div class="BtmLine"></div>
+			<div class="space"></div>
+		</div>
+		<!-- //content e ===================== -->
+
+
+
+
+
+
+
+	
+				</div>
+				<!-- //contentOut e ===================== -->
+				
+																								
+				<div class="spaceBtt"></div>
+			</div>			
+		</div>
+		
+		<div id="divQuickMenu">
+			<!--[s] quick -->
+			<jsp:include page="/commonInc/include/comQuick.jsp" flush="false"/>
+			<!--[e] quick -->
+		</div>
+	</div>
+	<!--[s] footer -->
+	<jsp:include page="/commonInc/include/comFoot.jsp" flush="false"/>
+	<!--[e] footer -->
+</div>
+
+</form>
+</body>									

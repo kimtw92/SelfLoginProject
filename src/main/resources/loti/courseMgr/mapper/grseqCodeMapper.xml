@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.GrseqCodeMapper">
+
+	<select id="selectGrseqMngList" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기수 코드 관리 리스트
+		SELECT   
+			SUBSTR (GRSEQ, 1, 4) GR_YEAR, SUBSTR (GRSEQ, 5, 2) SEQ,
+			TO_CHAR (EAPPLYST, 'YYYY.MM.DD HH24') EAPPLYST,
+			TO_CHAR (EAPPLYED, 'YYYY.MM.DD HH24') EAPPLYED,
+			TO_CHAR (EAPPLYED - 1, 'YYYY.MM.DD') || ' 24' PREEAPPLYED,
+			TO_CHAR (ENDAENT, 'YYYY.MM.DD') ENDAENT,
+			TO_CHAR (STARTED, 'YYYY.MM.DD') STARTED,
+			TO_CHAR (ENDDATE, 'YYYY.MM.DD') ENDDATE,
+			PERSON, TDATE,
+			(SELECT COUNT (*) FROM TB_GRSEQ WHERE GRSEQ = A.GRSEQ AND DEPT LIKE SUBSTR (A.DEPT, 1, 2) || '__' AND USE_YN = 'Y') GRSEQ_CNT
+		FROM TB_GRSEQMNG A
+		WHERE GRSEQ LIKE #{year} || '__' AND DEPT = #{dept}
+		ORDER BY GRSEQ
+	]]>
+	</select>
+	
+	<select id="selectGrseqMngRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 기수 코드 관리 상세 정보.
+		SELECT 
+			TDATE, PERSON, RPGRAD, GR_POINT, COMPLETE_TIME,
+			TO_CHAR(EAPPLYST, 'YYYYMMDDHH24') EAPPLYST, TO_CHAR(EAPPLYED, 'YYYYMMDDHH24') EAPPLYED, 
+			TO_CHAR(EAPPLYED-1, 'YYYYMMDDHH')||'24' PREEAPPLYED, 
+			TO_CHAR(STARTED, 'YYYYMMDD') STARTED, TO_CHAR(ENDDATE, 'YYYYMMDD') ENDDATE, 
+			TO_CHAR(ENDSENT, 'YYYYMMDD') ENDSENT, TO_CHAR(ENDAENT, 'YYYYMMDD') ENDAENT
+		FROM TB_GRSEQMNG 
+		WHERE GRSEQ = #{grseq}
+			AND DEPT = #{dept}
+	]]>
+	</select>
+	
+	<select id="selectGrseqMngMaxSeq" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 기수 코드 관리 Max+1 seq 가져 오기.
+		SELECT 
+			NVL(MAX(SUBSTR(GRSEQ, 5, 2)), 0)+ 1 MAX_SEQ 
+		FROM TB_GRSEQMNG 
+		WHERE GRSEQ LIKE #{year} || '__' 
+			AND DEPT = #{dept} 
+		ORDER BY GRSEQ
+	]]>
+	</select>
+	
+	<select id="selectGrseqMngGrseqChk" parameterType="Map" resultType="int">
+	<![CDATA[
+		-- 기수 코드 존재 여부.
+        SELECT 
+            COUNT(1) AS CNT
+        FROM TB_GRSEQMNG 
+        WHERE DEPT = #{dept} AND GRSEQ = #{grseq}
+	]]>
+	</select>
+	
+	<insert id="insertGrseqMng" parameterType="Map">
+	<![CDATA[
+		-- 기수 코드 관리 등록
+		INSERT INTO TB_GRSEQMNG 
+			(DEPT, GRSEQ, EAPPLYST, EAPPLYED, STARTED, 
+			 ENDDATE, TDATE, PERSON, ENDSENT, ENDAENT, 
+			 RPGRAD, GR_POINT, COMPLETE_TIME) 
+		VALUES 
+			( #{dept}, #{grseq}, TO_DATE(#{eapplyst}, 'YYYYMMDDHH24'), TO_DATE(#{eapplyed}, 'YYYYMMDDHH24'), #{started}, 
+			  #{enddate}, #{tdate}, #{person}, #{endsent}, #{endaent}, 
+			  #{rpgrad}, #{grPoint}, #{completeTime}) 
+	]]>
+	</insert>
+	
+	<update id="updateGrseqMng" parameterType="Map">
+	<![CDATA[
+		-- 기수 코드 관리 수정
+		UPDATE TB_GRSEQMNG SET 
+			EAPPLYST	= TO_DATE(#{eapplyst}, 'YYYYMMDDHH24'), 
+			EAPPLYED    = TO_DATE(#{eapplyed}, 'YYYYMMDDHH24'), 
+			ENDSENT     = #{endsent} ,
+			ENDAENT     = #{endaent} ,
+			STARTED     = #{started} ,
+			ENDDATE     = #{enddate} ,
+			TDATE       = #{tdate} ,
+			PERSON      = #{person} ,
+			RPGRAD      = #{rpgrad} ,
+			GR_POINT    = #{grPoint} ,
+			COMPLETE_TIME    = #{completeTime} 
+		WHERE DEPT = #{dept} 
+			AND GRSEQ = #{grseq}
+	]]>
+	</update>
+	
+	<delete id="deleteGrseqMng" parameterType="Map">
+	<![CDATA[
+		-- GrseqCodeDAO.java
+		-- 기수 코드 관리 삭제
+		DELETE FROM TB_GRSEQMNG 
+		WHERE DEPT = #{dept} 
+			AND GRSEQ = #{grseq}
+	]]>
+	</delete>
+</mapper>

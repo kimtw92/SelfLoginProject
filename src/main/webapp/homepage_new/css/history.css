@@ -1,0 +1,15 @@
+div.history { float:left; width:665px; padding-top:0px; padding-bottom:20px; margin:0px; }
+div.history div.history01{ float:left; width:665px; height:10px; margin:0px;background: url(../images/history/history_box_top.gif) repeat-x left top;}
+div.history div.history02{ float:left; width:665px; height:10px; margin:0px;background: url(../images/history/history_box_bottom.gif) repeat-x left bottom;}
+div.history div.history_wrap{ float:left; width:665px; padding-bottom:29px; margin:0px;background: url(../images/history/history_box_bg.gif) repeat-y left top;}
+div.history div.history_wrap02{ float:left; width:665px; padding-bottom:10px; margin:0px;background: url(../images/history/history_box_bg.gif) repeat-y left top;}
+div.history div.his_left{ float:left; width:145px; padding:0px; margin:0px; }
+div.history div.his_left img{ vertical-align:top; padding-left:30px; padding-top:4px; }
+div.history div.his_right{ float:left; width:500px; padding-top:8px; margin:0px; }
+
+div.history dl{ float:left; width:500px; background: url(../images/history/dot_line.gif) repeat-x 30px bottom; padding-top:0px; padding-bottom:0px; margin:0px; }
+div.history dl dt{ float:left; width:35px;padding-left:23px; color:#4C99D0; font-weight:bold; line-height:18px; }
+div.history dl dt img{ vertical-align:top; padding-left:30px; }
+div.history dl dd{ float:left; width:420px; padding-left:4px; padding-bottom:5px;color:#646464; line-height:16px; }
+div.history dl dd b{ color:#156dbd; }
+

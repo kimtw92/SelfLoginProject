@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.homepageMgr.mapper.BoardMapper">
+
+	<resultMap type="DataMap" id="clobDataMap">
+		<result property="CONTENT"  column="CONTENT" javaType="String" jdbcType="CLOB" typeHandler="org.apache.ibatis.type.ClobTypeHandler"></result>
+	</resultMap>
+
+	<update id="updateBbsBoardVisit" parameterType="Map">
+	<![CDATA[
+		-- 사용자게시판 조회수 증가
+		UPDATE 
+			${tableName}
+		SET
+			VISIT  = #{visit}
+		WHERE 
+			SEQ		= #{seq}
+	]]>
+	</update>
+	
+	<select id="selectbbsBoardViewWithPhoneAndAddr" parameterType="Map" resultMap="clobDataMap">
+	<![CDATA[
+		SELECT 
+					SEQ
+					, TOP_RANK
+					, (SELECT USER_ID FROM TB_MEMBER WHERE USERNO = WUSERNO) USER_ID
+					, WUSERNO
+					, USERNAME
+					, PASSWD
+					, EMAIL
+					, REGDATE
+					, TITLE
+					, STEP
+					, DEPTH
+					, VISIT
+					, GROUPFILE_NO
+					, REMOTE_IP
+					, CONTENT
+					, PHONE
+					, POST1
+					, POST2
+					, ADDR 
+		FROM 
+					TB_BOARD_${boardId} 
+		WHERE 	SEQ =#{seq}
+	]]>
+	</select>
+	
+	<select id="selectbbsBoardViewWithoutPhoneAndAddr" parameterType="Map" resultMap="clobDataMap">
+	<![CDATA[
+		SELECT 
+					SEQ
+					, TOP_RANK
+					, (SELECT USER_ID FROM TB_MEMBER WHERE USERNO = WUSERNO) USER_ID
+					, WUSERNO
+					, USERNAME
+					, PASSWD
+					, EMAIL
+					, REGDATE
+					, TITLE
+					, STEP
+					, DEPTH
+					, VISIT
+					, GROUPFILE_NO
+					, REMOTE_IP
+					, CONTENT
+		FROM 
+					TB_BOARD_${boardId}
+		WHERE 	SEQ =#{seq}
+	]]>
+	</select>
+	
+	<update id="deleteBbsBoard" parameterType="String">
+	<![CDATA[
+		-- 최소 step값 
+		${value}
+	]]>
+	</update>
+	
+	<update id="modifyBbsBoard" parameterType="Map">
+	<![CDATA[
+		-- 사용자 게시판 수정
+		UPDATE 
+			${tableName}
+		SET
+			TITLE	= #{title},
+			CONTENT = #{namoContent},
+			GROUPFILE_NO = #{fileGroupNo}
+	]]>
+			<if test="boardId == 'EPILOGUE'">
+			 , GRCODE = #{pGrcode, jdbcType=VARCHAR},
+			 GRSEQ = #{pGrseq, jdbcType=VARCHAR},
+			 GRCODENIKNM = #{pGrcodeNiknm, jdbcType=VARCHAR}
+			 </if>
+	<![CDATA[		
+		WHERE 
+			SEQ		= #{seq}
+	]]>
+	</update>
+	
+	<select id="selectBbsBoardMinNoRow" parameterType="Map" resultType="java.lang.Double">
+	<![CDATA[
+		-- 최소 step값 
+		SELECT NVL(MIN(STEP),0) AS REPLY 
+		${tableName}
+		WHERE DEPTH= #{depth} AND STEP <= #{step} AND STEP > #{minSetp}
+		
+	]]>
+	</select>
+	
+	<select id="selectBbsPopup" resultType="ut.lib.support.DataMap">
+	<![CDATA[
+		-- BoardMapper.java
+		-- 게시판 Q&A 리스트 (시스템관리자 > 팝업)
+		SELECT SEQ, TOP_RANK, TITLE, WUSERNO, USERNAME, EMAIL, REGDATE, go_url, reCnt FROM (
+			SELECT SEQ, TOP_RANK, TITLE, WUSERNO, USERNAME, EMAIL, REGDATE,
+			       '/homepageMgr/board/bbs.do?mode=bbsBoardView&qu=selectBbsBoardview&boardName=%EB%AC%B8%EC%9D%98%EB%B0%8F%EB%8B%B5%EB%B3%80&boardId=QNA&menuId=6-3-1&sessClass=0&seq='
+				   || SEQ as go_url,
+				   (select count(*) from tb_board_qna b where depth > 0 and X.step > b.step AND X.step < (b.step +1)) as reCnt
+				   --PASSWD,
+				   --STEP,
+				   --DEPTH,
+				   --GROUPFILE_NO,
+				   --VISIT,	   
+				   --REMOTE_IP
+			FROM TB_BOARD_QNA X
+			WHERE 1=1
+				  AND DEPTH = 0
+				  AND sysdate-7 < regdate
+		) Z
+		WHERE reCnt = 0
+	]]>
+	</select>
+	
+	<sql id="selectBoardListCommon">
+	<![CDATA[
+		-- 게시물관리 리스트 
+        SELECT A.BOARD_ID AS BOARD_ID,A.BOARD_NAME AS BOARD_NAME,A.USE_YN AS USE_YN,A.LDATE AS LDATE
+                ,A.MENUID AS MENUID , (SELECT NAME FROM tb_member WHERE USERNO = A.LUSERNO) AS NAME
+        FROM   TB_BOARD_MNGER A
+        WHERE 1=1
+        ORDER BY MENUID ASC
+	]]>
+	</sql>
+	<select id="selectBoardListCount" resultType="Integer">
+		<include refid="page.pageTotalCount2"></include>
+		<include refid="selectBoardListCommon"></include>
+		<include refid="page.pageTotalCount2Foot"></include>
+	</select>
+	<select id="selectBoardList" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<include refid="selectBoardListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<select id="selectBoardManagerRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 게시판 기본정보
+       SELECT 
+       		BOARD_ID, BOARD_NAME, FILE_YN, REPLY_YN, USE_YN, LUSERNO, MENUID, CONTLINK_YN 
+       FROM 
+       		TB_BOARD_MNGER 
+       WHERE 
+       		BOARD_ID = #{value}
+	]]>
+	</select>
+	
+	<select id="selectAuthBoardRow" parameterType="String" resultType="DataMap">
+	<![CDATA[
+		-- 게시판 권한 정보
+          SELECT 
+              BOARD_ID, BOARD_GRADE,
+              BOARD_READ, BOARD_WRITE, BOARD_DELETE, BOARD_DOWNLOAD 
+          FROM 
+              TB_BOARD_MNGER_AUTH 
+          WHERE 
+              BOARD_ID = #{value}
+	]]>
+	</select>
+	
+	<select id="selectUseBoardAuthRow" parameterType="Map" resultType="DataMap">
+	<![CDATA[
+		-- 사용자 게시판 권한 정보
+          SELECT 
+              BOARD_ID, BOARD_GRADE,
+              BOARD_READ, BOARD_WRITE, BOARD_DELETE, BOARD_DOWNLOAD 
+          FROM 
+              TB_BOARD_MNGER_AUTH 
+          WHERE 
+              BOARD_ID = #{boardId} AND BOARD_GRADE = #{sessClass}
+	]]>
+	</select>
+	
+	<select id="selectGadminBoardRow" resultType="DataMap">
+	<![CDATA[
+		-- 권한선택 데이터
+    	 SELECT 
+    	 	GADMIN, GADMINNM 
+    	 FROM 
+    	 	TB_GADMIN 
+    	 ORDER BY GADMIN
+	]]>
+	</select>
+	
+	<update id="updateDefaultInfo" parameterType="Map">
+	<![CDATA[
+		-- 게시판 기본정보 변경
+    	 UPDATE 
+    	 	TB_BOARD_MNGER 
+    	 SET 
+    	 	BOARD_NAME= #{boardName}, FILE_YN= #{fileYn}, REPLY_YN= #{replyYn}, USE_YN= #{useYn}, MENUID = #{menuid}, CONTLINK_YN= #{contlinkYn} 
+    	 WHERE 
+    	 	BOARD_ID = #{boardId}
+	]]>
+	</update>
+	
+	<update id="deleteAuthBoardInfo" parameterType="String">
+	<![CDATA[
+		-- 게시판 권한 설정 하기전 기존 권한을 삭제한다
+    	 DELETE FROM 
+    	 			TB_BOARD_MNGER_AUTH 
+    	 		WHERE 
+    	 			BOARD_ID = #{value}
+	]]>
+	</update>
+	
+	<update id="insertAuthBoardInfo" parameterType="Map">
+	<![CDATA[
+		-- 게시판 권한 등록
+    	INSERT INTO 
+    		TB_BOARD_MNGER_AUTH 
+				  (BOARD_ID, BOARD_GRADE, BOARD_READ, BOARD_WRITE, BOARD_DELETE, BOARD_DOWNLOAD)
+			VALUES
+				  (#{boardId}, #{gadmin}, #{write}, #{read}, #{delete}, #{download})
+	]]>
+	</update>
+	
+	<select id="selectBoardIdChk" parameterType="String" resultType="Integer">
+	<![CDATA[
+		-- 게시판 아이디 체크
+    	SELECT COUNT(*) AS COUNT FROM TB_BOARD_MNGER WHERE BOARD_ID = #{value}
+	]]>
+	</select>
+	
+	<update id="insertBoardMnger" parameterType="Map">
+	<![CDATA[
+		-- 게시판 기본정보 등록
+    	 INSERT INTO 
+    	 	TB_BOARD_MNGER 
+    	 		(BOARD_ID, BOARD_NAME, FILE_YN, REPLY_YN, USE_YN, LUSERNO, LDATE, MENUID, CONTLINK_YN)
+    	 	VALUES
+				(#{boardId}, #{boardName}, #{fileYn}, #{replyYn}, #{useYn}, #{sessNo}, SYSDATE, #{menuid}, #{contlinkYn})	
+	]]>
+	</update>
+	
+	<update id="createBoardTable" parameterType="String">
+	<![CDATA[
+		-- 게시판 테이블 생성
+		
+		CREATE TABLE TB_BOARD_${value}
+	         (
+                SEQ NUMBER(10) NOT NULL
+                , TOP_RANK NUMBER(5)
+                , WUSERNO VARCHAR2(13 BYTE)
+                , USERNAME VARCHAR2(20 BYTE)
+                , PASSWD VARCHAR2(40 BYTE)
+                , EMAIL VARCHAR2(50 BYTE)
+                , REGDATE DATE
+                , TITLE VARCHAR2(255 BYTE)
+                , STEP NUMBER(16,10)
+                , DEPTH NUMBER(3)
+                , VISIT NUMBER(5)
+                , GROUPFILE_NO NUMBER(10)
+                , REMOTE_IP VARCHAR2(50 BYTE)
+                , CONTENT CLOB
+                , PHONE VARCHAR2(50 BYTE) 
+				, POST1 VARCHAR2(3 BYTE) 
+				, POST2 VARCHAR2(3 BYTE) 
+				, ADDR VARCHAR2(1000 BYTE) 
+            )
+	]]>
+	</update>
+	
+	<update id="setBoardTablePk" parameterType="String">
+	<![CDATA[
+		-- 게시판 테이블 pk지정
+		ALTER TABLE TB_BOARD_${value} ADD (CONSTRAINT PK_TB_BOARD_${value}  PRIMARY KEY (SEQ))
+	]]>
+	</update>
+	
+	<update id="setBoardTableComment" parameterType="String">
+	<![CDATA[
+		-- 게시판 코멘트 입력
+		COMMENT ON TABLE TB_BOARD_${value} IS  '${value}'
+	]]>
+	</update>
+	
+	<update id="dropBoardTable" parameterType="String">
+	<![CDATA[
+		-- 게시판 삭제하기전 테이블 드랍
+    	ALTER TABLE TB_BOARD_${value} DROP CONSTRAINT PK_TB_BOARD_${value}
+	]]>
+	</update>		
+	
+	<update id="renameBoardTable" parameterType="Map">
+	<![CDATA[
+		-- 게시판 삭제하기전 테이블 드랍
+    	ALTER TABLE TB_BOARD_${boardId} RENAME TO DEL_${time}_${boardId}
+	]]>
+	</update>		
+	
+	<update id="deleteBoardManager" parameterType="String">
+	<![CDATA[
+		-- 기본정보삭제
+    	DELETE FROM TB_BOARD_MNGER WHERE BOARD_ID = #{value}
+	]]>
+	</update>
+	
+	<update id="deleteBoardAuth" parameterType="String">
+	<![CDATA[
+		-- 게시판 권한 삭제
+    	DELETE FROM TB_BOARD_MNGER_AUTH WHERE BOARD_ID = #{value}
+	]]>
+	</update>
+	
+	<sql id="selectBbsBoardListCommon">
+	<![CDATA[
+	-- 사용자 게시판 리스트
+		SELECT SEQ,TOP_RANK,WUSERNO,USERNAME,PASSWD,EMAIL,REGDATE,TITLE,STEP,DEPTH,VISIT,GROUPFILE_NO,REMOTE_IP
+        ${whereSearch}
+        ${query}
+        ORDER BY STEP DESC
+	]]>
+	</sql>
+	<select id="selectBbsBoardListCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount2"></include>
+		<include refid="selectBbsBoardListCommon"></include>
+		<include refid="page.pageTotalCount2Foot"></include>
+	</select>
+	<select id="selectBbsBoardList" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<include refid="selectBbsBoardListCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	
+	<select id="selectbbsBoardViewIncludePostAndPhone" parameterType="Map" resultMap="clobContent">
+		SELECT SEQ, TOP_RANK, (SELECT USER_ID FROM TB_MEMBER WHERE USERNO = WUSERNO)
+	   				 USER_ID, WUSERNO, USERNAME, PASSWD, EMAIL, REGDATE, TITLE, STEP, DEPTH, VISIT,
+	   				 GROUPFILE_NO, REMOTE_IP, CONTENT 
+	 	FROM TB_BOARD_${boardId} WHERE SEQ = #{seq}
+	</select>
+	
+	<select id="selectbbsBoardViewQna" parameterType="Map" resultMap="clobContent">
+		SELECT decode(depth,0,to_char(wuserno),(select max(wuserno) from TB_BOARD_QNA a where a.seq = round(b.step,1))) topuserno, SEQ, TOP_RANK, (SELECT USER_ID FROM TB_MEMBER WHERE USERNO = WUSERNO)
+				  USER_ID, WUSERNO, USERNAME, PASSWD, EMAIL, REGDATE, TITLE, STEP, DEPTH, VISIT,
+				  GROUPFILE_NO, REMOTE_IP, CONTENT, PHONE, POST1, POST2, ADDR 
+	  	FROM TB_BOARD_${boardId} b WHERE SEQ =#{seq}
+	</select>
+	
+	<resultMap type="DataMap" id="clobContent">
+		<result property="CONTENT"  column="CONTENT" javaType="String" jdbcType="CLOB" typeHandler="org.apache.ibatis.type.ClobTypeHandler"></result>
+	</resultMap>
+	
+	<select id="selectbbsBoardViewExceptPostAndPhone" parameterType="Map" resultMap="clobContent">
+		SELECT SEQ, TOP_RANK, (SELECT USER_ID FROM TB_MEMBER WHERE USERNO = WUSERNO)
+				  USER_ID, WUSERNO, USERNAME, PASSWD, EMAIL, REGDATE, TITLE, STEP, DEPTH, VISIT,
+				  GROUPFILE_NO, REMOTE_IP, CONTENT, PHONE, POST1, POST2, ADDR 
+		  FROM TB_BOARD_${boardId} WHERE SEQ = #{seq}
+	</select>
+	
+	<update id="insertBbsBoard" parameterType="Map">
+	<![CDATA[
+		-- 리스트
+		INSERT INTO TB_BOARD_${boardId}
+			(SEQ, WUSERNO, USERNAME, PASSWD, EMAIL, REGDATE, TITLE, STEP, DEPTH, VISIT, GROUPFILE_NO, REMOTE_IP, CONTENT) 
+		VALUES
+			(#{seq}, #{wuserno}, #{username}, #{passwd}, #{email}, SYSDATE, #{title}, #{step}, #{depth}, #{visit}, #{groupfileNo}, #{ip}, #{namoContent})
+	]]>
+	</update>
+	
+	<select id="selectbbsBoardViewWithEpilogue" parameterType="Map" resultMap="clobDataMap">
+	<![CDATA[
+		SELECT 
+					SEQ
+					, decode(depth,0,to_char(wuserno),(select max(wuserno) from TB_BOARD_EPILOGUE a where a.seq = round(b.step,1))) topuserno
+					, TOP_RANK
+					, (SELECT USER_ID FROM TB_MEMBER WHERE USERNO = WUSERNO) USER_ID
+					, WUSERNO
+					, USERNAME
+					, REGDATE
+					, TITLE
+					, STEP
+					, DEPTH
+					, VISIT
+					, GROUPFILE_NO
+					, REMOTE_IP
+					, CONTENT
+					, GRCODE
+					, GRSEQ
+					, GRCODENIKNM
+		FROM 
+					TB_BOARD_EPILOGUE b
+		WHERE 	SEQ =#{seq}
+	]]>
+	</select>
+	
+	<select id="selectbbsBoardPersonView" parameterType="Map" resultMap="clobContent">
+		SELECT 
+			SEQ, 
+			USERNAME,
+			PHONE ,
+			TITLE,
+			CONTENT,
+			REGDATE
+	  	FROM TB_BOARD_PERSON b 
+	  	WHERE SEQ =#{seq}
+	</select>
+	
+	<update id="modifyBbsBoardPerson" parameterType="Map">
+	<![CDATA[
+		-- 사용자 게시판 수정
+		UPDATE 
+			TB_BOARD_PERSON
+		SET
+			TITLE	= #{title},
+			CONTENT = #{namoContent},
+			USERNAME = #{username},
+			PHONE = #{phone}
+		WHERE 
+			SEQ		= #{seq}
+	]]>
+	</update>
+	
+	<update id="deleteBbsBoardPerson" parameterType="String">
+	<![CDATA[
+		-- 최소 step값 
+		${value}
+	]]>
+	</update>
+			
+	<select id="selectBoardPersonListCount" resultType="Integer">
+	<![CDATA[
+		SELECT COUNT(*) FROM (
+		SELECT 
+			NVL(SEQ, 0)
+	  	FROM TB_BOARD_PERSON 
+		)
+	]]>
+	</select> 
+	
+	<select id="selectBoardPersonList" parameterType="Map" resultMap="clobContent">
+	<![CDATA[
+		SELECT * FROM ( SELECT ROWNUM nPaging_rnum, nQuery.* FROM (
+		SELECT 
+			SEQ, 
+			USERNAME,
+			PHONE,
+			TITLE,
+			PASSWD,
+			REGDATE
+	  	FROM TB_BOARD_PERSON 
+		) nQuery 
+		WHERE ROWNUM <= #{page.end}
+		) 
+		WHERE nPaging_rnum >= #{page.start}
+	]]>
+	</select>
+	
+	<update id="modifyBoardPerson" parameterType="Map">
+	<![CDATA[
+		UPDATE 
+			TB_BOARD_PERSON
+		SET
+			TITLE	= #{title},
+			CONTENT = #{namoContent},
+			USERNAME = #{username},
+			PHONE = #{phone}
+		WHERE 
+			SEQ		= #{seq}
+	]]>
+	</update>
+	
+	<insert id="insertBoardPerson" parameterType="Map">
+	<![CDATA[
+		-- 사용자 게시판 등록
+		INSERT INTO 
+			TB_BOARD_PERSON
+			(SEQ, USERNAME, TITLE, REMOTE_IP, CONTENT, PHONE, PASSWD, REGDATE)
+		VALUES
+			((SELECT NVL(MAX(SEQ),0)+1 AS SEQ FROM TB_BOARD_PERSON), #{title}, #{username}, #{namoContent}, #{remoteIp}, #{content}, #{phone}, #{passwd}, SYSDATE)
+	]]>
+	</insert>		
+</mapper>

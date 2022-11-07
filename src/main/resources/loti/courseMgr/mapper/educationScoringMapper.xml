@@ -1,0 +1,949 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.courseMgr.mapper.EducationScoringMapper">
+
+	<select id="countExamAnsByKey" parameterType="Map" resultType="Integer">
+		SELECT COUNT(*) FROM ETEST.EXAM_ANS
+		WHERE 1=1
+		AND ID_COMPANY = #{idCompany}
+		AND USERID = #{userid}
+		AND ID_EXAM = #{idExam}
+		AND ID_SUBJECT = #{idSubject}
+	</select>
+	
+	<update id="updateExamAns" parameterType="Map">
+		UPDATE ETEST.EXAM_ANS
+			SET NR_SET = #{nrSet}
+			, EXAM_NO = #{examNo}
+			, START_TIME = #{startTime, jdbcType=DATE}
+			, END_TIME = #{endTime, jdbcType=DATE}
+			, ANSWERS = #{answers}
+			, OXS = #{oxs}
+			, POINTS = #{points}
+			, SCORE = #{score, jdbcType=NUMERIC}
+			, USER_IP = #{userIp}
+		WHERE 1=1
+			AND ID_COMPANY = #{idCompany}
+			AND USERID = #{userid}
+			AND ID_EXAM = #{idExam}
+			AND ID_SUBJECT = #{idSubject}
+	</update>
+	
+	<update id="insertExamAns" parameterType="Map">
+		INSERT INTO ETEST.EXAM_ANS (
+				ID_COMPANY
+				, USERID
+				, ID_EXAM
+				, ID_SUBJECT
+				, NR_SET
+				, EXAM_UNIT
+				, START_TIME
+				, END_TIME
+				, REMAIN_TIME
+				, ANSWERS
+				, OXS
+				, SCORE
+				, POINTS
+				, USER_IP
+				)
+		VALUES (
+				#{idCompany, jdbcType=VARCHAR}
+				, #{userid, jdbcType=VARCHAR}
+				, #{idExam, jdbcType=VARCHAR}
+				, #{idSubject, jdbcType=VARCHAR}
+				, #{nrSet, jdbcType=NUMERIC}
+				, #{examUnit, jdbcType=NUMERIC}
+				, #{startTime, jdbcType=DATE}
+				, #{endTime, jdbcType=DATE}
+				, #{remainTime, jdbcType=NUMERIC}
+				, #{answers, jdbcType=VARCHAR}
+				, #{oxs, jdbcType=VARCHAR}
+				, #{score, jdbcType=NUMERIC}
+				, #{points, jdbcType=VARCHAR}
+				, #{userIp, jdbcType=VARCHAR}
+				)
+	</update>
+	
+	<update id="deleteExamAns" parameterType="Map">
+		DELETE ETEST.EXAM_ANS
+		WHERE ID_COMPANY = #{idCompany}
+			AND USERID = #{userid}
+			AND ID_EXAM = #{idExam}
+			AND ID_SUBJECT = #{idSubject}
+	</update>
+	
+	<update id="deleteExamAnsByIdCompanyAndIdExamAndIdSubject" parameterType="Map">
+		DELETE ETEST.EXAM_ANS
+		WHERE ID_COMPANY = #{idCompany}
+			AND ID_EXAM = #{idExam}
+			AND ID_SUBJECT = #{idSubject}
+	</update>
+	
+	<select id="findExamAnsByKeyExceptUserid" parameterType="Map" resultType="DataMap">
+		SELECT 		
+			        TM.NAME
+			        , EA.ID_COMPANY
+			        , EA.USERID
+			        , EA.ID_EXAM
+			        , EA.ID_SUBJECT
+			        , EA.NR_SET
+			        , EA.EXAM_NO
+			        , EA.EXAM_UNIT
+			        , EA.START_TIME
+			        , EA.END_TIME
+			        , EA.REMAIN_TIME
+			        , EA.YN_END
+			        , EA.ANSWERS
+			        , EA.OXS
+			        , EA.POINTS
+			        , EA.USER_FILE
+			        , EA.PROF_FILE
+			        , EA.PROF_COMMENT
+			        , EA.SCORE
+			        , EA.SCORE_BAK
+			        , EA.SCORE_LOG
+			        , EA.USER_IP
+			        , EA.YN_MARK  
+		FROM 	ETEST.EXAM_ANS EA
+		JOIN 		TB_MEMBER TM
+		ON 		TM.USERNO = EA.USERID
+		WHERE 	EA.ID_COMPANY = #{idCompany}
+			AND 	EA.ID_EXAM = #{idExam}
+			AND 	EA.ID_SUBJECT = #{idSubject}
+	</select>
+	
+	<select id="findOneGrseqByKey" parameterType="Map" resultType="DataMap">
+		<![CDATA[
+		SELECT GS.GRCODE
+		     , GS.GRSEQ
+		     , GS.CAFE_YN
+		     , GS.GROUPFILE_NO
+		     , CD.GRCODENM AS GRCODENM
+		     , CD.GRGUBUN
+		     , NVL(SQ.SUBJ_COUNT, 0) AS SUBJ_COUNT
+		  FROM TB_GRSEQ GS
+             , TB_GRCODE CD
+             , (SELECT COUNT(0) AS SUBJ_COUNT, GRCODE, GRSEQ FROM TB_SUBJSEQ WHERE 1=1 AND LEC_TYPE <> 'P' GROUP BY GRCODE, GRSEQ) SQ
+		 WHERE 1=1
+		   AND CD.GRCODE = GS.GRCODE
+		   AND SQ.GRCODE(+) = GS.GRCODE
+		   AND SQ.GRSEQ(+) = GS.GRSEQ
+       AND GS.GRSEQ = #{grseq}
+		   AND GS.GRCODE = #{grcode}
+	   ]]>
+	   	<if test="sessGubun == ('1').toString()">
+		   AND TO_CHAR(SYSDATE,'YYYYMMDD') BETWEEN TO_CHAR(GS.STARTED,'YYYYMMDD') AND TO_CHAR(GS.ENDDATE, 'YYYYMMDD')
+		</if>
+	</select>
+	
+	<select id="findStuLecByKeyExceptUserno" parameterType="Map" resultType="DataMap">
+		SELECT 
+		        SUBJ
+		        , GRCODE
+		        , GRSEQ
+		        , USERNO
+		        , NAME
+		        , DEPT
+		        , JIK
+		        , CLASSNO
+		        , AVCOURSE
+		        , AVREPORT
+		        , AVLCOUNT
+		        , TSTEP
+		        , PACCEPT
+		        , GRAYN
+		        , LUSERNO
+		        , LDATE
+		        , AVQUIZ
+		        , LANG_POINT
+		        , QUIZSTEP
+		        , LANG_POINT2
+		        , LANG_POINT3
+		        , LANG_POINT4
+		FROM TB_STU_LEC
+		WHERE 1=1
+		AND SUBJ = #{subj}
+		AND GRCODE = #{grcode}
+		AND GRSEQ = #{grseq}
+	</select>
+	<select id="findBakAnsBySubjAndGrcodeAndGrseqAndIdExamCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount2"></include>
+		<include refid="findBakAnsBySubjAndGrcodeAndGrseqAndIdExamCommon"></include>
+		<include refid="page.pageTotalCount2Foot"></include>
+	</select>
+	<select id="findBakAnsBySubjAndGrcodeAndGrseqAndIdExam" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<include refid="findBakAnsBySubjAndGrcodeAndGrseqAndIdExamCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	<sql id="findBakAnsBySubjAndGrcodeAndGrseqAndIdExamCommon">
+		SELECT 
+			        SL.SUBJ
+			        , SL.GRCODE
+			        , SL.GRSEQ
+			        , SL.USERNO
+	            	, AI.EDUNO
+			        , SL.NAME
+	            	, CHR(EA.NR_SET + ASCII('A')-1) PAPER_TYPE
+			        , SL.DEPT
+			        , SL.JIK
+			        , SL.CLASSNO
+			        , SL.AVCOURSE
+			        , SL.AVREPORT
+			        , SL.AVLCOUNT
+			        , SL.TSTEP
+			        , SL.PACCEPT
+			        , SL.GRAYN
+			        , SL.LUSERNO
+			        , SL.LDATE
+			        , SL.AVQUIZ
+			        , SL.LANG_POINT
+			        , SL.QUIZSTEP
+			        , SL.LANG_POINT2
+			        , SL.LANG_POINT3
+			        , SL.LANG_POINT4
+  			        , SCP.DEC_B64('KEY1',TM.HP) as HP
+					, TM.JIKWI
+					, TM.DEPTSUB
+					, TM.MJIKNM
+			        , EA.ID_EXAM
+			        , EA.ID_SUBJECT
+			        , EA.NR_SET
+			        , EA.EXAM_NO
+			        , EA.EXAM_UNIT
+			        , EA.START_TIME
+			        , EA.END_TIME
+			        , EA.REMAIN_TIME
+			        , EA.YN_END
+			        , EA.ANSWERS
+			        , EA.OXS
+			        , EA.POINTS
+			        , EA.USER_FILE
+			        , EA.PROF_FILE
+			        , EA.PROF_COMMENT
+			        , EA.SCORE
+			        , EA.SCORE_BAK
+			        , EA.SCORE_LOG
+			        , EA.USER_IP
+			        , EA.YN_MARK
+					, CASE 	WHEN EA.YN_END = 'Y' THEN '1' -- '완료'
+			                    -- WHEN EA.ANSWERS IS NULL OR EA.ANSWERS = '' THEN '3' -- '미응시'
+			                    WHEN EA.ID_EXAM IS NULL THEN '3' -- 미응시
+            					WHEN EA.YN_END = 'N' THEN '2' -- '미완료'
+ 			                    WHEN EA.ANSWERS IS NOT NULL AND EA.ANSWERS <![CDATA[<>]]> '' THEN '2' -- '미완료'
+			                    ELSE '0' -- 
+			                    END STARE_TYPE
+			FROM TB_STU_LEC SL
+	      	JOIN TB_MEMBER TM
+      		ON TM.USERNO = SL.USERNO
+			JOIN ETEST.BAK_EXAM_ANS EA
+				ON SL.SUBJ = EA.ID_SUBJECT
+				AND SL.USERNO = EA.USERID
+		    LEFT JOIN TB_APP_INFO AI
+			    ON AI.USERNO = SL.USERNO
+			    AND AI.GRCODE = SL.GRCODE
+			    AND AI.GRSEQ = SL.GRSEQ
+			WHERE 1=1
+				AND SL.SUBJ = #{subj}
+				AND SL.GRCODE = #{grcode}
+				AND SL.GRSEQ = #{grseq}
+				AND (EA.ID_EXAM = #{idExam} OR EA.ID_EXAM IS NULL)
+			ORDER BY AI.EDUNO
+	</sql>
+	
+	<select id="findAnsBySubjAndGrcodeAndGrseqAndIdExamCount" parameterType="Map" resultType="Integer">
+		<include refid="page.pageTotalCount2"></include>
+		<include refid="findAnsBySubjAndGrcodeAndGrseqAndIdExamCommon"></include>
+		<include refid="page.pageTotalCount2Foot"></include>
+	</select>
+	<select id="findAnsBySubjAndGrcodeAndGrseqAndIdExam" parameterType="Map" resultType="DataMap">
+		<include refid="page.pageHead"></include>
+		<include refid="findAnsBySubjAndGrcodeAndGrseqAndIdExamCommon"></include>
+		<include refid="page.pageFoot"></include>
+	</select>
+	<sql id="findAnsBySubjAndGrcodeAndGrseqAndIdExamCommon">
+		SELECT * FROM (
+			SELECT 
+			        SL.SUBJ
+			        , SL.GRCODE
+			        , SL.GRSEQ
+			        , SL.USERNO
+	            	, AI.EDUNO
+			        , SL.NAME
+	            	, CHR(EA.NR_SET + ASCII('A')-1) PAPER_TYPE
+			        , SL.DEPT
+			        , SL.JIK
+			        , SL.CLASSNO
+			        , SL.AVCOURSE
+			        , SL.AVREPORT
+			        , SL.AVLCOUNT
+			        , SL.TSTEP
+			        , SL.PACCEPT
+			        , SL.GRAYN
+			        , SL.LUSERNO
+			        , SL.LDATE
+			        , SL.AVQUIZ
+			        , SL.LANG_POINT
+			        , SL.QUIZSTEP
+			        , SL.LANG_POINT2
+			        , SL.LANG_POINT3
+			        , SL.LANG_POINT4
+			        , SCP.DEC_B64('KEY1',TM.HP) as HP
+					, TM.JIKWI
+					, TM.DEPTSUB
+					, TM.MJIKNM
+			        , EA.ID_EXAM
+			        , EA.ID_SUBJECT
+			        , EA.NR_SET
+			        , EA.EXAM_NO
+			        , EA.EXAM_UNIT
+			        , EA.START_TIME
+			        , EA.END_TIME
+			        , EA.REMAIN_TIME
+			        , EA.YN_END
+			        , EA.ANSWERS
+			        , EA.OXS
+			        , EA.POINTS
+			        , EA.USER_FILE
+			        , EA.PROF_FILE
+			        , EA.PROF_COMMENT
+			        , EA.SCORE
+			        , EA.SCORE_BAK
+			        , EA.SCORE_LOG
+			        , EA.USER_IP
+			        , EA.YN_MARK
+            		, CASE 	WHEN EA.YN_END = 'Y' THEN '1' -- '완료'
+			                    -- WHEN EA.ANSWERS IS NULL OR EA.ANSWERS = '' THEN '3' -- '미응시'
+			                    WHEN EA.ID_EXAM IS NULL THEN '3' -- 미응시
+            					WHEN EA.YN_END = 'N' THEN '2' -- '미완료'
+ 			                    WHEN EA.ANSWERS IS NOT NULL AND EA.ANSWERS <![CDATA[<>]]> '' THEN '2' -- '미완료'
+			                    ELSE '0' -- 
+			                    END STARE_TYPE
+			FROM TB_STU_LEC SL
+	      	JOIN TB_MEMBER TM
+      		ON TM.USERNO = SL.USERNO
+			LEFT JOIN ETEST.EXAM_ANS EA
+				ON SL.SUBJ = EA.ID_SUBJECT
+				AND SL.USERNO = EA.USERID
+		    LEFT JOIN TB_APP_INFO AI
+			    ON AI.USERNO = SL.USERNO
+			    AND AI.GRCODE = SL.GRCODE
+			    AND AI.GRSEQ = SL.GRSEQ
+			WHERE 1=1
+				AND SL.SUBJ = #{subj}
+				AND SL.GRCODE = #{grcode}
+				AND SL.GRSEQ = #{grseq}
+				AND (EA.ID_EXAM = #{idExam} OR EA.ID_EXAM IS NULL)
+			ORDER BY AI.EDUNO
+		    )
+    	WHERE 1=1
+    		<choose>
+	    		<when test="stareType == null or stareType == ''">
+		    		AND STARE_TYPE = '1'
+	    		</when>
+	    		<when test="stareType != null and stareType != ''">
+		    		AND STARE_TYPE = #{stareType}
+	    		</when>
+    		</choose>
+	</sql>
+	
+	<select id="findOneExamIdByIdCourseAndCourseYearAndCourseNo" parameterType="Map" resultType="String">
+		SELECT ID_EXAM
+		FROM 	(
+				SELECT ID_EXAM 
+				FROM ETEST.EXAM_M
+				WHERE ID_COURSE = #{idSubject}
+					AND COURSE_YEAR = #{grcode} 
+					AND COURSE_NO =	#{grseq}
+			ORDER BY REGDATE DESC
+		)
+		WHERE ROWNUM = 1
+	</select>
+	
+	<select id="findUsernoInAppInfoByGrcodeAndGrseqAndEduNo" parameterType="Map" resultType="String">
+		SELECT
+					USERNO
+		FROM TB_APP_INFO A
+		WHERE 1=1
+			AND GRCHK = 'Y'
+			AND GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+            AND EDUNO = #{eduno}
+	</select>
+	
+	<select id="findAnsBySubjAndGrcodeAndGrseqAndYnEnd" parameterType="Map" resultType="Map">
+		SELECT 
+		        SL.SUBJ
+		        , SL.GRCODE
+		        , SL.GRSEQ
+		        , SL.USERNO
+            	, AI.EDUNO
+		        , SL.NAME
+            	, CHR(EA.NR_SET + ASCII('A')-1) PAPER_TYPE
+		        , SL.DEPT
+		        , SL.JIK
+		        , SL.CLASSNO
+		        , SL.AVCOURSE
+		        , SL.AVREPORT
+		        , SL.AVLCOUNT
+		        , SL.TSTEP
+		        , SL.PACCEPT
+		        , SL.GRAYN
+		        , SL.LUSERNO
+		        , SL.LDATE
+		        , SL.AVQUIZ
+		        , SL.LANG_POINT
+		        , SL.QUIZSTEP
+		        , SL.LANG_POINT2
+		        , SL.LANG_POINT3
+		        , SL.LANG_POINT4
+		        , EA.ID_EXAM
+		        , EA.ID_SUBJECT
+		        , EA.NR_SET
+		        , EA.EXAM_NO
+		        , EA.EXAM_UNIT
+		        , EA.START_TIME
+		        , EA.END_TIME
+		        , EA.REMAIN_TIME
+		        , EA.YN_END
+		        , EA.ANSWERS
+		        , EA.OXS
+		        , EA.POINTS
+		        , EA.USER_FILE
+		        , EA.PROF_FILE
+		        , EA.PROF_COMMENT
+		        , EA.SCORE
+		        , EA.SCORE_BAK
+		        , EA.SCORE_LOG
+		        , EA.USER_IP
+		        , EA.YN_MARK
+		FROM TB_STU_LEC SL
+		LEFT JOIN ETEST.EXAM_ANS EA
+			ON SL.SUBJ = EA.ID_SUBJECT
+			AND SL.USERNO = EA.USERID
+	    LEFT JOIN TB_APP_INFO AI
+		    ON AI.USERNO = SL.USERNO
+		    AND AI.GRCODE = SL.GRCODE
+		    AND AI.GRSEQ = SL.GRSEQ
+		WHERE 1=1
+			AND SL.SUBJ = #{subj}
+			AND SL.GRCODE = #{grcode}
+			AND SL.GRSEQ = #{grseq}
+			AND EA.YN_END = #{ynEnd}
+	        AND EA.OXS IS NOT NULL
+	        AND EA.ID_EXAM = #{idExam}
+		ORDER BY AI.EDUNO
+	</select>
+	
+	<select id="countExresult" parameterType="Map" resultType="Integer">
+		SELECT COUNT(*) FROM TB_EXRESULT
+	    WHERE 1=1
+	    AND GRCODE = #{grcode}
+	    AND GRSEQ = #{grseq}
+	    AND SUBJ = #{subj}
+	    AND PTYPE = #{ptype}
+	    AND USERNO = #{userno}
+	</select>
+	
+	<update id="insertExresult" parameterType="Map">
+		INSERT INTO TB_EXRESULT
+	      (
+	        GRCODE
+	        , GRSEQ
+	        , SUBJ
+	        , PTYPE
+	        , USERNO
+	        , APAGE_TYPE
+	        , ONOFF_TYPE
+	        , EVAL_TYPE
+	        , EXAM_ANS
+	        , EXAMGUBUN
+	        , GAKCOUNT
+	        , JUCOUNT
+	        , GAKPOINT
+	        , JUPOINT
+	        , GAKOXGUBUN
+	        , JUOXGUBUN
+	        , LUSERNO
+	        , LDATE
+	        , EXDATE
+	      )
+	      VALUES
+	      (
+	        #{grcode}
+	        , #{grseq}
+	        , #{subj}
+	        , #{ptype}
+	        , #{userno}
+	        , #{apageType}
+	        , #{onoffType}
+	        , #{evalType}
+	        , #{examAns, jdbcType=VARCHAR}
+	        , #{examgubun}
+	        , #{gakcount}
+	        , #{jucount, jdbcType=NUMERIC}
+	        , #{gakpoint}
+	        , #{jupoint, jdbcType=NUMERIC}
+	        , #{gakoxgubun}
+	        , #{juoxgubun, jdbcType=VARCHAR}
+	        , #{suserno}
+	        , SYSDATE
+	        , SYSDATE
+	      )
+	</update>
+	
+	<update id="updateExresult" parameterType="Map">
+		UPDATE TB_EXRESULT
+		SET 	GAKCOUNT = #{gakcount, jdbcType=NUMERIC}
+		        , JUCOUNT = #{jucount, jdbcType=NUMERIC}
+		        , GAKPOINT = #{gakpoint, jdbcType=NUMERIC}
+		        , JUPOINT = #{jupoint, jdbcType=NUMERIC}
+		        , GAKOXGUBUN = #{gakoxgubun, jdbcType=VARCHAR}
+		        , JUOXGUBUN = #{juoxgubun, jdbcType=VARCHAR}
+		        , LUSERNO = #{suserno, jdbcType=VARCHAR}
+		        , LDATE = SYSDATE
+        WHERE GRCODE = #{grcode}
+			AND GRSEQ = #{grseq}
+			AND SUBJ = #{subj}
+			AND PTYPE = #{ptype}
+			AND USERNO = #{userno}
+	</update>
+	
+	<select id="findExamPaper2ByIdExamAndIdSubject" parameterType="Map" resultType="Map">
+		SELECT 
+		    EP.ID_EXAM
+		    , EP.EXAM_UNIT
+		    , EP.ID_SUBJECT
+		    , EP.NR_SET
+		    , EP.NR_Q
+		    , EP.ID_Q
+		    , EP.EX_ORDER
+		    , EP.ALLOTTING
+		    , EP.PAGE
+		    , EP.Q_NO1
+		    , EP.Q_NO2
+		    , Q.ID_Q
+		    , Q.ID_COURSE
+		    , Q.ID_SUBJECT
+		    , Q.ID_CHAPTER
+		    , Q.ID_REF
+		    , Q.ID_QTYPE
+		    , Q.EXCOUNT
+		    , Q.CACOUNT
+		    , Q.ALLOTTING
+		    , Q.LIMITTIME
+		    , Q.ID_DIFFICULTY1
+		    , Q.ID_DIFFICULTY2
+		    , Q.Q
+		    , Q.EX1
+		    , Q.EX2
+		    , Q.EX3
+		    , Q.EX4
+		    , Q.EX5
+		    , Q.CA
+		    , Q.YN_CAORDER
+		    , Q.YN_CASE
+		    , Q.YN_BLANK
+		    , Q.EXPLAIN
+		    , Q.HINT
+		    , Q.SRC_BOOK
+		    , Q.SRC_AUTHOR
+		    , Q.SRC_PAGE
+		    , Q.SRC_PUB_COMP
+		    , Q.SRC_PUB_YEAR
+		    , Q.SRC_MISC
+		    , Q.FIND_KWD
+		    , Q.ID_COMPANY
+		    , Q.USERID
+		    , Q.ID_VALID_TYPE
+		    , Q.REGDATE
+		    , Q.UP_DATE
+		    , Q.ID_Q_USE
+		    , Q.Q_USE_DETAIL
+		    , Q.USE_YN
+		    , Q.QFILE
+		    , Q.EX1FILE
+		    , Q.EX2FILE
+		    , Q.EX3FILE
+		    , Q.EX4FILE
+		    , Q.EX5FILE
+		    , Q.QFILE_RN
+		    , Q.EX1FILE_RN
+		    , Q.EX2FILE_RN
+		    , Q.EX3FILE_RN
+		    , Q.EX4FILE_RN
+		    , Q.EX5FILE_RN
+		    , Q.XFILE
+		    , Q.HFILE
+		    , Q.XFILE_RN
+		    , Q.HFILE_RN
+		    , Q.QFILE_TP
+		    , Q.EX1FILE_TP
+		    , Q.EX2FILE_TP
+		    , Q.EX3FILE_TP
+		    , Q.EX4FILE_TP
+		    , Q.EX5FILE_TP
+		    , Q.XFILE_TP
+		    , Q.HFILE_TP
+		    , CC.ID_COURSE
+			, CC.ID_SUBJECT
+			, CC.ID_CHAPTER
+			, CC.CHAPTER
+			, CC.CHAPTER_ORDER
+			, CC.REGDATE
+			, CC.COURSE_CODE
+		FROM ETEST.EXAM_PAPER2 EP
+		JOIN ETEST.Q Q
+		ON EP.ID_Q = Q.ID_Q
+		JOIN ETEST.C_CHAPTER CC
+    	ON Q.ID_CHAPTER = CC.ID_CHAPTER
+		WHERE 1=1
+		AND EP.ID_EXAM = #{idExam}
+		AND EP.ID_SUBJECT = #{idSubject}
+		ORDER BY NR_SET, NR_Q
+	</select>
+	<select id="findExamPaper2ByIdExamAndIdSubjectAndNrSet" parameterType="Map" resultType="Map">
+		SELECT 
+		    EP.ID_EXAM
+		    , EP.EXAM_UNIT
+		    , EP.ID_SUBJECT
+		    , EP.NR_SET
+		    , EP.NR_Q
+		    , EP.ID_Q
+		    , EP.EX_ORDER
+		    , EP.ALLOTTING
+		    , EP.PAGE
+		    , EP.Q_NO1
+		    , EP.Q_NO2
+		    , Q.ID_Q
+		    , Q.ID_COURSE
+		    , Q.ID_SUBJECT
+		    , Q.ID_CHAPTER
+		    , Q.ID_REF
+		    , Q.ID_QTYPE
+		    , Q.EXCOUNT
+		    , Q.CACOUNT
+		    , Q.ALLOTTING
+		    , Q.LIMITTIME
+		    , Q.ID_DIFFICULTY1
+		    , Q.ID_DIFFICULTY2
+		    , Q.Q
+		    , Q.EX1
+		    , Q.EX2
+		    , Q.EX3
+		    , Q.EX4
+		    , Q.EX5
+		    , Q.CA
+		    , Q.YN_CAORDER
+		    , Q.YN_CASE
+		    , Q.YN_BLANK
+		    , Q.EXPLAIN
+		    , Q.HINT
+		    , Q.SRC_BOOK
+		    , Q.SRC_AUTHOR
+		    , Q.SRC_PAGE
+		    , Q.SRC_PUB_COMP
+		    , Q.SRC_PUB_YEAR
+		    , Q.SRC_MISC
+		    , Q.FIND_KWD
+		    , Q.ID_COMPANY
+		    , Q.USERID
+		    , Q.ID_VALID_TYPE
+		    , Q.REGDATE
+		    , Q.UP_DATE
+		    , Q.ID_Q_USE
+		    , Q.Q_USE_DETAIL
+		    , Q.USE_YN
+		    , Q.QFILE
+		    , Q.EX1FILE
+		    , Q.EX2FILE
+		    , Q.EX3FILE
+		    , Q.EX4FILE
+		    , Q.EX5FILE
+		    , Q.QFILE_RN
+		    , Q.EX1FILE_RN
+		    , Q.EX2FILE_RN
+		    , Q.EX3FILE_RN
+		    , Q.EX4FILE_RN
+		    , Q.EX5FILE_RN
+		    , Q.XFILE
+		    , Q.HFILE
+		    , Q.XFILE_RN
+		    , Q.HFILE_RN
+		    , Q.QFILE_TP
+		    , Q.EX1FILE_TP
+		    , Q.EX2FILE_TP
+		    , Q.EX3FILE_TP
+		    , Q.EX4FILE_TP
+		    , Q.EX5FILE_TP
+		    , Q.XFILE_TP
+		    , Q.HFILE_TP
+		    , CC.ID_COURSE
+			, CC.ID_SUBJECT
+			, CC.ID_CHAPTER
+			, CC.CHAPTER
+			, CC.CHAPTER_ORDER
+			, CC.REGDATE
+			, CC.COURSE_CODE
+			, RQ.QTYPE
+			, RQ.RMK
+		FROM ETEST.EXAM_PAPER2 EP
+		JOIN ETEST.Q Q
+		ON EP.ID_Q = Q.ID_Q
+		JOIN ETEST.C_CHAPTER CC
+    	ON Q.ID_CHAPTER = CC.ID_CHAPTER
+    	JOIN ETEST.R_QTYPE RQ
+		ON RQ.ID_QTYPE = Q.ID_QTYPE
+		WHERE 1=1
+		AND EP.ID_EXAM = #{idExam}
+		AND EP.ID_SUBJECT = #{idSubject}
+		AND EP.NR_SET = #{nrSet}
+		ORDER BY NR_SET, NR_Q
+	</select>
+	
+	<update id="updateExamAnsScoring" parameterType="Map" >
+		UPDATE ETEST.EXAM_ANS
+		SET
+				  OXS = #{oxs}
+				  , POINTS = #{points}
+				  , SCORE = #{score}
+		WHERE ID_COMPANY = #{idCompany}
+		AND USERID = #{userid}
+		AND ID_EXAM = #{idExam}
+		AND ID_SUBJECT = #{subj}
+	</update>
+	
+	<update id="updateExamAnsYnEnd" parameterType="Map">
+		UPDATE ETEST.EXAM_ANS
+		SET
+		  YN_END = #{ynEnd}
+		WHERE ID_COMPANY = #{idCompany}
+		AND ID_SUBJECT = #{idSubject}
+		AND ID_EXAM = #{idExam}
+		AND USERID = #{userno}
+		--AND SCORE IS NOT NULL
+	</update>
+	
+	<select id="findExamMByGrcodeAndGrseq" parameterType="Map" resultType="DataMap">
+		SELECT  
+		    ID_EXAM
+		    , ID_COURSE
+		    , COURSE_YEAR
+		    , COURSE_NO
+		    , COURSE_CLASS_NO
+		    , COURSE_STUDY_SEQ
+		    , EXAM_SEQ
+		    , TITLE
+		    , GUIDE
+		    , ID_EXAM_KIND
+		    , WEIGHT
+		    , YN_ENABLE
+		    , EXAM_START1
+		    , EXAM_END1
+		    , EXAM_START2
+		    , EXAM_END2
+		    , YN_OPEN_EXAM_DATE2
+		    , ID_EXAM_TYPE
+		    , ID_AUTH_TYPE
+		    , YN_FREE
+		    , YN_GROUP_RECEIPT
+		    , RECEIPT_START
+		    , RECEIPT_END
+		    , YN_STAT
+		    , STAT_START
+		    , STAT_END
+		    , YN_P_RANK
+		    , YN_P_RANK_PCT
+		    , YN_T_AVG
+		    , YN_T_U_AVG
+		    , U_AVG_BASIS
+		    , YN_T_MAX
+		    , YN_T_MIN
+		    , YN_T_USER_CNT
+		    , YN_SCORE_DIS
+		    , YN_OPT_SUBJ
+		    , ID_APPLY_ORDER
+		    , YN_OPEN_QA
+		    , YN_OPEN_SCORE_DIRECT
+		    , ID_COMPANY
+		    , USERID
+		    , CAL_STAT_DATE
+		    , REGDATE
+		    , UP_DATE
+		    , Q_MAKER_TITLE
+		    , Q_MAKER_BODY
+		    , FAILURE_SCORE
+		    , SUCCESS_SCORE
+		    , YN_EXAM_RESULT_MSG
+		    , LOG_OPTION
+		    , WEB_WINDOW_MODE
+		    , SURVEY
+		    , YN_SAMETIME
+		    , LOGIN_START
+		    , LOGIN_END
+		    , YN_RECEIPT
+		    , ONOFF_TYPE
+		FROM ETEST.EXAM_M
+		WHERE 1=1
+		AND COURSE_YEAR = #{grcode}
+		AND COURSE_NO = #{grseq}
+	</select>
+	
+	<select id="selectOneExamAns" parameterType="Map" resultType="DataMap">
+		SELECT 
+			ID_COMPANY
+			, USERID
+			, ID_EXAM
+			, ID_SUBJECT
+			, NR_SET
+			, EXAM_NO
+			, EXAM_UNIT
+			, START_TIME
+			, END_TIME
+			, REMAIN_TIME
+			, YN_END
+			, ANSWERS
+			, OXS
+			, POINTS
+			, USER_FILE
+			, PROF_FILE
+			, PROF_COMMENT
+			, SCORE
+			, SCORE_BAK
+			, SCORE_LOG
+			, USER_IP
+			, YN_MARK
+		FROM ETEST.EXAM_ANS
+		WHERE 1=1
+			AND	ID_COMPANY = #{idCompany}
+			AND	USERID = #{userid}
+			AND	ID_EXAM = #{idExam}
+			AND	ID_SUBJECT = #{idSubject}
+	</select>
+	
+	<select id="countBakExamAnsByKey" parameterType="Map" resultType="Integer">
+		SELECT COUNT(*) FROM ETEST.BAK_EXAM_ANS
+		WHERE 1=1
+		AND ID_COMPANY = #{idCompany}
+		AND USERID = #{userid}
+		AND ID_EXAM = #{idExam}
+		AND ID_SUBJECT = #{idSubject}
+	</select>
+	
+	<update id="updateBakExamAns" parameterType="Map">
+		UPDATE ETEST.BAK_EXAM_ANS
+			SET NR_SET = #{nrSet}
+			AND EXAM_NO = #{examNo}
+			--AND EXAM_UNIT = #{examUnit}
+			AND START_TIME = #{startTime, jdbcType=DATE}
+			AND END_TIME = #{endTime, jdbcType=DATE}
+			--AND REMAIN_TIME = #{remainTime}
+			--AND YN_END = #{ynEnd}
+			AND ANSWERS = #{answers}
+			AND OXS = #{oxs}
+			AND POINTS = #{points}
+			--AND USER_FILE = #{userFile}
+			--AND PROF_FILE = #{profFile}
+			--AND PROF_COMMENT = #{profComment}
+			AND SCORE = #{score}
+			--AND SCORE_BAK = #{scoreBak}
+			--AND SCORE_LOG = #{scoreLog}
+			AND USER_IP = #{userIp}
+			--AND YN_MARK = #{ynMark}
+		WHERE 1=1
+			AND ID_COMPANY = #{idCompany}
+			AND USERID = #{userid}
+			AND ID_EXAM = #{idExam}
+			AND ID_SUBJECT = #{idSubject}
+	</update>
+	
+	<update id="insertBakExamAns" parameterType="Map">
+		INSERT INTO ETEST.BAK_EXAM_ANS (
+				ID_COMPANY
+				, USERID
+				, ID_EXAM
+				, ID_SUBJECT
+				, NR_SET
+				, EXAM_UNIT
+				, START_TIME
+				, END_TIME
+				, REMAIN_TIME
+				, ANSWERS
+				, OXS
+				, SCORE
+				, USER_IP
+				)
+		VALUES (
+				#{idCompany, jdbcType=VARCHAR}
+				, #{userid, jdbcType=VARCHAR}
+				, #{idExam, jdbcType=VARCHAR}
+				, #{idSubject, jdbcType=VARCHAR}
+				, #{nrSet, jdbcType=NUMERIC}
+				, #{examUnit, jdbcType=NUMERIC}
+				, #{startTime, jdbcType=DATE}
+				, #{endTime, jdbcType=DATE}
+				, #{remainTime, jdbcType=NUMERIC}
+				, #{answers, jdbcType=VARCHAR}
+				, #{oxs, jdbcType=VARCHAR}
+				, #{score, jdbcType=NUMERIC}
+				, #{userIp, jdbcType=VARCHAR}
+				)
+	</update>
+	
+	<update id="deleteBakExamAns" parameterType="Map">
+		DELETE ETEST.BAK_EXAM_ANS
+		WHERE ID_COMPANY = #{idCompany}
+			AND USERID = #{userid}
+			AND ID_EXAM = #{idExam}
+			AND ID_SUBJECT = #{idSubject}
+	</update>
+	
+	<select id="selectOneBakExamAns" parameterType="Map" resultType="DataMap">
+		SELECT 
+			ID_COMPANY
+			, USERID
+			, ID_EXAM
+			, ID_SUBJECT
+			, NR_SET
+			, EXAM_NO
+			, EXAM_UNIT
+			, START_TIME
+			, END_TIME
+			, REMAIN_TIME
+			, YN_END
+			, ANSWERS
+			, OXS
+			, POINTS
+			, USER_FILE
+			, PROF_FILE
+			, PROF_COMMENT
+			, SCORE
+			, SCORE_BAK
+			, SCORE_LOG
+			, USER_IP
+			, YN_MARK
+		FROM ETEST.BAK_EXAM_ANS
+		WHERE 1=1
+			AND	ID_COMPANY = #{idCompany}
+			AND	USERID = #{userid}
+			AND	ID_EXAM = #{idExam}
+			AND	ID_SUBJECT = #{idSubject}
+	</select>
+	
+	<update id="updateAnswersExamAns" parameterType="Map">
+		UPDATE ETEST.EXAM_ANS
+		SET ANSWERS = #{answers}
+			, OXS = NULL
+			, POINTS = NULL
+			, SCORE = NULL
+			, YN_END = 'Y'
+		WHERE 1=1
+			AND ID_COMPANY = #{idCompany}
+			AND USERID = #{userid}
+			AND ID_EXAM = #{idExam}
+			AND ID_SUBJECT = #{idSubject}
+	</update>
+
+</mapper>

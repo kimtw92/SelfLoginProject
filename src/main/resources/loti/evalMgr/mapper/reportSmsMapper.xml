@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="loti.evalMgr.mapper.ReportSmsMapper">
+
+	<insert id="insertSMSList" parameterType="Map">
+	<![CDATA[
+		-- 과제물 미제출자 SMS 정보 입력
+				INSERT INTO SMS_MSG 
+			(
+				SUBJECT
+				,PHONE
+				,CALLBACK 
+				,STATUS 
+				,REQDATE 
+				,MSG
+				,ID
+			)VALUES (
+				'(제목없음)'
+				,'01057544919'
+				,'0324407684'
+				,'0'
+				,concat(date_format(now(),'%Y%m%d%H%i%s'))
+				,#{msg}
+				,'INCHLMS1'
+			) 
+	]]>
+	</insert>
+</mapper>
